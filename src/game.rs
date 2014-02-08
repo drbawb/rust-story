@@ -36,22 +36,21 @@ impl Game {
 		let display = graphics::Graphics();
 		
 		// event loop control
-		let last_update_time = sdl::sdl::get_ticks();
+		let mut last_update_time = sdl::sdl::get_ticks();
 		let frame_delay = (1000 / TARGET_FRAMERATE);
 
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
 
 		// load quote's sprite
-		let quote;
-		match sprite::Sprite::new() {
+		let mut quote;
+		match sprite::Sprite::new(3, 20) {
 			Ok(loaded_sprite) => {
 				quote = loaded_sprite;
 				println!("sprite = ok");
 			}
 			Err(msg) => {
 				println!("sprite err: {}", msg); 
-				running = false; 
 				fail!("cannot continue w/o sprite resources");
 			}
 		}
@@ -70,11 +69,26 @@ impl Game {
 
 
 			
-			quote.draw(&display);
+			let current_time_ms = sdl::sdl::get_ticks();
+			self.update(&mut quote, current_time_ms - last_update_time);
+			last_update_time = current_time_ms;
+
+
+			// draw
+			self.draw(&quote, &display);
 			display.switch_buffers();
 
 			timer.sleep(frame_delay as u64);
 		}
 
+	}
+
+	fn draw<T: sprite::Drawable>(&self, actor: &T, display: &graphics::Graphics) {
+		actor.draw(display);
+	}
+
+	fn update<T: sprite::Animatable>(&self, actor: &mut T, elapsed_time: uint) {
+		actor.step_time(sprite::Millis(elapsed_time));
+		actor.update();
 	}
 }
