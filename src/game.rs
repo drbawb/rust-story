@@ -12,6 +12,7 @@ pub struct Game {
 }
 
 impl Drop for Game {
+	/// Cleanly shuts down the SDL rendering context.
 	fn drop(&mut self) {
 		println!("quitting sdl ...");
 		sdl::quit();
@@ -20,8 +21,7 @@ impl Drop for Game {
 
 impl Game {
 	/// Starts running this games event loop, note that this will block indefinitely.
-	/// This task will close SDL cleanly & return control to the caller when the
-	/// `escape` key is pressed
+	/// This function will return to the caller when the escape key is pressed.
 	pub fn start(&self) {
 		println!("initalizing sdl ...");
 		
@@ -34,12 +34,16 @@ impl Game {
 	}
 
 
+	/// Polls current input events & dispatches them to the engine.
+	///
+	/// Then renders a snapshot of the world-state and then waits
+	/// until its next frame deadline.
 	fn event_loop(&self) {
 		let display = graphics::Graphics();
 		
 		// event loop control
 		let mut last_update_time = sdl::sdl::get_ticks();
-		let frame_delay = (1000 / TARGET_FRAMERATE);
+		let frame_delay = (1000 / TARGET_FRAMERATE) as uint;
 
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
@@ -71,6 +75,7 @@ impl Game {
 
 
 			
+			// update
 			let current_time_ms = sdl::sdl::get_ticks();
 			self.update(&mut quote, current_time_ms - last_update_time);
 			last_update_time = current_time_ms;
@@ -80,15 +85,32 @@ impl Game {
 			self.draw(&quote, &display);
 			display.switch_buffers();
 
-			timer.sleep(frame_delay as u64);
+
+			// throttle event-loop
+			let iter_time = sdl::sdl::get_ticks() - start_time_ms;	// time in ms that this iteration of event loop took
+			let next_frame_time: u64 = if frame_delay > iter_time {	// if we did not miss our deadline: adjust delay accordingly
+				(frame_delay - iter_time) as u64
+			} else { 0 as u64 };									// otherwise missed frame-deadline, skip waiting period
+			timer.sleep(next_frame_time);
+
+			/* 
+			// Print current FPS to stdout
+			let seconds_per_frame =  (sdl::sdl::get_ticks() - start_time_ms) as f64 / 1000.0;
+			let fps = 1.0 / (seconds_per_frame);
+
+			println!("fps: {}", fps);
+			*/
 		}
 
 	}
 
+	/// Draws current state of sprites to the screen
 	fn draw<T: sprite::Drawable>(&self, actor: &T, display: &graphics::Graphics) {
 		actor.draw(display);
 	}
 
+	/// Updates an actor's concept of time.
+	/// Then instructs them to mutate their state accordingly.
 	fn update<T: sprite::Animatable>(&self, actor: &mut T, elapsed_time: uint) {
 		actor.step_time(sprite::Millis(elapsed_time));
 		actor.update();

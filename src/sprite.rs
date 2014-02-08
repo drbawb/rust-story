@@ -3,8 +3,8 @@ extern mod sdl;
 use std::path::posix::Path;
 use game::graphics;
 
-// todo: units library?
-
+/// Milliseconds expressed as a large positive integer
+/// This will be used at module boundaries in place of raw types.
 pub struct Millis(uint);
 
 pub trait Drawable { fn draw(&self, display: &graphics::Graphics); }
@@ -53,7 +53,7 @@ impl Animatable for Sprite {
 }
 
 impl Updatable for Sprite {
-	/// Reads current time-deltas and mutates state accordingly.
+	//! Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self) {
 		self.source_rect = sdl::sdl::Rect::new((self.current_frame * 32) as i16, 0, 32, 32);
 	}
