@@ -11,7 +11,13 @@ pub struct Game {
 	sprite: int
 }
 
-// TODO: destructor
+impl Drop for Game {
+	fn drop(&mut self) {
+		println!("quitting sdl ...");
+		sdl::quit();
+	}
+}
+
 impl Game {
 	/// Starts running this games event loop, note that this will block indefinitely.
 	/// This task will close SDL cleanly & return control to the caller when the
@@ -27,10 +33,6 @@ impl Game {
 		self.event_loop();
 	}
 
-	pub fn stop(&self) {
-		println!("quitting sdl ...");
-		sdl::quit();
-	}
 
 	fn event_loop(&self) {
 		let display = graphics::Graphics();
