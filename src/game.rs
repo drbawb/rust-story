@@ -2,8 +2,9 @@ extern mod sdl;
 use std::io::Timer;
 
 pub mod graphics;
-pub mod sprite;
 pub mod input;
+pub mod sprite;
+pub mod player;
 
 static TARGET_FRAMERATE: int = 60;
 
@@ -41,28 +42,17 @@ impl Game {
 	/// until its next frame deadline.
 	fn event_loop(&self) {
 		let display = graphics::Graphics();
+		let mut input = input::Input::new();
 		
 		// event loop control
-		let mut last_update_time = sdl::sdl::get_ticks();
 		let frame_delay = (1000 / TARGET_FRAMERATE) as uint;
-
+		let mut last_update_time = sdl::sdl::get_ticks();
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
 
-		// load quote's sprite
-		let mut quote;
-		match sprite::Sprite::new(3, 20) {
-			Ok(loaded_sprite) => {
-				quote = loaded_sprite;
-				println!("sprite = ok");
-			}
-			Err(msg) => {
-				println!("sprite err: {}", msg); 
-				fail!("cannot continue w/o sprite resources");
-			}
-		}
 
-		let mut input = input::Input::new();
+		// load quote's sprite
+		let mut quote= player::Player::new(0,0);
 
 		while running {
 			let start_time_ms = sdl::sdl::get_ticks();
