@@ -1,7 +1,7 @@
 extern mod sdl;
-use std::path::posix::Path;
 
-pub mod graphics;
+use std::path::posix::Path;
+use game::graphics;
 
 /// Represents a 32x32 2D character
 /// This sprite will implm. a `Drawable` trait
@@ -31,5 +31,9 @@ impl Sprite {
 			}
 			Err(msg) => {return Err(msg);}
 		}
+	}
+
+	pub fn draw(&self, display: &graphics::Graphics) {
+		display.blit_surface(self.sprite_sheet, &self.source_rect);
 	}
 }

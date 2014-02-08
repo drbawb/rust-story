@@ -52,7 +52,7 @@ impl Game {
 			Err(msg) => {
 				println!("sprite err: {}", msg); 
 				running = false; 
-				fail!("nope");
+				fail!("cannot continue w/o sprite resources");
 			}
 		}
 
@@ -69,9 +69,10 @@ impl Game {
 			}
 
 
-			display.blit_surface(quote.sprite_sheet, &quote.source_rect);
-			display.switch_buffers();
 			
+			quote.draw(&display);
+			display.switch_buffers();
+
 			timer.sleep(frame_delay as u64);
 		}
 
