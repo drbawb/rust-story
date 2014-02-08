@@ -52,7 +52,7 @@ impl Game {
 
 
 		// load quote's sprite
-		let mut quote= player::Player::new(0,0);
+		let mut quote= player::Player::new(320,240);
 
 		while running {
 			let start_time_ms = sdl::sdl::get_ticks();
@@ -71,8 +71,22 @@ impl Game {
 				_ => {}
 			}
 
+			// Handle exit game
 			if input.wasKeyReleased(sdl::event::EscapeKey) {
 				running = false;
+			}
+
+			// Handle player movement
+			if input.isKeyHeld(sdl::event::LeftKey)
+				&& input.isKeyHeld(sdl::event::RightKey) {
+
+				quote.stopMoving();
+			} else if input.isKeyHeld(sdl::event::LeftKey) {
+				quote.startMovingLeft();
+			} else if input.isKeyHeld(sdl::event::RightKey) {
+				quote.startMovingRight();
+			} else {
+				quote.stopMoving();
 			}
 
 			// update
@@ -82,6 +96,7 @@ impl Game {
 
 
 			// draw
+			display.clear_buffer(); // clear back-buffer
 			self.draw(&quote, &display);
 			display.switch_buffers();
 

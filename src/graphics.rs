@@ -40,4 +40,8 @@ impl Graphics {
 	pub fn switch_buffers(&self) -> bool {
 		self.screen.flip()
 	}
+
+	pub fn clear_buffer(&self) {
+		self.screen.clear();
+	}
 }
