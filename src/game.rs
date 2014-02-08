@@ -3,6 +3,7 @@ use std::io::Timer;
 
 pub mod graphics;
 pub mod sprite;
+pub mod input;
 
 static TARGET_FRAMERATE: int = 60;
 
@@ -61,20 +62,29 @@ impl Game {
 			}
 		}
 
+		let mut input = input::Input::new();
+
 		while running {
 			let start_time_ms = sdl::sdl::get_ticks();
+			input.beginNewFrame();
 
 			// drain event queue once per frame
 			// ideally should do in separate task
 			match sdl::event::poll_event() {
-				sdl::event::KeyEvent(keyCap,_,_,_) if keyCap == sdl::event::EscapeKey => {
-					running = false;
+				sdl::event::KeyEvent(keyCap,pressed,_,_) => {
+					if pressed {
+						input.keyDownEvent(keyCap);
+					} else {
+						input.keyUpEvent(keyCap);
+					}
 				}
 				_ => {}
 			}
 
+			if input.wasKeyReleased(sdl::event::EscapeKey) {
+				running = false;
+			}
 
-			
 			// update
 			let current_time_ms = sdl::sdl::get_ticks();
 			self.update(&mut quote, current_time_ms - last_update_time);
