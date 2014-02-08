@@ -7,7 +7,10 @@ use game::graphics;
 /// This will be used at module boundaries in place of raw types.
 pub struct Millis(uint);
 
-pub trait Drawable { fn draw(&self, display: &graphics::Graphics); }
+pub trait Drawable { 
+	fn draw(&self, display: &graphics::Graphics); 
+}
+
 pub trait Updatable { fn update(&mut self); }
 pub trait Animatable : Updatable {
 	fn step_time(&mut self, elapsed_time: Millis);
@@ -59,21 +62,14 @@ impl Updatable for Sprite {
 	}
 }
 
-impl Drawable for Sprite {
-	/// Draws current state to `display`
-	fn draw(&self, display: &graphics::Graphics) {
-		display.blit_surface(self.sprite_sheet, &self.source_rect);
-	}
-}
-
 impl Sprite {
 	/// Loads character sprites from `assets/MyChar.bmp`
 	/// `source_rect` acts as a viewport of this sprite-sheet.
 	///
 	/// Returns an error message if sprite-sheet could not be loaded.
-	pub fn new(num_frames: int, fps: int) -> Result<Sprite, ~str> {
+	pub fn new(sheet_path: ~str, num_frames: int, fps: int) -> Result<Sprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
-		let sprite_sheet = Path::new("assets/MyChar.bmp");
+		let sprite_sheet = Path::new(sheet_path);
 		if !(sprite_sheet.is_file()) {
 			return Err(~"sprite file does not appear to be a regular file.");
 		}
@@ -94,5 +90,11 @@ impl Sprite {
 			}
 			Err(msg) => {return Err(msg);}
 		}
+	}
+
+	/// Draws this sprite at `x`, and `y` on `display`.
+	pub fn draw_at(&self, display: &graphics::Graphics, x: i16, y: i16) {
+		let dest_rect = sdl::sdl::Rect::new(x, y, 32, 32);
+		display.blit_surface(self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }
