@@ -43,11 +43,16 @@ impl Game {
 		let mut timer = Timer::new().unwrap();
 
 		// load quote's sprite
+		let quote;
 		match sprite::Sprite::new() {
-			Ok(_) => {println!("sprite = ok");}
+			Ok(loaded_sprite) => {
+				quote = loaded_sprite;
+				println!("sprite = ok");
+			}
 			Err(msg) => {
 				println!("sprite err: {}", msg); 
 				running = false; 
+				fail!("nope");
 			}
 		}
 
@@ -63,6 +68,9 @@ impl Game {
 				_ => {}
 			}
 
+
+			display.blit_surface(quote.sprite_sheet, &quote.source_rect);
+			display.switch_buffers();
 			
 			timer.sleep(frame_delay as u64);
 		}

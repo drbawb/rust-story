@@ -32,4 +32,13 @@ pub fn Graphics() -> Graphics {
 	return graphics;
 }
 
-impl Graphics {}
+impl Graphics {
+	pub fn blit_surface(&self, src: &sdl::video::Surface, src_rect: &sdl::sdl::Rect) {
+		let dest_rect = sdl::sdl::Rect::new(320, 240, 32, 32);
+		self.screen.blit_rect(src, Some(*src_rect), Some(dest_rect));
+	}
+
+	pub fn switch_buffers(&self) -> bool {
+		self.screen.flip()
+	}
+}
