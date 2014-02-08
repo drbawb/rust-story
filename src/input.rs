@@ -35,28 +35,25 @@ impl Input {
 
 	pub fn wasKeyPressed(&self, key: sdl::event::Key) -> bool {
 		let key_cap = &(key as u32);
-		if self.pressed_keys.contains_key(key_cap) {
-			*(self.pressed_keys.get(key_cap))
-		} else {
-			false
+		match self.pressed_keys.find_copy(key_cap) {
+			Some(is_pressed) => {is_pressed}
+			None => false
 		}
 	}
 	
 	pub fn wasKeyReleased(&self, key: sdl::event::Key) -> bool {
 		let key_cap = &(key as u32);
-		if self.released_keys.contains_key(key_cap) {
-			*(self.released_keys.get(key_cap))
-		} else {
-			false
+		match self.released_keys.find_copy(key_cap) {
+			Some(is_pressed) => {is_pressed}
+			None => false
 		}
 	}
 	
 	pub fn isKeyHeld(&self, key: sdl::event::Key) -> bool {
 		let key_cap = &(key as u32);
-		if self.held_keys.contains_key(key_cap) {
-			*(self.held_keys.get(key_cap))
-		} else {
-			false
+		match self.held_keys.find_copy(key_cap) {
+			Some(is_pressed) => {is_pressed}
+			None => false
 		}
 	}
 }
