@@ -4,3 +4,13 @@ to attempt the first bits of [reconstructing cavestory](#slug) in `Rust`...
 Why Rust?
 
 BECAUSE PARADIGMS.
+
+---
+
+Structure:
+-- rust-story
+	-- src: 	Main source files used by rust-story
+	-- lib: 	Shared libraries used by rust-story
+	-- assets:	Game assets, taken from `reconstructing-cavestory` / freeware version of cavestory
+
+
