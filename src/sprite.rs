@@ -5,6 +5,23 @@ extern mod sdl;
 use self::extra::arc::Arc;
 use game::graphics;
 
+static TILE_SIZE: i16 = 32;
+
+
+pub enum Motion {
+	Walking,
+	Standing
+}
+
+pub enum Facing {
+	North,
+	West,
+	South,
+	East
+}
+
+pub struct SpriteState(Motion, Facing);
+
 /// Milliseconds expressed as a large positive integer
 /// This will be used at module boundaries in place of raw types.
 pub struct Millis(uint);
@@ -24,7 +41,9 @@ pub struct Sprite {
 	source_rect: sdl::sdl::Rect,
 	sprite_sheet: Arc<~sdl::video::Surface>, 
 
-	priv current_frame: int,
+	priv state: SpriteState,
+
+	priv current_frame: (i16,i16),
 	priv num_frames: int,
 	priv fps: int,
 
@@ -43,24 +62,31 @@ impl Animatable for Sprite {
 		self.elapsed_time = Millis(last_elapsed);
 
 
+		// determine next frame
 		if (last_elapsed > frame_time) {
-			// reset timer when we move frame-pointer
-			self.elapsed_time = Millis(0); 
-			
-			// increment frame if it doesn't overflow num_frames
-			self.current_frame = if self.current_frame >= self.num_frames {
-				0
-			} else {
-				self.current_frame + 1
-			};
+			let SpriteState(action, direction) = self.state;
+			self.current_frame = 
+			match action {
+				Standing => { (0,0) } 
+				Walking => {
+					match direction {
+						West => { (0,0) }
+						East => { (0,0) }
+						_ => {println!("cannot face that way"); (0,0) }
+					}
+				}
+			}
 		}
+
+
 	}
 }
 
 impl Updatable for Sprite {
 	//! Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self) {
-		self.source_rect = sdl::sdl::Rect::new((self.current_frame * 32) as i16, 0, 32, 32);
+		let (x,y) = self.current_frame;
+		self.source_rect = sdl::sdl::Rect::new(x * TILE_SIZE, y * TILE_SIZE, 32, 32);
 	}
 }
 
@@ -74,9 +100,10 @@ impl Sprite {
 		let origin = sdl::sdl::Rect::new(0, 0, 32, 32);
 		let sheet = graphics.load_image(sheet_path); // request graphics subsystem cache this sprite.
 		let sprite = Sprite{
-			current_frame: 0, 
+			current_frame: (0,0), 
 			elapsed_time: Millis(0),
 			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
+			state: SpriteState(Standing, West),
 			fps: fps,
 			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
 			source_rect: origin
