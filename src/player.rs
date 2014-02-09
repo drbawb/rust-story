@@ -9,13 +9,16 @@ static WALKING_ACCEL: f64 		= 0.0012;
 static MAX_VELOCITY: f64 		= 0.325;
 
 pub struct Player {
-	priv sprite: ~sprite::Sprite,
+	priv sprite: ~sprite::AnimatedSprite,
 	
+	// positioning
 	priv x: i16,
 	priv y: i16,
 
 	priv last_facing: sprite::Facing,
 
+	// physics
+	priv elapsed_time: sprite::Millis,
 	priv velocity_x: f64,
 	priv accel_x: f64
 }
@@ -23,7 +26,7 @@ pub struct Player {
 impl Player {
 	pub fn new(graphics: &mut graphics::Graphics, x: i16, y: i16) -> Player {
 		let mut quote;
-		match sprite::Sprite::new(graphics, ~"assets/MyChar.bmp", 3, 20) {
+		match sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20) {
 			Ok(loaded_sprite) => {
 				quote = loaded_sprite;
 				println!("sprite = ok");
@@ -35,6 +38,7 @@ impl Player {
 		}
 
 		Player{
+			elapsed_time: sprite::Millis(0),
 			sprite: ~quote, 
 			
 			x: x, 
@@ -63,17 +67,20 @@ impl Player {
 }
 
 /* Proxies for drawable sprite traits */
-
-/// Proxies animation calls to underlying sprite
-impl sprite::Animatable for Player {
-	fn step_time(&mut self, elapsed_time: sprite::Millis) {
-		self.sprite.step_time(elapsed_time);
+/// Proxies update calls to underlying sprite
+impl sprite::Updatable for Player {
+	//! Reads current time-deltas and mutates state accordingly.
+	fn update(&mut self, elapsed_time: sprite::Millis) {
+		// calculate current position
+		self.elapsed_time = elapsed_time;
+		self.set_position((self.x, 32));
 		
-		// compute next position from current velocity
-		let sprite::Millis(elapsed_time_ms) = elapsed_time;
+		// calculate next position
+		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
 		self.x += f64::round(
 			self.velocity_x * elapsed_time_ms as f64
 		) as i16;
+
 
 
 		// compute velocity for next frame
@@ -87,14 +94,12 @@ impl sprite::Animatable for Player {
 		} else {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
-	}
-}
 
-/// Proxies update calls to underlying sprite
-impl sprite::Updatable for Player {
-	//! Reads current time-deltas and mutates state accordingly.
-	fn update(&mut self) {
-		self.sprite.update();
+		self.sprite.update(elapsed_time);
+	}
+
+	fn set_position(&mut self, coords: (i16,i16)) {
+		self.sprite.set_position(coords);
 	}
 }
 
@@ -102,6 +107,6 @@ impl sprite::Updatable for Player {
 impl sprite::Drawable for Player {
 	/// Draws current state to `display`
 	fn draw(&self, display: &graphics::Graphics) {
-		self.sprite.draw_at(display, self.x, self.y);
+		self.sprite.draw(display);
 	}
 }
