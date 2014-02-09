@@ -126,8 +126,7 @@ impl Game {
 
 	/// Updates an actor's concept of time.
 	/// Then instructs them to mutate their state accordingly.
-	fn update<T: sprite::Animatable>(&self, actor: &mut T, elapsed_time: uint) {
-		actor.step_time(sprite::Millis(elapsed_time));
-		actor.update();
+	fn update<T: sprite::Updatable>(&self, actor: &mut T, elapsed_time: uint) {
+		actor.update(sprite::Millis(elapsed_time));
 	}
 }
