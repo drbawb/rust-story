@@ -61,11 +61,14 @@ impl sprite::Animatable for Player {
 	fn step_time(&mut self, elapsed_time: sprite::Millis) {
 		self.sprite.step_time(elapsed_time);
 		
+		// compute next position from current velocity
 		let sprite::Millis(elapsed_time_ms) = elapsed_time;
 		self.x += f64::round(
 			self.velocity_x * elapsed_time_ms as f64
 		) as i16;
 
+
+		// compute velocity for next frame
 		self.velocity_x += 
 			self.accel_x * elapsed_time_ms as f64;
 

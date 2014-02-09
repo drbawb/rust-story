@@ -41,7 +41,7 @@ impl Game {
 	/// Then renders a snapshot of the world-state and then waits
 	/// until its next frame deadline.
 	fn event_loop(&self) {
-		let display = graphics::Graphics();
+		let display = graphics::Graphics::new();
 		let mut input = input::Input::new();
 		
 		// event loop control
