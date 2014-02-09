@@ -14,6 +14,8 @@ pub struct Player {
 	priv x: i16,
 	priv y: i16,
 
+	priv last_facing: sprite::Facing,
+
 	priv velocity_x: f64,
 	priv accel_x: f64
 }
@@ -37,6 +39,7 @@ impl Player {
 			
 			x: x, 
 			y: y,
+			last_facing: sprite::East,
 			
 			velocity_x: 0.0,
 			accel_x: 0.0
@@ -44,12 +47,17 @@ impl Player {
 	}
 
 	pub fn startMovingLeft(&mut self) {
+		self.last_facing = sprite::West;
+		self.sprite.state = sprite::SpriteState(sprite::Walking, self.last_facing);
 		self.accel_x = -WALKING_ACCEL;
 	}
 	pub fn startMovingRight(&mut self) {
+		self.last_facing = sprite::East;
+		self.sprite.state = sprite::SpriteState(sprite::Walking, self.last_facing);
 		self.accel_x = WALKING_ACCEL;
 	}
 	pub fn stopMoving(&mut self) {
+		self.sprite.state = sprite::SpriteState(sprite::Standing, self.last_facing);
 		self.accel_x = 0.0;
 	}
 }
