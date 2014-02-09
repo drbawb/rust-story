@@ -84,9 +84,6 @@ impl Animatable for Sprite {
 					}
 				}
 			};
-
-			println!("frame: {:?}, window: {:?}", self.state, self.current_frame);
-
 		}
 
 
