@@ -20,7 +20,7 @@ pub trait Animatable : Updatable {
 /// This sprite will implm. a `Drawable` trait
 pub struct Sprite {
 	source_rect: sdl::sdl::Rect,
-	sprite_sheet: ~sdl::video::Surface,
+	sprite_sheet: sdl::video::Surface, 
 
 	priv current_frame: int,
 	priv num_frames: int,
@@ -67,29 +67,21 @@ impl Sprite {
 	/// `source_rect` acts as a viewport of this sprite-sheet.
 	///
 	/// Returns an error message if sprite-sheet could not be loaded.
-	pub fn new(sheet_path: ~str, num_frames: int, fps: int) -> Result<Sprite, ~str> {
+	pub fn new(graphics: &mut graphics::Graphics, sheet_path: ~str, num_frames: int, fps: int) -> Result<Sprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
-		let sprite_sheet = Path::new(sheet_path);
-		if !(sprite_sheet.is_file()) {
-			return Err(~"sprite file does not appear to be a regular file.");
-		}
+		let origin = sdl::sdl::Rect::new(0, 0, 32, 32);
+		let sheet = graphics.load_image(sheet_path);
+		let sprite = Sprite{
+			current_frame: 0, 
+			elapsed_time: Millis(0),
+			num_frames: (num_frames -1), // our frames are drawin w/ a 0-idx'd window.
+			fps: fps,
+			sprite_sheet: sheet, 
+			source_rect: origin
+		};
 
-		let sprite_window = sdl::video::Surface::from_bmp(&sprite_sheet);
-		match sprite_window {
-			Ok(sheet) => {
-				let origin = sdl::sdl::Rect::new(0, 0, 32, 32);
-				let sprite = Sprite{
-					current_frame: 0, 
-					elapsed_time: Millis(0),
-					num_frames: (num_frames -1), // our frames are drawin w/ a 0-idx'd window.
-					fps: fps,
-					sprite_sheet: sheet, 
-					source_rect: origin
-				};
-				return Ok(sprite);
-			}
-			Err(msg) => {return Err(msg);}
-		}
+		return Ok(sprite);
+
 	}
 
 	/// Draws this sprite at `x`, and `y` on `display`.
