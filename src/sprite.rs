@@ -41,7 +41,7 @@ pub struct Sprite {
 	source_rect: sdl::sdl::Rect,
 	sprite_sheet: Arc<~sdl::video::Surface>, 
 
-	priv state: SpriteState,
+	state: SpriteState,
 
 	priv current_frame: (i16,i16),
 	priv num_frames: int,
@@ -64,18 +64,29 @@ impl Animatable for Sprite {
 
 		// determine next frame
 		if (last_elapsed > frame_time) {
+			self.elapsed_time = Millis(0); // reset frame timer
 			let SpriteState(action, direction) = self.state;
-			self.current_frame = 
-			match action {
-				Standing => { (0,0) } 
+
+			let facing = match direction {
+				West => { 0 }
+				East => { 1 }
+				_ => {println!("dont know how to face dir"); 0}
+			};
+
+			self.current_frame = match action {
+				Standing => { (0, facing) } // sprite col 1
 				Walking => {
-					match direction {
-						West => { (0,0) }
-						East => { (0,0) }
-						_ => {println!("cannot face that way"); (0,0) }
+					let (action, _) = self.current_frame;
+					if action + 1 > self.num_frames as i16 {
+						(0, facing)
+					} else {
+						(action + 1, facing)
 					}
 				}
-			}
+			};
+
+			println!("frame: {:?}, window: {:?}", self.state, self.current_frame);
+
 		}
 
 
