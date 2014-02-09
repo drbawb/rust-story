@@ -1,6 +1,5 @@
 extern mod sdl;
 
-use std::path::posix::Path;
 use game::graphics;
 
 /// Milliseconds expressed as a large positive integer
@@ -20,7 +19,7 @@ pub trait Animatable : Updatable {
 /// This sprite will implm. a `Drawable` trait
 pub struct Sprite {
 	source_rect: sdl::sdl::Rect,
-	sprite_sheet: sdl::video::Surface, 
+	sprite_sheet: graphics::Handle, 
 
 	priv current_frame: int,
 	priv num_frames: int,

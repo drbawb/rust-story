@@ -6,7 +6,7 @@ pub mod input;
 pub mod sprite;
 pub mod player;
 
-static TARGET_FRAMERATE: int = 60;
+static TARGET_FRAMERATE: int = 120;
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
@@ -52,7 +52,7 @@ impl Game {
 
 
 		// load quote's sprite
-		let mut quote= player::Player::new(&display, 320,240);
+		let mut quote= player::Player::new(&mut display, 320,240);
 
 		while running {
 			let start_time_ms = sdl::sdl::get_ticks();
@@ -108,13 +108,13 @@ impl Game {
 			} else { 0 as u64 };									// otherwise missed frame-deadline, skip waiting period
 			timer.sleep(next_frame_time);
 
-			/* 
+			 
 			// Print current FPS to stdout
 			let seconds_per_frame =  (sdl::sdl::get_ticks() - start_time_ms) as f64 / 1000.0;
 			let fps = 1.0 / (seconds_per_frame);
 
 			println!("fps: {}", fps);
-			*/
+			
 		}
 
 	}
