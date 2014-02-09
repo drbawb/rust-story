@@ -52,7 +52,7 @@ impl Graphics {
 	// TODO: return [borrowed?] pointer which is valid as long as `graphics` is in scope
 	pub fn load_image(&mut self, file_path: ~str) -> Handle {
 		// Retrieve a handle or generate a new one if it exists already.
-		let a = self.open_handles.find_or_insert_with(file_path, |key| {
+		let sprite_handle = self.open_handles.find_or_insert_with(file_path, |key| {
 			// Assign handle
 			let sprite_handle = Handle{id: self.next_handle};
 			self.next_handle += 1; // incr. for next handle
@@ -68,7 +68,7 @@ impl Graphics {
 			sprite_handle
 		});
 
-		*a
+		*sprite_handle
 	}
 
 	pub fn blit_surface(&self, src: Handle, src_rect: &sdl::sdl::Rect, dest_rect: &sdl::sdl::Rect) {
