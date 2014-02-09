@@ -69,6 +69,9 @@ impl Graphics {
 		
 	}
 
+	pub fn remove_image(&mut self, file_path: ~str) {
+		self.sprite_cache.remove(&file_path);
+	}
 	
 
 	pub fn blit_surface(&self, src: &sdl::video::Surface, src_rect: &sdl::sdl::Rect, dest_rect: &sdl::sdl::Rect) {
