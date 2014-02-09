@@ -1,12 +1,15 @@
 extern mod sdl;
 
+use std::hashmap::HashMap;
+
 static SCREEN_WIDTH: 	int 	 	= 1280;
 static SCREEN_HEIGHT: 	int 	 	= 1024;
 static BITS_PER_PIXEL: 	int 	 	= 32;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
-	screen: ~sdl::video::Surface
+	sprite_cache: HashMap<~str, sdl::video::Surface>,
+	priv screen: ~sdl::video::Surface
 }
 
 impl Graphics {
@@ -23,11 +26,23 @@ impl Graphics {
 		
 		let graphics: Graphics;
 		match current_mode {
-			Ok(surface) => {graphics = Graphics{screen: surface};}
+			Ok(surface) => {
+				graphics = Graphics{screen: surface, sprite_cache: HashMap::<~str, sdl::video::Surface>::new()};
+			}
 			Err(_) => {fail!("oh my")}
 		}
 
 		return graphics;
+	}
+
+	// TODO: return [borrowed?] pointer which is valid as long as `graphics` is in scope
+	pub fn load_image<'a>(&'a mut self, file_path: ~str) -> &'a mut sdl::video::Surface {
+		self.sprite_cache.find_or_insert_with(file_path, |key| {
+			let sprite_sheet = Path::new((*key).clone());
+			let sprite_window = sdl::video::Surface::from_bmp(&sprite_sheet);
+
+			*(sprite_window.unwrap())
+		})
 	}
 
 	pub fn blit_surface(&self, src: &sdl::video::Surface, src_rect: &sdl::sdl::Rect, dest_rect: &sdl::sdl::Rect) {
