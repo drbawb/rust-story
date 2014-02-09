@@ -69,7 +69,7 @@ impl Sprite {
 	pub fn new(graphics: &mut graphics::Graphics, sheet_path: ~str, num_frames: int, fps: int) -> Result<Sprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let origin = sdl::sdl::Rect::new(0, 0, 32, 32);
-		let sheet = graphics.load_image(sheet_path);
+		let sheet = graphics.load_image(sheet_path); // request graphics subsystem cache this sprite.
 		let sprite = Sprite{
 			current_frame: 0, 
 			elapsed_time: Millis(0),
