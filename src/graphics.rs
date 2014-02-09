@@ -16,7 +16,7 @@ pub struct Graphics {
 }
 
 pub struct Handle {
-	id: int
+	priv id: int
 }
 
 impl Graphics {
