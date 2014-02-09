@@ -12,9 +12,7 @@ static BITS_PER_PIXEL: 	int 	 	= 32;
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
 	priv screen: ~sdl::video::Surface,
-
 	sprite_cache: HashMap<~str, Arc<~sdl::video::Surface>>,
-	priv next_handle: int
 }
 
 impl Graphics {
@@ -34,20 +32,13 @@ impl Graphics {
 			Ok(surface) => {
 				graphics = Graphics{
 					screen: surface, 
-
-					sprite_cache: HashMap::<~str, Arc<~sdl::video::Surface>>::new(),
-
-					next_handle: 0
+					sprite_cache: HashMap::<~str, Arc<~sdl::video::Surface>>::new()
 				};
 			}
 			Err(_) => {fail!("oh my")}
 		}
 
 		return graphics;
-	}
-
-	pub fn test(&mut self) {
-		println!("test: handle was dropped we can clean it from cache.")
 	}
 
 	/// Loads a bitmap which resides at `file_path` and returns a handle
@@ -61,8 +52,10 @@ impl Graphics {
 			let sprite_window = sdl::video::Surface::from_bmp(&sprite_path);
 
 			// Store sprite
-			// TODO: check `Result<>`
-			Arc::new(sprite_window.unwrap())
+			match sprite_window {
+				Ok(sprite) => {Arc::new(sprite)},
+				Err(msg) => {fail!("sprite could not be loaded: {}", msg)}
+			}
 		});
 
 		sprite_handle.clone()
