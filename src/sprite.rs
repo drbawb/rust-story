@@ -1,5 +1,8 @@
+extern mod extra;
 extern mod sdl;
 
+
+use self::extra::arc::Arc;
 use game::graphics;
 
 /// Milliseconds expressed as a large positive integer
@@ -19,7 +22,7 @@ pub trait Animatable : Updatable {
 /// This sprite will implm. a `Drawable` trait
 pub struct Sprite {
 	source_rect: sdl::sdl::Rect,
-	sprite_sheet: graphics::Handle, 
+	sprite_sheet: Arc<~sdl::video::Surface>, 
 
 	priv current_frame: int,
 	priv num_frames: int,
@@ -73,9 +76,9 @@ impl Sprite {
 		let sprite = Sprite{
 			current_frame: 0, 
 			elapsed_time: Millis(0),
-			num_frames: (num_frames -1), // our frames are drawin w/ a 0-idx'd window.
+			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
 			fps: fps,
-			sprite_sheet: sheet, 
+			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
 			source_rect: origin
 		};
 
@@ -86,6 +89,6 @@ impl Sprite {
 	/// Draws this sprite at `x`, and `y` on `display`.
 	pub fn draw_at(&self, display: &graphics::Graphics, x: i16, y: i16) {
 		let dest_rect = sdl::sdl::Rect::new(x, y, 32, 32);
-		display.blit_surface(self.sprite_sheet, &self.source_rect, &dest_rect);
+		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }

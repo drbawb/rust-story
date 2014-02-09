@@ -1,5 +1,8 @@
 extern mod sdl;
+extern mod extra;
 
+
+use self::extra::arc::Arc;
 use std::hashmap::HashMap;
 
 static SCREEN_WIDTH: 	int 	 	= 1280;
@@ -10,13 +13,8 @@ static BITS_PER_PIXEL: 	int 	 	= 32;
 pub struct Graphics {
 	priv screen: ~sdl::video::Surface,
 
-	open_handles: HashMap<~str, Handle>,
-	sprite_cache: HashMap<int, ~sdl::video::Surface>,
+	sprite_cache: HashMap<~str, Arc<~sdl::video::Surface>>,
 	priv next_handle: int
-}
-
-pub struct Handle {
-	priv id: int
 }
 
 impl Graphics {
@@ -37,8 +35,7 @@ impl Graphics {
 				graphics = Graphics{
 					screen: surface, 
 
-					open_handles: HashMap::<~str, Handle>::new(),
-					sprite_cache: HashMap::<int, ~sdl::video::Surface>::new(),
+					sprite_cache: HashMap::<~str, Arc<~sdl::video::Surface>>::new(),
 
 					next_handle: 0
 				};
@@ -49,31 +46,34 @@ impl Graphics {
 		return graphics;
 	}
 
-	// TODO: return [borrowed?] pointer which is valid as long as `graphics` is in scope
-	pub fn load_image(&mut self, file_path: ~str) -> Handle {
-		// Retrieve a handle or generate a new one if it exists already.
-		let sprite_handle = self.open_handles.find_or_insert_with(file_path, |key| {
-			// Assign handle
-			let sprite_handle = Handle{id: self.next_handle};
-			self.next_handle += 1; // incr. for next handle
+	pub fn test(&mut self) {
+		println!("test: handle was dropped we can clean it from cache.")
+	}
 
+	/// Loads a bitmap which resides at `file_path` and returns a handle
+	/// This handle can safely be used in any of the graphics subsystem's rendering
+	/// contexts.
+	pub fn load_image(&mut self, file_path: ~str) -> Arc<~sdl::video::Surface> {
+		// Retrieve a handle or generate a new one if it exists already.
+		let sprite_handle = self.sprite_cache.find_or_insert_with(file_path, |key| {
 			// Load sprite
 			let sprite_path = Path::new((*key).clone());
 			let sprite_window = sdl::video::Surface::from_bmp(&sprite_path);
 
 			// Store sprite
 			// TODO: check `Result<>`
-			self.sprite_cache.insert(sprite_handle.id, sprite_window.unwrap());
-
-			sprite_handle
+			Arc::new(sprite_window.unwrap())
 		});
 
-		*sprite_handle
+		sprite_handle.clone()
+		
 	}
 
-	pub fn blit_surface(&self, src: Handle, src_rect: &sdl::sdl::Rect, dest_rect: &sdl::sdl::Rect) {
-		let src_surface = self.sprite_cache.get(&src.id);
-		self.screen.blit_rect(*src_surface, Some(*src_rect), Some(*dest_rect));
+	
+
+	pub fn blit_surface(&self, src: &sdl::video::Surface, src_rect: &sdl::sdl::Rect, dest_rect: &sdl::sdl::Rect) {
+		//let src_surface = self.sprite_cache.get(&src.id);
+		self.screen.blit_rect(src, Some(*src_rect), Some(*dest_rect));
 	}
 
 	pub fn switch_buffers(&self) -> bool {
