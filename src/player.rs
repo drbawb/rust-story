@@ -19,9 +19,9 @@ pub struct Player {
 }
 
 impl Player {
-	pub fn new(x: i16, y: i16) -> Player {
+	pub fn new(graphics: &mut graphics::Graphics, x: i16, y: i16) -> Player {
 		let mut quote;
-		match sprite::Sprite::new(~"assets/MyChar.bmp", 3, 20) {
+		match sprite::Sprite::new(graphics, ~"assets/MyChar.bmp", 3, 20) {
 			Ok(loaded_sprite) => {
 				quote = loaded_sprite;
 				println!("sprite = ok");

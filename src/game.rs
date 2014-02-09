@@ -41,7 +41,7 @@ impl Game {
 	/// Then renders a snapshot of the world-state and then waits
 	/// until its next frame deadline.
 	fn event_loop(&self) {
-		let display = graphics::Graphics::new();
+		let mut display = graphics::Graphics::new();
 		let mut input = input::Input::new();
 		
 		// event loop control
@@ -52,7 +52,7 @@ impl Game {
 
 
 		// load quote's sprite
-		let mut quote= player::Player::new(320,240);
+		let mut quote= player::Player::new(&display, 320,240);
 
 		while running {
 			let start_time_ms = sdl::sdl::get_ticks();

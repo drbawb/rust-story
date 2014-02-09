@@ -41,7 +41,7 @@ impl Graphics {
 			let sprite_sheet = Path::new((*key).clone());
 			let sprite_window = sdl::video::Surface::from_bmp(&sprite_sheet);
 
-			*(sprite_window.unwrap())
+			*(sprite_window.unwrap()) // TODO: match & fail where
 		})
 	}
 
