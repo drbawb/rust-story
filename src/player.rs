@@ -68,19 +68,27 @@ impl Player {
 		}
 	}
 
-	pub fn startMovingLeft(&mut self) {
+	pub fn start_moving_left(&mut self) {
 		self.movement = (sprite::Walking, sprite::West);
 		self.last_facing = sprite::West;
 		self.accel_x = -WALKING_ACCEL;
 	}
-	pub fn startMovingRight(&mut self) {
+	pub fn start_moving_right(&mut self) {
 		self.movement = (sprite::Walking, sprite::East);
 		self.last_facing = sprite::East;
 		self.accel_x = WALKING_ACCEL;
 	}
-	pub fn stopMoving(&mut self) {
+	pub fn stop_moving(&mut self) {
 		self.movement = (sprite::Standing, self.last_facing);
 		self.accel_x = 0.0;
+	}
+
+	pub fn start_jump(&mut self) {
+
+	}
+
+	pub fn stop_jump(&mut self) {
+
 	}
 }
 

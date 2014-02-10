@@ -80,13 +80,20 @@ impl Game {
 			if input.isKeyHeld(sdl::event::LeftKey)
 				&& input.isKeyHeld(sdl::event::RightKey) {
 
-				quote.stopMoving();
+				quote.stop_moving();
 			} else if input.isKeyHeld(sdl::event::LeftKey) {
-				quote.startMovingLeft();
+				quote.start_moving_left();
 			} else if input.isKeyHeld(sdl::event::RightKey) {
-				quote.startMovingRight();
+				quote.start_moving_right();
 			} else {
-				quote.stopMoving();
+				quote.stop_moving();
+			}
+
+			// Handle player jump
+			if input.isKeyHeld(sdl::event::ZKey) {
+				quote.start_jump();
+			} else if input.wasKeyReleased(sdl::event::ZKey) {
+				quote.stop_jump();
 			}
 
 			// update
