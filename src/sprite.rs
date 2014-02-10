@@ -20,8 +20,6 @@ pub enum Facing {
 	East
 }
 
-pub struct SpriteState(Motion, Facing);
-
 /// Milliseconds expressed as a large positive integer
 /// This will be used at module boundaries in place of raw types.
 pub struct Millis(uint);
@@ -33,7 +31,7 @@ pub trait Drawable {
 }
 
 /// Any object which understands time and placement in 2D space.
-pub trait Updatable { 
+pub trait Updatable : Drawable { 
 	fn update(&mut self, elapsed_time: Millis); 
 	fn set_position(&mut self, coords: (i16,i16));
 }

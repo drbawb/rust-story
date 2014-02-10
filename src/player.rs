@@ -11,13 +11,12 @@ static WALKING_ACCEL: f64 		= 0.0012;
 static MAX_VELOCITY: f64 		= 0.325;
 
 pub struct Player {
-	priv sprite: ~sprite::AnimatedSprite,
 	priv sprites: HashMap<(int, int), RefCell<~sprite::Updatable>>,
 	
 	// positioning
 	priv x: i16,
 	priv y: i16,
-	priv movement: sprite::SpriteState,
+	priv movement: (sprite::Motion, sprite::Facing),
 	priv last_facing: sprite::Facing,
 
 	// physics
@@ -28,18 +27,6 @@ pub struct Player {
 
 impl Player {
 	pub fn new(graphics: &mut graphics::Graphics, x: i16, y: i16) -> Player {
-		let mut quote;
-		match sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20) {
-			Ok(loaded_sprite) => {
-				quote = loaded_sprite;
-				println!("sprite = ok");
-			}
-			Err(msg) => {
-				println!("sprite err: {}", msg); 
-				fail!("cannot create player w/o sprite resources");
-			}
-		}
-
 		let ref_quote = match sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20) {
 			Ok(loaded_sprite) => {
 				loaded_sprite
@@ -59,12 +46,11 @@ impl Player {
 
 		Player{
 			elapsed_time: sprite::Millis(0),
-			sprite: ~quote, 
 			sprites: ref_sprites,
 			
 			x: x, 
 			y: y,
-			movement: sprite::SpriteState(sprite::Standing, sprite::East),
+			movement: (sprite::Standing, sprite::East),
 			last_facing: sprite::East,
 			
 			velocity_x: 0.0,
@@ -112,11 +98,16 @@ impl sprite::Updatable for Player {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
 
-		self.sprite.update(elapsed_time);
+		// mut-ref the struct and update its time
+		let (a,b) = self.movement;
+		let mut sprite_ref = self.sprites.get(&(a as int,b as int)).borrow_mut();
+		sprite_ref.get().update(elapsed_time);
 	}
 
 	fn set_position(&mut self, coords: (i16,i16)) {
-		self.sprite.set_position(coords);
+		let (a,b) = self.movement;
+		let mut sprite_ref = self.sprites.get(&(a as int,b as int)).borrow_mut();
+		sprite_ref.get().set_position(coords);
 	}
 }
 
@@ -124,6 +115,8 @@ impl sprite::Updatable for Player {
 impl sprite::Drawable for Player {
 	/// Draws current state to `display`
 	fn draw(&self, display: &graphics::Graphics) {
-		self.sprite.draw(display);
+		let (a,b) = self.movement;
+		let sprite_ref = self.sprites.get(&(a as int,b as int)).borrow();
+		sprite_ref.get().draw(display);
 	}
 }
