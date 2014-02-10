@@ -24,6 +24,7 @@ pub enum Facing {
 
 /// Milliseconds expressed as a large positive integer
 /// This will be used at module boundaries in place of raw types.
+#[deriving(Ord)]
 pub struct Millis(uint);
 
 

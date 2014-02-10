@@ -5,10 +5,12 @@ use std::hashmap::HashMap;
 use game::graphics;
 use game::sprite;
 
-static SLOWDOWN_VELOCITY: f64 	= 0.8;
-static WALKING_ACCEL: f64 		= 0.0012;
-static MAX_VELOCITY: f64 		= 0.325;
-static JUMP_SPEED: f64			= 0.325;
+static SLOWDOWN_VELOCITY: f64 		= 0.8;
+static WALKING_ACCEL: f64 			= 0.0012;
+static MAX_VELOCITY: f64 			= 0.325;
+
+static JUMP_SPEED: f64				= 0.325;
+static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
 
 pub struct Player {
 	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable>,
@@ -149,13 +151,45 @@ impl sprite::Drawable for Player {
 	}
 }
 
-pub struct Jump;
+pub struct Jump {
+	priv active: bool,
+	priv time_remaining: sprite::Millis
+}
 
 impl Jump {
 	pub fn new() -> Jump {
-		return Jump;
+		return Jump{
+			active: false,
+			time_remaining: sprite::Millis(0)
+		};
+	}
+
+	pub fn jump(&mut self, elapsed_time: sprite::Millis) {
+		if self.active {
+			self.time_remaining = {
+				// unpack millis to do calcs
+				let sprite::Millis(elapsed_time_ms) = elapsed_time;
+				let sprite::Millis(remaining_ms) = self.time_remaining;
+
+				sprite::Millis(remaining_ms - elapsed_time_ms)
+			};
+
+			if self.time_remaining <= sprite::Millis(0) {
+				self.active = false;
+			}
+		}
+	}
+
+	pub fn reset(&mut self) {
+		self.time_remaining = JUMP_TIME;
+		self.reactivate();
+	}
+
+	pub fn reactivate(&mut self) {
+		self.active = self.time_remaining > sprite::Millis(0);
 	}
 	
-	pub fn reset(&self) {}
-	pub fn reactivate(&self) {}
+	pub fn deactivate(&mut self) {
+		self.active = false;
+	}
 }
