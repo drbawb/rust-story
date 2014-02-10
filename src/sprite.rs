@@ -8,11 +8,13 @@ use game::graphics;
 static TILE_SIZE: i16 = 32;
 
 
+#[deriving(IterBytes,Eq)]
 pub enum Motion {
 	Walking,
 	Standing
 }
 
+#[deriving(IterBytes,Eq)]
 pub enum Facing {
 	North,
 	West,

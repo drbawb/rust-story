@@ -10,7 +10,7 @@ static WALKING_ACCEL: f64 		= 0.0012;
 static MAX_VELOCITY: f64 		= 0.325;
 
 pub struct Player {
-	priv sprites: HashMap<(int,int), ~sprite::Updatable>,
+	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable>,
 	
 	// positioning
 	priv x: i16,
@@ -27,7 +27,7 @@ pub struct Player {
 impl Player {
 	pub fn new(graphics: &mut graphics::Graphics, x: i16, y: i16) -> Player {
 		// insert sprites into map
-		let mut sprite_map = HashMap::<(int,int), ~sprite::Updatable>::new();
+		let mut sprite_map = HashMap::<(sprite::Motion,sprite::Facing), ~sprite::Updatable>::new();
 		
 		// walking
 		/* graphics: &mut graphics::Graphics, 
@@ -36,20 +36,20 @@ impl Player {
 		file_name: ~str
 		*/
 		sprite_map.insert(
-			(sprite::Standing as int, sprite::West as int),
+			(sprite::Standing, sprite::West),
 			~sprite::Sprite::new(graphics, (0,0), (0,0), ~"assets/MyChar.bmp") as ~sprite::Updatable
 		);
 		sprite_map.insert(
-			(sprite::Standing as int, sprite::East as int),
+			(sprite::Standing, sprite::East),
 			~sprite::Sprite::new(graphics, (0,0), (0, 1), ~"assets/MyChar.bmp") as ~sprite::Updatable
 		);
 		
 		sprite_map.insert(
-			(sprite::Walking as int, sprite::West as int),
+			(sprite::Walking, sprite::West),
 			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20).unwrap() as ~sprite::Updatable
 		);
 		sprite_map.insert(
-			(sprite::Walking as int, sprite::East as int),
+			(sprite::Walking, sprite::East),
 			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,1), 3, 20).unwrap() as ~sprite::Updatable
 		);
 
@@ -112,15 +112,11 @@ impl sprite::Updatable for Player {
 		}
 
 		// mut-ref the struct and update its time
-		let (a,b) = self.movement;
-		let current_sprite = self.sprites.get_mut(&(a as int, b as int));
-		current_sprite.update(elapsed_time);
+		self.sprites.get_mut(&self.movement).update(elapsed_time);
 	}
 
 	fn set_position(&mut self, coords: (i16,i16)) {
-		let (a,b) = self.movement;
-		let current_sprite = self.sprites.get_mut(&(a as int, b as int));
-		current_sprite.set_position(coords);
+		self.sprites.get_mut(&self.movement).set_position(coords);
 	}
 }
 
@@ -128,8 +124,6 @@ impl sprite::Updatable for Player {
 impl sprite::Drawable for Player {
 	/// Draws current state to `display`
 	fn draw(&self, display: &graphics::Graphics) {
-		let (a,b) = self.movement;
-		let current_sprite = self.sprites.get(&(a as int, b as int));
-		current_sprite.draw(display);
+		self.sprites.get(&self.movement).draw(display);
 	}
 }
