@@ -114,7 +114,11 @@ impl sprite::Updatable for Player {
 	fn update(&mut self, elapsed_time: sprite::Millis) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
+		self.jump.update(elapsed_time);
+
+		// update sprite
 		self.set_position((self.x, self.y));
+		self.sprites.get_mut(&self.movement).update(elapsed_time);
 
 		// calculate next position
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
@@ -134,8 +138,7 @@ impl sprite::Updatable for Player {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
 
-		// mut-ref the struct and update its time
-		self.sprites.get_mut(&self.movement).update(elapsed_time);
+		
 	}
 
 	fn set_position(&mut self, coords: (i16,i16)) {
@@ -164,7 +167,7 @@ impl Jump {
 		};
 	}
 
-	pub fn jump(&mut self, elapsed_time: sprite::Millis) {
+	pub fn update(&mut self, elapsed_time: sprite::Millis) {
 		if self.active {
 			self.time_remaining = {
 				// unpack millis to do calcs
