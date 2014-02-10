@@ -102,6 +102,7 @@ impl Player {
 
 	pub fn stop_jump(&mut self) {
 		self.velocity_y = 0.0;
+		self.jump.deactivate();
 	}
 
 	pub fn on_ground(&self) -> bool {		
@@ -136,7 +137,7 @@ impl sprite::Updatable for Player {
 			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
 		} else if (self.accel_x > 0.0) {
 			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
-		} else {
+		} else if self.on_ground() {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
 
@@ -144,9 +145,7 @@ impl sprite::Updatable for Player {
 			self.velocity_y * elapsed_time_ms as f64
 		) as i16;
 
-		if self.jump.active() {
-			// LOL DONT DO NOTHIN
-		} else {
+		if !self.jump.active() {
 			self.velocity_y = cmp::min(
 				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
 				MAX_VELOCITY_Y
@@ -158,8 +157,6 @@ impl sprite::Updatable for Player {
 			self.y = 320;
 			self.velocity_y = 0.0;
 		}
-
-		
 	}
 
 	fn set_position(&mut self, coords: (i16,i16)) {
@@ -202,7 +199,9 @@ impl Jump {
 				sprite::Millis(remaining_ms - elapsed_time_ms)
 			};
 
-			if self.time_remaining <= sprite::Millis(0) {
+			// check overflow because `sprite::Millis` is unsigned.
+			if self.time_remaining <= sprite::Millis(0) 
+				|| self.time_remaining > JUMP_TIME {
 				self.active = false;
 			}
 		}

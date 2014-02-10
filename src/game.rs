@@ -90,7 +90,7 @@ impl Game {
 			}
 
 			// Handle player jump
-			if input.is_key_held(sdl::event::ZKey) {
+			if input.was_key_pressed(sdl::event::ZKey) {
 				quote.start_jump();
 			} else if input.was_key_released(sdl::event::ZKey) {
 				quote.stop_jump();
