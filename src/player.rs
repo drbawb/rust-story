@@ -7,8 +7,10 @@ use game::sprite;
 
 static SLOWDOWN_VELOCITY: f64 		= 0.8;
 static WALKING_ACCEL: f64 			= 0.0012;
-static MAX_VELOCITY: f64 			= 0.325;
+static MAX_VELOCITY_X: f64 			= 0.325;
+static MAX_VELOCITY_Y: f64			= 0.325;
 
+static GRAVITY: f64					= 0.0012;
 static JUMP_SPEED: f64				= 0.325;
 static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
 
@@ -126,16 +128,29 @@ impl sprite::Updatable for Player {
 			self.velocity_x * elapsed_time_ms as f64
 		) as i16;
 
-		// compute velocity for next frame
+		// compute velocity x for next frame
 		self.velocity_x += 
 			self.accel_x * elapsed_time_ms as f64;
 
 		if (self.accel_x < 0.0) {
-			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY);
+			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
 		} else if (self.accel_x > 0.0) {
-			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY);
+			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
 		} else {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
+		}
+
+		self.y += f64::round(
+			self.velocity_y * elapsed_time_ms as f64
+		) as i16;
+
+		if self.jump.active() {
+			// LOL DONT DO NOTHIN
+		} else {
+			self.velocity_y = cmp::min(
+				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
+				MAX_VELOCITY_Y
+			)
 		}
 
 		
@@ -165,6 +180,10 @@ impl Jump {
 			active: false,
 			time_remaining: sprite::Millis(0)
 		};
+	}
+
+	pub fn active(&self) -> bool {
+		self.active
 	}
 
 	pub fn update(&mut self, elapsed_time: sprite::Millis) {
