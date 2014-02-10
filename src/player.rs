@@ -91,7 +91,7 @@ impl sprite::Updatable for Player {
 	fn update(&mut self, elapsed_time: sprite::Millis) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
-		self.set_position((self.x, 32));
+		self.set_position((self.x, self.y));
 
 		// calculate next position
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
@@ -130,7 +130,6 @@ impl sprite::Drawable for Player {
 	fn draw(&self, display: &graphics::Graphics) {
 		let (a,b) = self.movement;
 		let current_sprite = self.sprites.get(&(a as int, b as int));
-		println!("selected {:?}", (a as int, b as int));
 		current_sprite.draw(display);
 	}
 }
