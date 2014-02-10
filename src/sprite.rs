@@ -95,8 +95,6 @@ pub struct AnimatedSprite {
 	source_rect: sdl::sdl::Rect,
 	sprite_sheet: Arc<~sdl::video::Surface>, 
 
-	state: SpriteState,
-
 	priv coords: (i16, i16),
 	priv offset: (i16,i16),
 	priv current_frame: (i16,i16),
@@ -120,28 +118,7 @@ impl Updatable for AnimatedSprite {
 
 
 		// determine next frame
-		if (last_elapsed > frame_time) {
-			self.elapsed_time = Millis(0); // reset frame timer
-			let SpriteState(action, direction) = self.state;
-
-			let facing = match direction {
-				West => { 0 }
-				East => { 1 }
-				_ => {println!("dont know how to face dir"); 0}
-			};
-
-			self.current_frame = match action {
-				Standing => { (0, facing) } // sprite col 1
-				Walking => {
-					let (action, _) = self.current_frame;
-					if action + 1 > self.num_frames as i16 {
-						(0, facing)
-					} else {
-						(action + 1, facing)
-					}
-				}
-			};
-		}
+		if (last_elapsed > frame_time) {}
 
 		let (ox, oy) = self.offset;
 		let (x,y) = self.current_frame;
@@ -185,7 +162,6 @@ impl AnimatedSprite {
 			current_frame: (0,0), 
 			elapsed_time: Millis(0),
 			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
-			state: SpriteState(Standing, West),
 			fps: fps,
 			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
 			source_rect: origin
