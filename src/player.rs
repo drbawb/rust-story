@@ -1,6 +1,5 @@
 use std::f64;
 use std::cmp;
-use std::cell::RefCell;
 use std::hashmap::HashMap;
 
 use game::graphics;
@@ -11,7 +10,7 @@ static WALKING_ACCEL: f64 		= 0.0012;
 static MAX_VELOCITY: f64 		= 0.325;
 
 pub struct Player {
-	priv sprites: HashMap<(int, int), RefCell<~sprite::Updatable>>,
+	priv sprites: HashMap<(int,int), ~sprite::Updatable>,
 	
 	// positioning
 	priv x: i16,
@@ -27,27 +26,38 @@ pub struct Player {
 
 impl Player {
 	pub fn new(graphics: &mut graphics::Graphics, x: i16, y: i16) -> Player {
-		let ref_quote = match sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20) {
-			Ok(loaded_sprite) => {
-				loaded_sprite
-			}
-			Err(msg) => {
-				println!("sprite err: {}", msg); 
-				fail!("cannot create player w/o sprite resources");
-			}
-		};
-
-		let mut ref_sprites = HashMap::<(int,int), RefCell<~sprite::Updatable>>::new();
-		ref_sprites.insert(
-			(sprite::Standing as int, sprite::East as int), 
-			RefCell::new(~ref_quote as ~sprite::Updatable)
+		// insert sprites into map
+		let mut sprite_map = HashMap::<(int,int), ~sprite::Updatable>::new();
+		
+		// walking
+		/* graphics: &mut graphics::Graphics, 
+		coords: (i16,i16), 
+		offset: (i16,i16), 
+		file_name: ~str
+		*/
+		sprite_map.insert(
+			(sprite::Standing as int, sprite::West as int),
+			~sprite::Sprite::new(graphics, (0,0), (0,0), ~"assets/MyChar.bmp") as ~sprite::Updatable
+		);
+		sprite_map.insert(
+			(sprite::Standing as int, sprite::East as int),
+			~sprite::Sprite::new(graphics, (0,0), (0, 1), ~"assets/MyChar.bmp") as ~sprite::Updatable
+		);
+		
+		sprite_map.insert(
+			(sprite::Walking as int, sprite::West as int),
+			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20).unwrap() as ~sprite::Updatable
+		);
+		sprite_map.insert(
+			(sprite::Walking as int, sprite::East as int),
+			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,1), 3, 20).unwrap() as ~sprite::Updatable
 		);
 
-
+		println!("map has been init to {:?}", (sprite::Standing as int, sprite::East as int));
 		Player{
 			elapsed_time: sprite::Millis(0),
-			sprites: ref_sprites,
-			
+			sprites: sprite_map,
+
 			x: x, 
 			y: y,
 			movement: (sprite::Standing, sprite::East),
@@ -59,14 +69,17 @@ impl Player {
 	}
 
 	pub fn startMovingLeft(&mut self) {
+		self.movement = (sprite::Walking, sprite::West);
 		self.last_facing = sprite::West;
 		self.accel_x = -WALKING_ACCEL;
 	}
 	pub fn startMovingRight(&mut self) {
+		self.movement = (sprite::Walking, sprite::East);
 		self.last_facing = sprite::East;
 		self.accel_x = WALKING_ACCEL;
 	}
 	pub fn stopMoving(&mut self) {
+		self.movement = (sprite::Standing, self.last_facing);
 		self.accel_x = 0.0;
 	}
 }
@@ -100,14 +113,14 @@ impl sprite::Updatable for Player {
 
 		// mut-ref the struct and update its time
 		let (a,b) = self.movement;
-		let mut sprite_ref = self.sprites.get(&(a as int,b as int)).borrow_mut();
-		sprite_ref.get().update(elapsed_time);
+		let current_sprite = self.sprites.get_mut(&(a as int, b as int));
+		current_sprite.update(elapsed_time);
 	}
 
 	fn set_position(&mut self, coords: (i16,i16)) {
 		let (a,b) = self.movement;
-		let mut sprite_ref = self.sprites.get(&(a as int,b as int)).borrow_mut();
-		sprite_ref.get().set_position(coords);
+		let current_sprite = self.sprites.get_mut(&(a as int, b as int));
+		current_sprite.set_position(coords);
 	}
 }
 
@@ -116,7 +129,8 @@ impl sprite::Drawable for Player {
 	/// Draws current state to `display`
 	fn draw(&self, display: &graphics::Graphics) {
 		let (a,b) = self.movement;
-		let sprite_ref = self.sprites.get(&(a as int,b as int)).borrow();
-		sprite_ref.get().draw(display);
+		let current_sprite = self.sprites.get(&(a as int, b as int));
+		println!("selected {:?}", (a as int, b as int));
+		current_sprite.draw(display);
 	}
 }

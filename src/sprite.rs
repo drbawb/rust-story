@@ -58,8 +58,8 @@ impl Updatable for Sprite {
 		// no-op for static sprite.
 	}
 
-	fn set_position(&mut self, cords: (i16,i16)) {
-		// no-op for static sprite.
+	fn set_position(&mut self, coords: (i16,i16)) {
+		self.coords = coords;
 	}
 }
 
@@ -68,11 +68,11 @@ impl Sprite {
 	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
 	pub fn new(
 		graphics: &mut graphics::Graphics, 
-		sprite_at: (i16,i16), 
 		coords: (i16,i16), 
+		offset: (i16,i16), 
 		file_name: ~str
 	) -> Sprite {
-		let (a,b) = sprite_at;
+		let (a,b) = offset;
 		let origin = sdl::sdl::Rect::new(a * TILE_SIZE, b * TILE_SIZE, 32, 32);
 
 		let sheet = graphics.load_image(file_name); // request graphics subsystem cache this sprite.
@@ -95,8 +95,8 @@ pub struct AnimatedSprite {
 
 	priv coords: (i16, i16),
 	priv offset: (i16,i16),
-	priv current_frame: (i16,i16),
-	priv num_frames: int,
+	priv current_frame: i16,
+	priv num_frames: i16,
 	priv fps: int,
 
 	priv elapsed_time: Millis
@@ -116,11 +116,16 @@ impl Updatable for AnimatedSprite {
 
 
 		// determine next frame
-		if (last_elapsed > frame_time) {}
+		if (last_elapsed > frame_time) {
+			self.elapsed_time = Millis(0); // reset timer
+			self.current_frame += 1;
+			if self.current_frame > self.num_frames {
+				self.current_frame = 0;
+			}
+		}
 
 		let (ox, oy) = self.offset;
-		let (x,y) = self.current_frame;
-		self.source_rect = sdl::sdl::Rect::new(ox + (x * TILE_SIZE), oy + (y * TILE_SIZE), 32, 32)
+		self.source_rect = sdl::sdl::Rect::new(ox + (self.current_frame * TILE_SIZE), oy * TILE_SIZE, 32, 32)
 	}
 
 	fn set_position(&mut self, coords: (i16,i16)) {
@@ -146,7 +151,7 @@ impl AnimatedSprite {
 		graphics: &mut graphics::Graphics, 
 		sheet_path: ~str, 
 		offset: (i16,i16),
-		num_frames: int, 
+		num_frames: i16, 
 		fps: int
 	) -> Result<AnimatedSprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
@@ -157,7 +162,7 @@ impl AnimatedSprite {
 		let sprite = AnimatedSprite{
 			offset: offset,
 			coords: (0,0),
-			current_frame: (0,0), 
+			current_frame: 0, 
 			elapsed_time: Millis(0),
 			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
 			fps: fps,
