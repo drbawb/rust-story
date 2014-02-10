@@ -17,7 +17,7 @@ pub struct Player {
 	// positioning
 	priv x: i16,
 	priv y: i16,
-
+	priv movement: sprite::SpriteState,
 	priv last_facing: sprite::Facing,
 
 	// physics
@@ -64,6 +64,7 @@ impl Player {
 			
 			x: x, 
 			y: y,
+			movement: sprite::SpriteState(sprite::Standing, sprite::East),
 			last_facing: sprite::East,
 			
 			velocity_x: 0.0,
