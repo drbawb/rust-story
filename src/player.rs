@@ -16,7 +16,6 @@ pub struct Player {
 	priv x: i16,
 	priv y: i16,
 	priv movement: (sprite::Motion, sprite::Facing),
-	priv last_facing: sprite::Facing,
 
 	// physics
 	priv elapsed_time: sprite::Millis,
@@ -61,7 +60,6 @@ impl Player {
 			x: x, 
 			y: y,
 			movement: (sprite::Standing, sprite::East),
-			last_facing: sprite::East,
 			
 			velocity_x: 0.0,
 			accel_x: 0.0
@@ -70,16 +68,15 @@ impl Player {
 
 	pub fn start_moving_left(&mut self) {
 		self.movement = (sprite::Walking, sprite::West);
-		self.last_facing = sprite::West;
 		self.accel_x = -WALKING_ACCEL;
 	}
 	pub fn start_moving_right(&mut self) {
 		self.movement = (sprite::Walking, sprite::East);
-		self.last_facing = sprite::East;
 		self.accel_x = WALKING_ACCEL;
 	}
 	pub fn stop_moving(&mut self) {
-		self.movement = (sprite::Standing, self.last_facing);
+		let (_, last_facing) = self.movement; // copy last facing
+		self.movement = (sprite::Standing, last_facing);
 		self.accel_x = 0.0;
 	}
 
