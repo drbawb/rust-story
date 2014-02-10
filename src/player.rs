@@ -105,7 +105,7 @@ impl Player {
 	}
 
 	pub fn on_ground(&self) -> bool {		
-		true
+		self.y == 320
 	}
 }
 
@@ -151,6 +151,12 @@ impl sprite::Updatable for Player {
 				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
 				MAX_VELOCITY_Y
 			)
+		}
+
+		// TODO: HACK FLOOR
+		if (self.y > 320) {
+			self.y = 320;
+			self.velocity_y = 0.0;
 		}
 
 		
