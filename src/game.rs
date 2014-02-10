@@ -56,43 +56,43 @@ impl Game {
 
 		while running {
 			let start_time_ms = sdl::sdl::get_ticks();
-			input.beginNewFrame();
+			input.begin_new_frame();
 
 			// drain event queue once per frame
 			// ideally should do in separate task
 			match sdl::event::poll_event() {
 				sdl::event::KeyEvent(keyCap,pressed,_,_) => {
 					if pressed {
-						input.keyDownEvent(keyCap);
+						input.key_down_event(keyCap);
 					} else {
-						input.keyUpEvent(keyCap);
+						input.key_up_event(keyCap);
 					}
 				}
 				_ => {}
 			}
 
 			// Handle exit game
-			if input.wasKeyReleased(sdl::event::EscapeKey) {
+			if input.was_key_released(sdl::event::EscapeKey) {
 				running = false;
 			}
 
 			// Handle player movement
-			if input.isKeyHeld(sdl::event::LeftKey)
-				&& input.isKeyHeld(sdl::event::RightKey) {
+			if input.is_key_held(sdl::event::LeftKey)
+				&& input.is_key_held(sdl::event::RightKey) {
 
 				quote.stop_moving();
-			} else if input.isKeyHeld(sdl::event::LeftKey) {
+			} else if input.is_key_held(sdl::event::LeftKey) {
 				quote.start_moving_left();
-			} else if input.isKeyHeld(sdl::event::RightKey) {
+			} else if input.is_key_held(sdl::event::RightKey) {
 				quote.start_moving_right();
 			} else {
 				quote.stop_moving();
 			}
 
 			// Handle player jump
-			if input.isKeyHeld(sdl::event::ZKey) {
+			if input.is_key_held(sdl::event::ZKey) {
 				quote.start_jump();
-			} else if input.wasKeyReleased(sdl::event::ZKey) {
+			} else if input.was_key_released(sdl::event::ZKey) {
 				quote.stop_jump();
 			}
 

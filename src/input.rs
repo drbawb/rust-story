@@ -24,26 +24,26 @@ impl Input {
 	}
 
 	/// Resets the toggle states of pressed & released keys.
-	pub fn beginNewFrame(&mut self) {
+	pub fn begin_new_frame(&mut self) {
 		self.pressed_keys.clear();
 		self.released_keys.clear();
 	}
 
 	/// Handles a key down event
-	pub fn keyDownEvent(&mut self, key: sdl::event::Key) {
+	pub fn key_down_event(&mut self, key: sdl::event::Key) {
 		self.pressed_keys.insert(key as u32, true);
 		self.held_keys.insert(key as u32, true);
 	}
 
 	/// Handles a key up event
-	pub fn keyUpEvent(&mut self, key: sdl::event::Key) {
+	pub fn key_up_event(&mut self, key: sdl::event::Key) {
 		self.released_keys.insert(key as u32, true);
 		self.held_keys.insert(key as u32, false);
 	}
 
 	/// Responds true if key was pressed since last call to `beginNewFrame()`.
 	/// Responds false otherwise.
-	pub fn wasKeyPressed(&self, key: sdl::event::Key) -> bool {
+	pub fn was_key_pressed(&self, key: sdl::event::Key) -> bool {
 		let key_cap = &(key as u32);
 		match self.pressed_keys.find_copy(key_cap) {
 			Some(is_pressed) => {is_pressed}
@@ -53,7 +53,7 @@ impl Input {
 	
 	/// Responds true if key was released since last call to `beginNewFrame()`.
 	/// Responds false otherwise.
-	pub fn wasKeyReleased(&self, key: sdl::event::Key) -> bool {
+	pub fn was_key_released(&self, key: sdl::event::Key) -> bool {
 		let key_cap = &(key as u32);
 		match self.released_keys.find_copy(key_cap) {
 			Some(is_pressed) => {is_pressed}
@@ -65,7 +65,7 @@ impl Input {
 	/// but _has not yet been released._
 	///
 	/// Responds false otherwise.
-	pub fn isKeyHeld(&self, key: sdl::event::Key) -> bool {
+	pub fn is_key_held(&self, key: sdl::event::Key) -> bool {
 		let key_cap = &(key as u32);
 		match self.held_keys.find_copy(key_cap) {
 			Some(is_pressed) => {is_pressed}
