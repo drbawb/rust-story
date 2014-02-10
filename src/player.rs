@@ -8,6 +8,7 @@ use game::sprite;
 static SLOWDOWN_VELOCITY: f64 	= 0.8;
 static WALKING_ACCEL: f64 		= 0.0012;
 static MAX_VELOCITY: f64 		= 0.325;
+static JUMP_SPEED: f64			= 0.325;
 
 pub struct Player {
 	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable>,
@@ -20,7 +21,10 @@ pub struct Player {
 	// physics
 	priv elapsed_time: sprite::Millis,
 	priv velocity_x: f64,
-	priv accel_x: f64
+	priv velocity_y: f64,
+	priv accel_x: f64,
+
+	priv jump: Jump
 }
 
 impl Player {
@@ -62,7 +66,10 @@ impl Player {
 			movement: (sprite::Standing, sprite::East),
 			
 			velocity_x: 0.0,
-			accel_x: 0.0
+			velocity_y: 0.0,
+			accel_x: 0.0,
+
+			jump: Jump::new()
 		}
 	}
 
@@ -81,11 +88,20 @@ impl Player {
 	}
 
 	pub fn start_jump(&mut self) {
-
+		if self.on_ground() {
+			self.jump.reset();
+			self.velocity_y = -JUMP_SPEED;
+		} else if (self.velocity_y < 0.0) {
+			self.jump.reactivate();
+		}
 	}
 
 	pub fn stop_jump(&mut self) {
+		self.velocity_y = 0.0;
+	}
 
+	pub fn on_ground(&self) -> bool {		
+		true
 	}
 }
 
@@ -131,4 +147,15 @@ impl sprite::Drawable for Player {
 	fn draw(&self, display: &graphics::Graphics) {
 		self.sprites.get(&self.movement).draw(display);
 	}
+}
+
+pub struct Jump;
+
+impl Jump {
+	pub fn new() -> Jump {
+		return Jump;
+	}
+	
+	pub fn reset(&self) {}
+	pub fn reactivate(&self) {}
 }
