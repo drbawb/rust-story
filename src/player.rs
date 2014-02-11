@@ -19,8 +19,8 @@ static FACING_WEST: i16 			= 0;
 static FACING_EAST: i16 			= 1;
 
 static STAND_FRAME: i16 			= 0;
-static JUMP_FRAME: i16 				= 0;
-static FALL_FRAME: i16 				= 0;
+static JUMP_FRAME: i16 				= 1;
+static FALL_FRAME: i16 				= 2;
 
 
 
@@ -109,16 +109,14 @@ impl Player {
 	}
 
 	pub fn start_moving_left(&mut self) {
-		self.movement = (sprite::Walking, sprite::West);
+		self.set_facing(sprite::West);
 		self.accel_x = -WALKING_ACCEL;
 	}
 	pub fn start_moving_right(&mut self) {
-		self.movement = (sprite::Walking, sprite::East);
+		self.set_facing(sprite::East);
 		self.accel_x = WALKING_ACCEL;
 	}
 	pub fn stop_moving(&mut self) {
-		let (_, last_facing) = self.movement; // copy last facing
-		self.movement = (sprite::Standing, last_facing);
 		self.accel_x = 0.0;
 	}
 
@@ -131,6 +129,30 @@ impl Player {
 		}
 
 
+	}
+
+	pub fn set_facing(&mut self, direction: sprite::Facing) {
+		let (last_action, _) = self.movement;
+		self.movement = (last_action, direction);
+	}
+
+	pub fn current_motion(&mut self) {
+		let (_, last_facing) = self.movement;
+
+		self.movement = if self.on_ground() {
+			if self.accel_x == 0.0 {
+				(sprite::Standing, last_facing)
+			} else {
+				(sprite::Walking, last_facing)
+			}	
+		} else {
+			if self.velocity_y < 0.0 {
+				(sprite::Jumping, last_facing)
+			} else {
+				(sprite::Falling, last_facing)
+			}
+		}
+		
 	}
 
 	pub fn stop_jump(&mut self) {
@@ -153,6 +175,7 @@ impl sprite::Updatable for Player {
 		self.jump.update(elapsed_time);
 
 		// update sprite
+		self.current_motion(); // update motion once at beginning of frame for consistency
 		self.set_position((self.x, self.y));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
 
