@@ -14,6 +14,17 @@ static GRAVITY: f64					= 0.0012;
 static JUMP_SPEED: f64				= 0.325;
 static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
 
+
+static FACING_WEST: i16 			= 0;
+static FACING_EAST: i16 			= 1;
+
+static STAND_FRAME: i16 			= 0;
+static JUMP_FRAME: i16 				= 0;
+static FALL_FRAME: i16 				= 0;
+
+
+
+
 pub struct Player {
 	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable>,
 	
@@ -44,11 +55,11 @@ impl Player {
 		*/
 		sprite_map.insert(
 			(sprite::Standing, sprite::West),
-			~sprite::Sprite::new(graphics, (0,0), (0,0), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable
 		);
 		sprite_map.insert(
 			(sprite::Standing, sprite::East),
-			~sprite::Sprite::new(graphics, (0,0), (0, 1), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable
 		);
 		
 		sprite_map.insert(
@@ -59,6 +70,26 @@ impl Player {
 			(sprite::Walking, sprite::East),
 			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,1), 3, 20).unwrap() as ~sprite::Updatable
 		);
+
+		sprite_map.insert(
+			(sprite::Jumping, sprite::West),
+			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+		);
+		sprite_map.insert(
+			(sprite::Jumping, sprite::East),
+			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+		);
+
+		sprite_map.insert(
+			(sprite::Falling, sprite::West),
+			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+		);
+		sprite_map.insert(
+			(sprite::Falling, sprite::East),
+			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+		);
+
+
 
 		println!("map has been init to {:?}", (sprite::Standing as int, sprite::East as int));
 		Player{
@@ -98,6 +129,8 @@ impl Player {
 		} else if (self.velocity_y < 0.0) {
 			self.jump.reactivate();
 		}
+
+
 	}
 
 	pub fn stop_jump(&mut self) {
@@ -105,7 +138,7 @@ impl Player {
 		self.jump.deactivate();
 	}
 
-	pub fn on_ground(&self) -> bool {		
+	pub fn on_ground(&self) -> bool {			
 		self.y == 320
 	}
 }

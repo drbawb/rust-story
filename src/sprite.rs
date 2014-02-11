@@ -11,7 +11,9 @@ static TILE_SIZE: i16 = 32;
 #[deriving(IterBytes,Eq)]
 pub enum Motion {
 	Walking,
-	Standing
+	Standing,
+	Jumping,
+	Falling
 }
 
 #[deriving(IterBytes,Eq)]
@@ -22,6 +24,11 @@ pub enum Facing {
 	East
 }
 
+pub enum Looking {
+	Up,
+	Down,
+	Sideways
+}
 /// Milliseconds expressed as a large positive integer
 /// This will be used at module boundaries in place of raw types.
 #[deriving(Ord)]
