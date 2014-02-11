@@ -15,8 +15,9 @@ static JUMP_SPEED: f64				= 0.325;
 static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
 
 
-static FACING_WEST: i16 			= 0;
-static FACING_EAST: i16 			= 1;
+static CHAR_OFFSET: i16				= 0;
+static FACING_WEST: i16 			= 0 + CHAR_OFFSET;
+static FACING_EAST: i16 			= 1 + CHAR_OFFSET;
 
 static STAND_FRAME: i16 			= 0;
 static JUMP_FRAME: i16 				= 1;
@@ -24,7 +25,8 @@ static FALL_FRAME: i16 				= 2;
 
 
 
-
+/// Encapsulates the pysical motion of a player as it relates to
+/// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
 	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable>,
 	
@@ -42,17 +44,19 @@ pub struct Player {
 	priv jump: Jump
 }
 
+
 impl Player {
+	/// Loads and initializes a set of sprite-sheets for the various combinatoins of directions.
+	/// (These incl: facing west and east for: standing, walking, jumping, falling.)
+	///
+	/// The player will spawn at `x` and `y`, though it will immediately be subject to gravity.
+	/// The player is initailized `standing` facing `east`.
+	/// The player will continue to fall until some collision is detected.
 	pub fn new(graphics: &mut graphics::Graphics, x: i16, y: i16) -> Player {
 		// insert sprites into map
 		let mut sprite_map = HashMap::<(sprite::Motion,sprite::Facing), ~sprite::Updatable>::new();
 		
 		// walking
-		/* graphics: &mut graphics::Graphics, 
-		coords: (i16,i16), 
-		offset: (i16,i16), 
-		file_name: ~str
-		*/
 		sprite_map.insert(
 			(sprite::Standing, sprite::West),
 			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable
@@ -89,9 +93,6 @@ impl Player {
 			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable
 		);
 
-
-
-		println!("map has been init to {:?}", (sprite::Standing as int, sprite::East as int));
 		Player{
 			elapsed_time: sprite::Millis(0),
 			sprites: sprite_map,
@@ -108,18 +109,32 @@ impl Player {
 		}
 	}
 
+	/// The player will immediately face `West`
+	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_left(&mut self) {
 		self.set_facing(sprite::West);
 		self.accel_x = -WALKING_ACCEL;
 	}
+
+	/// The player will immediately face `East`
+	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_right(&mut self) {
 		self.set_facing(sprite::East);
 		self.accel_x = WALKING_ACCEL;
 	}
+
+	/// The player will immediately cease acceleration.
+	/// They will still be facing the same direction as before this call.
 	pub fn stop_moving(&mut self) {
 		self.accel_x = 0.0;
 	}
 
+	/// Resets the player's jump timer if they are currently on the ground.
+	/// Otherwise: uses the remainder of the player's jump timer to extend
+	/// their jump.
+	///
+	/// The effects of a jump against gravity are `instantaneous` and do not
+	/// consider acceleration.
 	pub fn start_jump(&mut self) {
 		if self.on_ground() {
 			self.jump.reset();
@@ -127,15 +142,25 @@ impl Player {
 		} else if (self.velocity_y < 0.0) {
 			self.jump.reactivate();
 		}
-
-
 	}
 
+	/// This updates the `self.movement` tuple
+	/// The `Motion` is kept as-is, but the `Facing` portion of the tuple
+	/// is replaced with `direction`.
 	pub fn set_facing(&mut self, direction: sprite::Facing) {
 		let (last_action, _) = self.movement;
 		self.movement = (last_action, direction);
 	}
 
+	/// This is called to update the player's `movement` based on
+	/// their current: acceleration, velocity, and collision state.
+	///
+	/// Ideally this should be called early-on, once per frame,
+	/// so that the rest of the frames calculations `appear consistent`
+	///
+	/// This is because all updates determine which sprite-sheet to mutate
+	/// based on `self.movement` -- so if self.movement is updated multiple
+	/// times per frame then some sprite-sheet updates may get `lost.`
 	pub fn current_motion(&mut self) {
 		let (_, last_facing) = self.movement;
 
@@ -152,14 +177,20 @@ impl Player {
 				(sprite::Falling, last_facing)
 			}
 		}
-		
 	}
 
+	/// A player will immediately cease their jump and become subject
+	/// to the effects of gravity.
+	///
+	/// While the player is in this state: their remaining `jump time` is
+	/// temporarily suspended.
 	pub fn stop_jump(&mut self) {
 		self.velocity_y = 0.0;
 		self.jump.deactivate();
 	}
 
+	/// The player will collide w/ the ground at y-coord `320`
+	/// Gravity cannot pull them below this floor.
 	pub fn on_ground(&self) -> bool {			
 		self.y == 320
 	}
@@ -168,7 +199,9 @@ impl Player {
 /* Proxies for drawable sprite traits */
 /// Proxies update calls to underlying sprite
 impl sprite::Updatable for Player {
-	//! Reads current time-deltas and mutates state accordingly.
+	/// Updates player-state that relies on time data. (Namely physics calculations.)
+	/// Determines which sprite-sheet should be used for thsi frame.
+	/// Forwards the elapsed time to the current sprite.
 	fn update(&mut self, elapsed_time: sprite::Millis) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
@@ -197,6 +230,7 @@ impl sprite::Updatable for Player {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
 
+		// determine effects of gravity
 		self.y += f64::round(
 			self.velocity_y * elapsed_time_ms as f64
 		) as i16;
@@ -215,6 +249,8 @@ impl sprite::Updatable for Player {
 		}
 	}
 
+	/// Instructs the current sprite-sheet to position itself
+	/// at the coordinates specified by `coords:(x,y)`.
 	fn set_position(&mut self, coords: (i16,i16)) {
 		self.sprites.get_mut(&self.movement).set_position(coords);
 	}
@@ -228,12 +264,14 @@ impl sprite::Drawable for Player {
 	}
 }
 
+/// Maintains track of a player's available `jump time`.
 pub struct Jump {
 	priv active: bool,
 	priv time_remaining: sprite::Millis
 }
 
 impl Jump {
+	/// Initializes a jump which is not active and has no time remaining.
 	pub fn new() -> Jump {
 		return Jump{
 			active: false,
@@ -241,10 +279,13 @@ impl Jump {
 		};
 	}
 
+	/// Returns true if the jump is currently using up `jump time`.
 	pub fn active(&self) -> bool {
 		self.active
 	}
 
+	/// If the jump is active: `elapsed_time` will be removed from
+	/// the jump's remaining time.
 	pub fn update(&mut self, elapsed_time: sprite::Millis) {
 		if self.active {
 			self.time_remaining = {
@@ -263,15 +304,19 @@ impl Jump {
 		}
 	}
 
+	/// Resets jump's remaining time to some constant factor.
+	/// NOTE: this also activates the jump.
 	pub fn reset(&mut self) {
 		self.time_remaining = JUMP_TIME;
 		self.reactivate();
 	}
 
+	/// Activates the jump if there is time remaining.
 	pub fn reactivate(&mut self) {
 		self.active = self.time_remaining > sprite::Millis(0);
 	}
-	
+
+	/// Suspends the jump timer.
 	pub fn deactivate(&mut self) {
 		self.active = false;
 	}
