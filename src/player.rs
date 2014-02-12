@@ -15,24 +15,24 @@ static JUMP_SPEED: f64				= 0.325;
 static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
 
 
-static CHAR_OFFSET: i16				= 0;
-static FACING_WEST: i16 			= 0 + CHAR_OFFSET;
-static FACING_EAST: i16 			= 1 + CHAR_OFFSET;
+static CHAR_OFFSET: i32				= 0;
+static FACING_WEST: i32 			= 0 + CHAR_OFFSET;
+static FACING_EAST: i32 			= 1 + CHAR_OFFSET;
 
-static STAND_FRAME: i16 			= 0;
-static JUMP_FRAME: i16 				= 1;
-static FALL_FRAME: i16 				= 2;
+static STAND_FRAME: i32 			= 0;
+static JUMP_FRAME: i32 				= 1;
+static FALL_FRAME: i32 				= 2;
 
 
 
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable>,
+	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable: >,
 	
 	// positioning
-	priv x: i16,
-	priv y: i16,
+	priv x: i32,
+	priv y: i32,
 	priv movement: (sprite::Motion, sprite::Facing),
 
 	// physics
@@ -52,45 +52,45 @@ impl Player {
 	/// The player will spawn at `x` and `y`, though it will immediately be subject to gravity.
 	/// The player is initailized `standing` facing `east`.
 	/// The player will continue to fall until some collision is detected.
-	pub fn new(graphics: &mut graphics::Graphics, x: i16, y: i16) -> Player {
+	pub fn new(graphics: &mut graphics::Graphics, x: i32, y: i32) -> Player {
 		// insert sprites into map
-		let mut sprite_map = HashMap::<(sprite::Motion,sprite::Facing), ~sprite::Updatable>::new();
+		let mut sprite_map = HashMap::<(sprite::Motion,sprite::Facing), ~sprite::Updatable: >::new();
 		
 		// walking
 		sprite_map.insert(
 			(sprite::Standing, sprite::West),
-			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
 		);
 		sprite_map.insert(
 			(sprite::Standing, sprite::East),
-			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 		
 		sprite_map.insert(
 			(sprite::Walking, sprite::West),
-			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20).unwrap() as ~sprite::Updatable
+			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20).unwrap() as ~sprite::Updatable:
 		);
 		sprite_map.insert(
 			(sprite::Walking, sprite::East),
-			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,1), 3, 20).unwrap() as ~sprite::Updatable
+			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,1), 3, 20).unwrap() as ~sprite::Updatable:
 		);
 
 		sprite_map.insert(
 			(sprite::Jumping, sprite::West),
-			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 		sprite_map.insert(
 			(sprite::Jumping, sprite::East),
-			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 
 		sprite_map.insert(
 			(sprite::Falling, sprite::West),
-			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 		sprite_map.insert(
 			(sprite::Falling, sprite::East),
-			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable
+			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 
 		Player{
@@ -139,7 +139,7 @@ impl Player {
 		if self.on_ground() {
 			self.jump.reset();
 			self.velocity_y = -JUMP_SPEED;
-		} else if (self.velocity_y < 0.0) {
+		} else if self.velocity_y < 0.0 {
 			self.jump.reactivate();
 		}
 	}
@@ -216,15 +216,15 @@ impl sprite::Updatable for Player {
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
 		self.x += f64::round(
 			self.velocity_x * elapsed_time_ms as f64
-		) as i16;
+		) as i32;
 
 		// compute velocity x for next frame
 		self.velocity_x += 
 			self.accel_x * elapsed_time_ms as f64;
 
-		if (self.accel_x < 0.0) {
+		if self.accel_x < 0.0 {
 			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
-		} else if (self.accel_x > 0.0) {
+		} else if self.accel_x > 0.0 {
 			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
 		} else if self.on_ground() {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
@@ -233,7 +233,7 @@ impl sprite::Updatable for Player {
 		// determine effects of gravity
 		self.y += f64::round(
 			self.velocity_y * elapsed_time_ms as f64
-		) as i16;
+		) as i32;
 
 		if !self.jump.active() {
 			self.velocity_y = cmp::min(
@@ -243,7 +243,7 @@ impl sprite::Updatable for Player {
 		}
 
 		// TODO: HACK FLOOR
-		if (self.y > 320) {
+		if self.y > 320 {
 			self.y = 320;
 			self.velocity_y = 0.0;
 		}
@@ -251,7 +251,7 @@ impl sprite::Updatable for Player {
 
 	/// Instructs the current sprite-sheet to position itself
 	/// at the coordinates specified by `coords:(x,y)`.
-	fn set_position(&mut self, coords: (i16,i16)) {
+	fn set_position(&mut self, coords: (i32,i32)) {
 		self.sprites.get_mut(&self.movement).set_position(coords);
 	}
 }

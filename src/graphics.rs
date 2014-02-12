@@ -11,7 +11,6 @@ use std::hashmap::HashMap;
 
 static SCREEN_WIDTH: 	int 	 	= 1280;
 static SCREEN_HEIGHT: 	int 	 	= 1024;
-static BITS_PER_PIXEL: 	int 	 	= 32;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
@@ -23,10 +22,10 @@ impl Graphics {
 	/// Prepare the display for rendering
 	pub fn new() -> Graphics {
 		let current_mode = ~video::Window::new(
-			~"rust-story v0.0",							// title
+			"rust-story v0.0",							// title
 			video::PosCentered, video::PosCentered,		// position (x,y)
 			1024, 768, 									// width, height
-			~[video::OpenGL]
+			[video::OpenGL]
 		);
 
 
@@ -35,7 +34,7 @@ impl Graphics {
 		let render_context = render::Renderer::from_window(
 			current_mode.unwrap(),
 			render::DriverAuto,
-			~[render::Software]
+			[render::Software]
 		);
 
 		match render_context {

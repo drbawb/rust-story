@@ -127,7 +127,7 @@ impl Updatable for AnimatedSprite {
 
 
 		// determine next frame
-		if (last_elapsed > frame_time) {
+		if last_elapsed > frame_time {
 			self.elapsed_time = Millis(0); // reset timer
 			self.current_frame += 1;
 			if self.current_frame > self.num_frames {
