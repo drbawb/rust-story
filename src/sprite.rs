@@ -132,10 +132,12 @@ impl Updatable for AnimatedSprite {
 
 		// determine next frame
 		if last_elapsed > frame_time {
+			let (ox,_) = self.offset;
+
 			self.elapsed_time = Millis(0); // reset timer
 			self.current_frame += 1;
-			if self.current_frame > self.num_frames {
-				self.current_frame = 0;
+			if self.current_frame > self.num_frames + ox {
+				self.current_frame = match self.offset {(ox,_) => {ox}};
 			}
 		}
 
@@ -177,7 +179,7 @@ impl AnimatedSprite {
 		let sprite = AnimatedSprite{
 			offset: offset,
 			coords: (0,0),
-			current_frame: 0, 
+			current_frame: match offset {(ox, _) => {ox}}, 
 			elapsed_time: Millis(0),
 			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
 			fps: fps,
