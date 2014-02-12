@@ -24,12 +24,9 @@ impl Graphics {
 		let current_mode = ~video::Window::new(
 			"rust-story v0.0",							// title
 			video::PosCentered, video::PosCentered,		// position (x,y)
-			1024, 768, 									// width, height
-			[video::OpenGL]
+			SCREEN_HEIGHT, SCREEN_WIDTH, 				// width, height
+			[video::InputGrabbed]
 		);
-
-
-		let graphics: Graphics;
 
 		let render_context = render::Renderer::from_window(
 			current_mode.unwrap(),
@@ -37,6 +34,7 @@ impl Graphics {
 			[render::Software]
 		);
 
+		let graphics: Graphics;
 		match render_context {
 			Ok(renderer) => {
 				graphics = Graphics{
