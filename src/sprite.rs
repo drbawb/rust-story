@@ -16,6 +16,7 @@ pub enum Motion {
 	Jumping,
 	Falling
 }
+pub static MOTIONS: [Motion, ..4] = [Walking, Standing, Jumping, Falling];
 
 
 #[deriving(IterBytes,Eq)]
@@ -23,6 +24,7 @@ pub enum Facing {
 	West,
 	East
 }
+pub static FACINGS: [Facing, ..2] = [West, East];
 
 #[deriving(IterBytes,Eq)]
 pub enum Looking {
@@ -30,6 +32,7 @@ pub enum Looking {
 	Down,
 	Horizontal
 }
+pub static LOOKINGS: [Looking, ..3] = [Up, Down, Horizontal];
 
 /// Milliseconds expressed as a large positive integer
 /// This will be used at module boundaries in place of raw types.
