@@ -17,18 +17,18 @@ pub enum Motion {
 	Falling
 }
 
+
 #[deriving(IterBytes,Eq)]
 pub enum Facing {
-	North,
 	West,
-	South,
 	East
 }
 
+#[deriving(IterBytes,Eq)]
 pub enum Looking {
 	Up,
 	Down,
-	Sideways
+	Horizontal
 }
 /// Milliseconds expressed as a large positive integer
 /// This will be used at module boundaries in place of raw types.
