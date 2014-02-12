@@ -117,10 +117,12 @@ impl Player {
 
 			match movement {
 				(sprite::Walking,_,_)
-				| ( sprite::Jumping,_,_)
-				| ( sprite::Falling,_,_) => {
+				| ( sprite::Jumping,_,_) => {
 					// animated path
 					~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (motion_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
+				}
+				( sprite::Falling,_,_) => {
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
 				}
 				(sprite::Standing,_,_) => {
 					// static path
