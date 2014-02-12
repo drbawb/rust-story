@@ -28,12 +28,12 @@ static FALL_FRAME: i32 				= 2;
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites: HashMap<(sprite::Motion,sprite::Facing), ~sprite::Updatable: >,
+	priv sprites: HashMap<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable: >,
 	
 	// positioning
 	priv x: i32,
 	priv y: i32,
-	priv movement: (sprite::Motion, sprite::Facing),
+	priv movement: (sprite::Motion, sprite::Facing, sprite::Looking),
 
 	// physics
 	priv elapsed_time: sprite::Millis,
@@ -54,42 +54,42 @@ impl Player {
 	/// The player will continue to fall until some collision is detected.
 	pub fn new(graphics: &mut graphics::Graphics, x: i32, y: i32) -> Player {
 		// insert sprites into map
-		let mut sprite_map = HashMap::<(sprite::Motion,sprite::Facing), ~sprite::Updatable: >::new();
+		let mut sprite_map = HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable: >::new();
 		
 		// walking
 		sprite_map.insert(
-			(sprite::Standing, sprite::West),
+			(sprite::Standing, sprite::West, sprite::Horizontal),
 			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
 		);
 		sprite_map.insert(
-			(sprite::Standing, sprite::East),
+			(sprite::Standing, sprite::East, sprite::Horizontal),
 			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 		
 		sprite_map.insert(
-			(sprite::Walking, sprite::West),
+			(sprite::Walking, sprite::West, sprite::Horizontal),
 			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20).unwrap() as ~sprite::Updatable:
 		);
 		sprite_map.insert(
-			(sprite::Walking, sprite::East),
+			(sprite::Walking, sprite::East, sprite::Horizontal),
 			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,1), 3, 20).unwrap() as ~sprite::Updatable:
 		);
 
 		sprite_map.insert(
-			(sprite::Jumping, sprite::West),
+			(sprite::Jumping, sprite::West, sprite::Horizontal),
 			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 		sprite_map.insert(
-			(sprite::Jumping, sprite::East),
+			(sprite::Jumping, sprite::East, sprite::Horizontal),
 			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 
 		sprite_map.insert(
-			(sprite::Falling, sprite::West),
+			(sprite::Falling, sprite::West, sprite::Horizontal),
 			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 		sprite_map.insert(
-			(sprite::Falling, sprite::East),
+			(sprite::Falling, sprite::East, sprite::Horizontal),
 			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
 		);
 
@@ -99,7 +99,7 @@ impl Player {
 
 			x: x, 
 			y: y,
-			movement: (sprite::Standing, sprite::East),
+			movement: (sprite::Standing, sprite::East, sprite::Horizontal),
 			
 			velocity_x: 0.0,
 			velocity_y: 0.0,
@@ -129,6 +129,18 @@ impl Player {
 		self.accel_x = 0.0;
 	}
 
+	pub fn look_up(&mut self) {
+
+	}
+
+	pub fn look_down(&mut self) {
+
+	}
+
+	pub fn look_horizontal(&mut self) {
+
+	}
+
 	/// Resets the player's jump timer if they are currently on the ground.
 	/// Otherwise: uses the remainder of the player's jump timer to extend
 	/// their jump.
@@ -148,8 +160,8 @@ impl Player {
 	/// The `Motion` is kept as-is, but the `Facing` portion of the tuple
 	/// is replaced with `direction`.
 	pub fn set_facing(&mut self, direction: sprite::Facing) {
-		let (last_action, _) = self.movement;
-		self.movement = (last_action, direction);
+		let (last_action, _, last_looking) = self.movement;
+		self.movement = (last_action, direction, last_looking);
 	}
 
 	/// This is called to update the player's `movement` based on
@@ -162,19 +174,19 @@ impl Player {
 	/// based on `self.movement` -- so if self.movement is updated multiple
 	/// times per frame then some sprite-sheet updates may get `lost.`
 	pub fn current_motion(&mut self) {
-		let (_, last_facing) = self.movement;
+		let (_, last_facing, last_looking) = self.movement;
 
 		self.movement = if self.on_ground() {
 			if self.accel_x == 0.0 {
-				(sprite::Standing, last_facing)
+				(sprite::Standing, last_facing, last_looking)
 			} else {
-				(sprite::Walking, last_facing)
+				(sprite::Walking, last_facing, last_looking)
 			}	
 		} else {
 			if self.velocity_y < 0.0 {
-				(sprite::Jumping, last_facing)
+				(sprite::Jumping, last_facing, last_looking)
 			} else {
-				(sprite::Falling, last_facing)
+				(sprite::Falling, last_facing, last_looking)
 			}
 		}
 	}
