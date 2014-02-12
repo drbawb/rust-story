@@ -95,6 +95,19 @@ impl Game {
 				quote.stop_moving();
 			}
 
+			// Handle player looking
+			if input.is_key_held(keycode::UpKey)
+				&& input.is_key_held(keycode::DownKey) {
+
+				quote.look_horizontal();
+			} else if input.is_key_held(keycode::UpKey) {
+				quote.look_up();
+			} else if input.is_key_held(keycode::DownKey) {
+				quote.look_down();
+			} else {
+				quote.look_horizontal();
+			}
+
 			// Handle player jump
 			if input.was_key_pressed(keycode::ZKey) {
 				quote.start_jump();
