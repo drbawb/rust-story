@@ -122,9 +122,7 @@ impl Player {
 				(sprite::Jumping, _, looking)
 				| (sprite::Falling, _, looking) => {
 					let looking_frame = match looking { // ignored while jumping / falling for now
-						sprite::Up => 0,
-						sprite::Down => 0,
-						sprite::Horizontal => 0,
+						_ => 0
 					};
 					
 					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 
@@ -134,8 +132,7 @@ impl Player {
 				(sprite::Walking, _, looking) => {
 					let looking_frame = match looking {
 						sprite::Up => 3,
-						sprite::Down => 0, 	// invalid state
-						sprite::Horizontal => 0
+						_ => 0
 					};
 	
 					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame + looking_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
