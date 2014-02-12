@@ -94,6 +94,7 @@ impl Player {
 		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
 	) {
 		self.sprites.find_or_insert_with(movement, |key| -> ~sprite::Updatable: {
+			let file_path = ~"assets/MyChar.bmp";
 			let (motion, facing, looking) = *key;
 			let motion_frame = match motion {
 				sprite::Standing | sprite::Walking => STAND_FRAME,
@@ -113,34 +114,34 @@ impl Player {
 			};
 
 			match movement {
-				  (sprite::Falling,_,sprite::Up) 
-				| (sprite::Jumping,_,sprite::Up)
-				| (sprite::Falling,_,sprite::Down) 
-				| (sprite::Jumping,_,sprite::Down) => {
-					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+				  // static: falling looking up or down
+				  (sprite::Falling,_,vfacing) 
+				  if vfacing == sprite::Up || vfacing == sprite::Down => {
+					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), file_path) as ~sprite::Updatable: 
 				}
 
 				// static: 	falling, facing east or west
 				//			jumping, facing east or west
 				  (sprite::Falling,_,_) 
 				| (sprite::Jumping,_,_) => {
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), file_path) as ~sprite::Updatable: 
 				}
 
 				// static: standing, facing east or west
 				(sprite::Standing,_,_) => {
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame+1), facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame+1), facing_frame), file_path) as ~sprite::Updatable: 
 				}
 
 				// dynamic: walking, facing east or west
-				// 			walking, " looking up or down.
+				// 			walking, " looking up
 				  (sprite::Walking,_,sprite::Up)
 				| (sprite::Walking,_,sprite::Horizontal) => {
-					~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (motion_frame + looking_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
+					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame + looking_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
 				}
 
+				// ignore vertical facing down while walking
 				(sprite::Walking,_,sprite::Down) => {
-					~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (motion_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:	
+					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:	
 				}
 			}
 		});
