@@ -93,13 +93,8 @@ impl Player {
 		graphics: &mut graphics::Graphics, 
 		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
 	) {
-		// generalized: motion -> sprite/animated sprite, stand_frame, jump_frame
-		//				coords = (0,0)
-		//				facing -> facing_west, facing_east
-
-		// find or insert with dynamic sprite loader
 		self.sprites.find_or_insert_with(movement, |key| -> ~sprite::Updatable: {
-			let (motion, facing, _) = *key;
+			let (motion, facing, looking) = *key;
 			let motion_frame = match motion {
 				sprite::Standing | sprite::Walking => STAND_FRAME,
 				sprite::Jumping => JUMP_FRAME,
@@ -111,22 +106,33 @@ impl Player {
 				sprite::East => FACING_EAST
 			};
 
-			/*match looking {
-				sprite::Up | sprite::Down | sprite::Horizontal=> fail!("don't know how to look!")
-			};*/
+			let looking_frame = match looking {
+				sprite::Up => 	3,
+				sprite::Down => 6,
+				sprite::Horizontal => 0
+			};
 
 			match movement {
-				(sprite::Walking,_,_)
-				| ( sprite::Jumping,_,_) => {
-					// animated path
+				// static: looking up or down
+					(_,_,sprite::Up)
+				| 	(_,_, sprite::Down) => {
+					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+				}
+
+				// static: falling, facing east or west
+				(sprite::Falling,_,sprite::Horizontal) => {
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+				}
+
+				// static: standing, facing east or west
+				(sprite::Standing,_,sprite::Horizontal) => {
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+				}
+
+				// dynamic: walking, facing east or west
+					(sprite::Walking,_,sprite::Horizontal)
+				| 	( sprite::Jumping,_,sprite::Horizontal) => {
 					~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (motion_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
-				}
-				( sprite::Falling,_,_) => {
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
-				}
-				(sprite::Standing,_,_) => {
-					// static path
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
 				}
 			}
 		});
