@@ -113,6 +113,12 @@ impl Player {
 			};
 
 			match movement {
+				  (sprite::Falling,_,sprite::Up) 
+				| (sprite::Jumping,_,sprite::Up)
+				| (sprite::Falling,_,sprite::Down) 
+				| (sprite::Jumping,_,sprite::Down) => {
+					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+				}
 
 				// static: 	falling, facing east or west
 				//			jumping, facing east or west
@@ -123,12 +129,18 @@ impl Player {
 
 				// static: standing, facing east or west
 				(sprite::Standing,_,_) => {
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame + looking_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame+1), facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
 				}
 
 				// dynamic: walking, facing east or west
-				(sprite::Walking,_,_) => {
+				// 			walking, " looking up or down.
+				  (sprite::Walking,_,sprite::Up)
+				| (sprite::Walking,_,sprite::Horizontal) => {
 					~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (motion_frame + looking_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
+				}
+
+				(sprite::Walking,_,sprite::Down) => {
+					~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (motion_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:	
 				}
 			}
 		});
