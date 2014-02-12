@@ -1,6 +1,8 @@
 use std::f64;
 use std::cmp;
 use std::hashmap::HashMap;
+use std::rc::Rc;
+
 
 use game::graphics;
 use game::sprite;
@@ -28,7 +30,7 @@ static FALL_FRAME: i32 				= 2;
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites: HashMap<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable: >,
+	priv sprites: HashMap<(sprite::Motion,sprite::Facing,sprite::Looking), Rc<~sprite::Updatable:>>,
 	
 	// positioning
 	priv x: i32,
@@ -54,44 +56,8 @@ impl Player {
 	/// The player will continue to fall until some collision is detected.
 	pub fn new(graphics: &mut graphics::Graphics, x: i32, y: i32) -> Player {
 		// insert sprites into map
-		let mut sprite_map = HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable: >::new();
-		
-		// walking
-		sprite_map.insert(
-			(sprite::Standing, sprite::West, sprite::Horizontal),
-			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
-		);
-		sprite_map.insert(
-			(sprite::Standing, sprite::East, sprite::Horizontal),
-			~sprite::Sprite::new(graphics, (0,0), (STAND_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
-		);
-		
-		sprite_map.insert(
-			(sprite::Walking, sprite::West, sprite::Horizontal),
-			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,0), 3, 20).unwrap() as ~sprite::Updatable:
-		);
-		sprite_map.insert(
-			(sprite::Walking, sprite::East, sprite::Horizontal),
-			~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (0,1), 3, 20).unwrap() as ~sprite::Updatable:
-		);
-
-		sprite_map.insert(
-			(sprite::Jumping, sprite::West, sprite::Horizontal),
-			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
-		);
-		sprite_map.insert(
-			(sprite::Jumping, sprite::East, sprite::Horizontal),
-			~sprite::Sprite::new(graphics, (0,0), (JUMP_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
-		);
-
-		sprite_map.insert(
-			(sprite::Falling, sprite::West, sprite::Horizontal),
-			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_WEST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
-		);
-		sprite_map.insert(
-			(sprite::Falling, sprite::East, sprite::Horizontal),
-			~sprite::Sprite::new(graphics, (0,0), (FALL_FRAME, FACING_EAST), ~"assets/MyChar.bmp") as ~sprite::Updatable:
-		);
+		let mut sprite_map = 
+			HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), Rc<~sprite::Updatable:> >::new();
 
 		Player{
 			elapsed_time: sprite::Millis(0),
@@ -107,6 +73,55 @@ impl Player {
 
 			jump: Jump::new()
 		}
+	}
+
+	/// First attempt at `safely loading sprites`
+	/// Since I can't loop over enums basic plan is this:
+	/// * `match{}` will provide compile time safety that map is fully initialized.
+	///	* fast path will basically be a map access.
+	fn load_sprite(
+		&mut self, 
+		graphics: &mut graphics::Graphics, 
+		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
+	) -> Rc<~sprite::Updatable:> {
+		// generalized: motion -> sprite/animated sprite, stand_frame, jump_frame
+		//				coords = (0,0)
+		//				facing -> facing_west, facing_east
+
+		// find or insert with dynamic sprite loader
+		let sprite_ref = 
+			self.sprites.find_or_insert_with(movement, |key| -> Rc<~sprite::Updatable:> {
+			let (motion, facing, looking) = *key;
+			let motion_frame = match motion {
+				sprite::Standing | sprite::Walking => STAND_FRAME,
+				sprite::Jumping => JUMP_FRAME,
+				sprite::Falling => FALL_FRAME
+			};
+
+			let facing_frame = match facing {
+				sprite::West => FACING_WEST,
+				sprite::East => FACING_EAST
+			};
+
+			match looking {
+				sprite::Up | sprite::Down | sprite::Horizontal=> fail!("don't know how to look!")
+			};
+
+			match movement {
+				(sprite::Walking,_,_)
+				| ( sprite::Jumping,_,_)
+				| ( sprite::Falling,_,_) => {
+					// animated path
+					~sprite::AnimatedSprite::new(graphics, ~"assets/MyChar.bmp", (motion_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
+				}
+				(sprite::Standing,_,_) => {
+					// static path
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame, facing_frame), ~"assets/MyChar.bmp") as ~sprite::Updatable: 
+				}
+			}
+		});
+
+			sprite_ref.clone()
 	}
 
 	/// The player will immediately face `West`
@@ -230,7 +245,7 @@ impl sprite::Updatable for Player {
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
 		self.set_position((self.x, self.y));
-		self.sprites.get_mut(&self.movement).update(elapsed_time);
+		//self.sprites.get_mut(&self.movement).update(elapsed_time);
 
 		// calculate next position
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
@@ -272,7 +287,7 @@ impl sprite::Updatable for Player {
 	/// Instructs the current sprite-sheet to position itself
 	/// at the coordinates specified by `coords:(x,y)`.
 	fn set_position(&mut self, coords: (i32,i32)) {
-		self.sprites.get_mut(&self.movement).set_position(coords);
+		//self.sprites.get_mut(&self.movement).set_position(coords);
 	}
 }
 
@@ -280,7 +295,7 @@ impl sprite::Updatable for Player {
 impl sprite::Drawable for Player {
 	/// Draws current state to `display`
 	fn draw(&self, display: &graphics::Graphics) {
-		self.sprites.get(&self.movement).draw(display);
+		//self.sprites.get(&self.movement).draw(display);
 	}
 }
 
