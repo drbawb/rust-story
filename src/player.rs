@@ -130,15 +130,15 @@ impl Player {
 	}
 
 	pub fn look_up(&mut self) {
-
+		self.set_looking(sprite::Up);
 	}
 
 	pub fn look_down(&mut self) {
-
+		self.set_looking(sprite::Down);
 	}
 
 	pub fn look_horizontal(&mut self) {
-
+		self.set_looking(sprite::Horizontal);
 	}
 
 	/// Resets the player's jump timer if they are currently on the ground.
@@ -162,6 +162,14 @@ impl Player {
 	pub fn set_facing(&mut self, direction: sprite::Facing) {
 		let (last_action, _, last_looking) = self.movement;
 		self.movement = (last_action, direction, last_looking);
+	}
+
+	/// This updates the `self.movement` tuple
+	/// The `Motion` is kept as-is, but the `Facing` portion of the tuple
+	/// is replaced with `direction`.
+	pub fn set_looking(&mut self, direction: sprite::Looking) {
+		let (last_action, last_facing, _) = self.movement;
+		self.movement = (last_action, last_facing, direction);
 	}
 
 	/// This is called to update the player's `movement` based on
