@@ -1,5 +1,12 @@
-extern mod sdl;
+extern mod sdl2;
+
 use std::io::Timer;
+
+use sdl2::sdl;
+
+use sdl2::event;
+use sdl2::mouse;
+use sdl2::keycode;
 
 pub mod graphics;
 pub mod input;
@@ -30,7 +37,7 @@ impl Game {
 		// initialize all major subsystems
 		// hide the mouse cursor in our drawing context
 		sdl::init([sdl::InitEverything]);
-		sdl::mouse::set_cursor_visible(false);
+		mouse::show_cursor(false);
 
 		self.event_loop();
 	}
@@ -46,7 +53,7 @@ impl Game {
 		
 		// event loop control
 		let frame_delay = (1000 / TARGET_FRAMERATE) as uint;
-		let mut last_update_time = sdl::sdl::get_ticks();
+		let mut last_update_time = sdl::get_ticks();
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
 
@@ -55,49 +62,48 @@ impl Game {
 		let mut quote= player::Player::new(&mut display, 320,240);
 
 		while running {
-			let start_time_ms = sdl::sdl::get_ticks();
+			let start_time_ms = sdl::get_ticks();
 			input.begin_new_frame();
 
 			// drain event queue once per frame
 			// ideally should do in separate task
-			match sdl::event::poll_event() {
-				sdl::event::KeyEvent(keyCap,pressed,_,_) => {
-					if pressed {
-						input.key_down_event(keyCap);
-					} else {
-						input.key_up_event(keyCap);
-					}
+			match event::poll_event() {
+				event::KeyDownEvent(_,_,keyCap) => {
+					input.key_down_event(keyCap);
+				}
+				event::KeyUpEvent(_,_,keyCap) => {
+					input.key_up_event(keyCap);
 				}
 				_ => {}
 			}
 
 			// Handle exit game
-			if input.was_key_released(sdl::event::EscapeKey) {
+			if input.was_key_released(keycode::EscapeKey) {
 				running = false;
 			}
 
 			// Handle player movement
-			if input.is_key_held(sdl::event::LeftKey)
-				&& input.is_key_held(sdl::event::RightKey) {
+			if input.is_key_held(keycode::LeftKey)
+				&& input.is_key_held(keycode::RightKey) {
 
 				quote.stop_moving();
-			} else if input.is_key_held(sdl::event::LeftKey) {
+			} else if input.is_key_held(keycode::LeftKey) {
 				quote.start_moving_left();
-			} else if input.is_key_held(sdl::event::RightKey) {
+			} else if input.is_key_held(keycode::RightKey) {
 				quote.start_moving_right();
 			} else {
 				quote.stop_moving();
 			}
 
 			// Handle player jump
-			if input.was_key_pressed(sdl::event::ZKey) {
+			if input.was_key_pressed(keycode::ZKey) {
 				quote.start_jump();
-			} else if input.was_key_released(sdl::event::ZKey) {
+			} else if input.was_key_released(keycode::ZKey) {
 				quote.stop_jump();
 			}
 
 			// update
-			let current_time_ms = sdl::sdl::get_ticks();
+			let current_time_ms = sdl::get_ticks();
 			self.update(&mut quote, current_time_ms - last_update_time);
 			last_update_time = current_time_ms;
 
@@ -109,7 +115,7 @@ impl Game {
 
 
 			// throttle event-loop
-			let iter_time = sdl::sdl::get_ticks() - start_time_ms;	// time in ms that this iteration of event loop took
+			let iter_time = sdl::get_ticks() - start_time_ms;	// time in ms that this iteration of event loop took
 			let next_frame_time: u64 = if frame_delay > iter_time {	// if we did not miss our deadline: adjust delay accordingly
 				(frame_delay - iter_time) as u64
 			} else { 0 as u64 };									// otherwise missed frame-deadline, skip waiting period

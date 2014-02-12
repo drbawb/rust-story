@@ -1,6 +1,4 @@
-#[crate_id = "ruststory#0.1"];
-
-extern mod sdl;
+extern mod sdl2;
 pub mod game;
 
 pub fn main() {

@@ -1,8 +1,12 @@
-extern mod sdl;
-extern mod extra;
+extern mod sdl2;
+
+use sdl2::rect;
+use sdl2::surface;
+use sdl2::render;
+use sdl2::video;
 
 
-use self::extra::arc::Arc;
+use std::rc::Rc;
 use std::hashmap::HashMap;
 
 static SCREEN_WIDTH: 	int 	 	= 1280;
@@ -11,32 +15,39 @@ static BITS_PER_PIXEL: 	int 	 	= 32;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
-	priv screen: ~sdl::video::Surface,
-	sprite_cache: HashMap<~str, Arc<~sdl::video::Surface>>,
+	priv screen: ~render::Renderer,
+	sprite_cache: HashMap<~str, Rc<~render::Texture>>,
 }
 
 impl Graphics {
 	/// Prepare the display for rendering
 	pub fn new() -> Graphics {
-		let current_mode = sdl::video::set_video_mode(
-			SCREEN_WIDTH, 
-			SCREEN_HEIGHT, 
-			BITS_PER_PIXEL, 
-			[sdl::video::HWSurface],
-			[sdl::video::Fullscreen]
+		let current_mode = ~video::Window::new(
+			~"rust-story v0.0",							// title
+			video::PosCentered, video::PosCentered,		// position (x,y)
+			1024, 768, 									// width, height
+			~[video::OpenGL]
 		);
-		
-		
+
+
 		let graphics: Graphics;
-		match current_mode {
-			Ok(surface) => {
+
+		let render_context = render::Renderer::from_window(
+			current_mode.unwrap(),
+			render::DriverAuto,
+			~[render::Software]
+		);
+
+		match render_context {
+			Ok(renderer) => {
 				graphics = Graphics{
-					screen: surface, 
-					sprite_cache: HashMap::<~str, Arc<~sdl::video::Surface>>::new()
+					screen: renderer, 
+					sprite_cache: HashMap::<~str, Rc<~render::Texture>>::new()
 				};
 			}
-			Err(_) => {fail!("oh my")}
-		}
+			Err(_) => {fail!("Could not create a renderer using SDL2.");}
+		};
+		
 
 		return graphics;
 	}
@@ -44,16 +55,25 @@ impl Graphics {
 	/// Loads a bitmap which resides at `file_path` and returns a handle
 	/// This handle can safely be used in any of the graphics subsystem's rendering
 	/// contexts.
-	pub fn load_image(&mut self, file_path: ~str) -> Arc<~sdl::video::Surface> {
+	pub fn load_image(&mut self, file_path: ~str) -> Rc<~render::Texture> {
 		// Retrieve a handle or generate a new one if it exists already.
 		let sprite_handle = self.sprite_cache.find_or_insert_with(file_path, |key| {
 			// Load sprite
 			let sprite_path = Path::new((*key).clone());
-			let sprite_window = sdl::video::Surface::from_bmp(&sprite_path);
+			let sprite_window = surface::Surface::from_bmp(&sprite_path);
 
 			// Store sprite
 			match sprite_window {
-				Ok(sprite) => {Arc::new(sprite)},
+				Ok(sprite) => {
+					// wrap surface in texture and store it
+					let sprite_texture = self.screen.create_texture_from_surface(sprite);
+					match sprite_texture {
+						Ok(texture) => {
+							Rc::new(texture)
+						}
+						Err(msg) => {fail!("sprite could not be rendered: {}", msg)}
+					}
+				},
 				Err(msg) => {fail!("sprite could not be loaded: {}", msg)}
 			}
 		});
@@ -67,13 +87,19 @@ impl Graphics {
 	}
 	
 
-	pub fn blit_surface(&self, src: &sdl::video::Surface, src_rect: &sdl::sdl::Rect, dest_rect: &sdl::sdl::Rect) {
+	pub fn blit_surface(
+		&self, 
+		src: &render::Texture, 
+		src_rect: &rect::Rect, 
+		dest_rect: &rect::Rect
+	) {
 		//let src_surface = self.sprite_cache.get(&src.id);
-		self.screen.blit_rect(src, Some(*src_rect), Some(*dest_rect));
+		self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
 	pub fn switch_buffers(&self) -> bool {
-		self.screen.flip()
+		self.screen.present();
+		true
 	}
 
 	pub fn clear_buffer(&self) {

@@ -1,8 +1,9 @@
-extern mod extra;
-extern mod sdl;
+extern mod sdl2;
 
+use sdl2::rect;
+use sdl2::surface;
 
-use self::extra::arc::Arc;
+use std::rc::Rc;
 use game::graphics;
 
 static TILE_SIZE: i16 = 32;
@@ -48,8 +49,8 @@ pub trait Updatable : Drawable {
 
 /// Represents a static 32x32 2D character
 pub struct Sprite {
-	sprite_sheet: Arc<~sdl::video::Surface>, 
-	source_rect: sdl::sdl::Rect,
+	sprite_sheet: Rc<~surface::Surface>, 
+	source_rect: rect::Rect,
 	coords: (i16,i16)
 }
 
@@ -57,7 +58,7 @@ impl Drawable for Sprite {
 	/// Draws selfs @ coordinates provided by 
 	fn draw(&self, display: &graphics::Graphics) {
 		let (x,y) = self.coords;
-		let dest_rect = sdl::sdl::Rect::new(x, y, 32, 32);
+		let dest_rect = rect::Rect::new(x, y, 32, 32);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }
@@ -83,7 +84,7 @@ impl Sprite {
 		file_name: ~str
 	) -> Sprite {
 		let (a,b) = offset;
-		let origin = sdl::sdl::Rect::new(a * TILE_SIZE, b * TILE_SIZE, 32, 32);
+		let origin = rect::Rect::new(a * TILE_SIZE, b * TILE_SIZE, 32, 32);
 
 		let sheet = graphics.load_image(file_name); // request graphics subsystem cache this sprite.
 
@@ -100,8 +101,8 @@ impl Sprite {
 /// Represents a 32x32 2D character w/ a number of frames
 /// Frames will be selected based on time-deltas supplied through update
 pub struct AnimatedSprite {
-	source_rect: sdl::sdl::Rect,
-	sprite_sheet: Arc<~sdl::video::Surface>, 
+	source_rect: rect::Rect,
+	sprite_sheet: Rc<~surface::Surface>, 
 
 	priv coords: (i16, i16),
 	priv offset: (i16,i16),
@@ -135,7 +136,7 @@ impl Updatable for AnimatedSprite {
 		}
 
 		let (ox, oy) = self.offset;
-		self.source_rect = sdl::sdl::Rect::new(ox + (self.current_frame * TILE_SIZE), oy * TILE_SIZE, 32, 32)
+		self.source_rect = rect::Rect::new(ox + (self.current_frame * TILE_SIZE), oy * TILE_SIZE, 32, 32)
 	}
 
 	fn set_position(&mut self, coords: (i16,i16)) {
@@ -147,7 +148,7 @@ impl Drawable for AnimatedSprite {
 	/// Draws selfs @ coordinates provided by 
 	fn draw(&self, display: &graphics::Graphics) {
 		let (x,y) = self.coords;
-		let dest_rect = sdl::sdl::Rect::new(x, y, 32, 32);
+		let dest_rect = rect::Rect::new(x, y, 32, 32);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }
@@ -166,7 +167,7 @@ impl AnimatedSprite {
 	) -> Result<AnimatedSprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let (x,y) = offset;
-		let origin = sdl::sdl::Rect::new(x * TILE_SIZE, y * TILE_SIZE, 32, 32);
+		let origin = rect::Rect::new(x * TILE_SIZE, y * TILE_SIZE, 32, 32);
 		
 		let sheet = graphics.load_image(sheet_path); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
