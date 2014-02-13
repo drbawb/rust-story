@@ -112,7 +112,7 @@ pub struct AnimatedSprite {
 	priv offset: (i32,i32),
 	priv current_frame: i32,
 	priv num_frames: i32,
-	priv fps: int,
+	priv fps: i32,
 
 	priv elapsed_time: Millis
 }
@@ -169,7 +169,7 @@ impl AnimatedSprite {
 		sheet_path: ~str, 
 		offset: (i32,i32),
 		num_frames: i32, 
-		fps: int
+		fps: i32
 	) -> Result<AnimatedSprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let (x,y) = offset;

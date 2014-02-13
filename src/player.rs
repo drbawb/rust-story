@@ -5,6 +5,7 @@ use std::hashmap::HashMap;
 use game::graphics;
 use game::sprite;
 
+// physics
 static SLOWDOWN_VELOCITY: f64 		= 0.8;
 static WALKING_ACCEL: f64 			= 0.0012;
 static MAX_VELOCITY_X: f64 			= 0.325;
@@ -14,22 +15,24 @@ static GRAVITY: f64					= 0.0012;
 static JUMP_SPEED: f64				= 0.325;
 static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
 
-
+// player sprite animation
 static CHAR_OFFSET: i32				= 0;
-static FACING_WEST: i32 			= 0 + CHAR_OFFSET;
-static FACING_EAST: i32 			= 1 + CHAR_OFFSET;
+static SPRITE_NUM_FRAMES: i32		= 3;
+static SPRITE_FPS: i32				= 20;
 
+// motion
 static STAND_FRAME: i32 			= 0;
 static JUMP_FRAME: i32 				= 1;
 static FALL_FRAME: i32 				= 2;
 
+// horizontal facing (Facing)
+static FACING_WEST: i32 			= 0 + CHAR_OFFSET;
+static FACING_EAST: i32 			= 1 + CHAR_OFFSET;
+
+// vertical facing (Looking)
 static WALK_UP_OFFSET: i32			= 3;
 static JUMP_DOWN_FRAME:  i32		= 6;
 static STAND_DOWN_FRAME: i32 		= 7;
-
-
-
-
 
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
@@ -63,6 +66,7 @@ impl Player {
 		let sprite_map = 
 			HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable:>::new();
 
+		// construct new player
 		let mut new_player = Player{
 			elapsed_time: sprite::Millis(0),
 			sprites: sprite_map,
@@ -78,7 +82,7 @@ impl Player {
 			jump: Jump::new()
 		};
 
-		// Load sprites for every possible movement tuple.
+		// load sprites for every possible movement tuple.
 		for motion in sprite::MOTIONS.iter() {
 			for facing in sprite::FACINGS.iter() {
 				for looking in sprite::LOOKINGS.iter() {
@@ -142,7 +146,7 @@ impl Player {
 						_ => 0
 					};
 	
-					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame + looking_frame, facing_frame), 3, 20).unwrap() as ~sprite::Updatable:
+					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame + looking_frame, facing_frame), SPRITE_NUM_FRAMES, SPRITE_FPS).unwrap() as ~sprite::Updatable:
 				}
 			}
 		});
