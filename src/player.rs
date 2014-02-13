@@ -23,6 +23,12 @@ static STAND_FRAME: i32 			= 0;
 static JUMP_FRAME: i32 				= 1;
 static FALL_FRAME: i32 				= 2;
 
+static WALK_UP_OFFSET: i32			= 3;
+static JUMP_DOWN_FRAME:  i32		= 6;
+static STAND_DOWN_FRAME: i32 		= 7;
+
+
+
 
 
 /// Encapsulates the pysical motion of a player as it relates to
@@ -110,9 +116,9 @@ impl Player {
 				// static: standing in place
 				(sprite::Standing, _, looking) => {
 					let looking_frame = match looking {
-						sprite::Up => 3,
-						sprite::Down => 7,
-						sprite::Horizontal => 0
+						sprite::Up => WALK_UP_OFFSET,
+						sprite::Down => STAND_DOWN_FRAME,
+						_ => 0
 					};
 				
 					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 
@@ -122,16 +128,17 @@ impl Player {
 				(sprite::Jumping, _, looking)
 				| (sprite::Falling, _, looking) => {
 					let looking_frame = match looking { // ignored while jumping / falling for now
-						_ => 0
+						sprite::Down => JUMP_DOWN_FRAME,
+						_ => motion_frame
 					};
 					
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 
+					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), file_path) as ~sprite::Updatable: 
 				}
 
 				// dynamic: 
 				(sprite::Walking, _, looking) => {
 					let looking_frame = match looking {
-						sprite::Up => 3,
+						sprite::Up => WALK_UP_OFFSET,
 						_ => 0
 					};
 	
