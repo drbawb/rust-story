@@ -84,9 +84,9 @@ impl Map {
 
 impl sprite::Updatable for Map {
 	fn update(&mut self, elapsed_time: sprite::Millis) {
-		for row in self.foreground_sprites.iter() {
+		for row in self.tiles.iter() {
 			for col in row.iter() {
-				match *col {
+				match col.borrow().sprite {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().update(elapsed_time);
@@ -104,9 +104,9 @@ impl sprite::Updatable for Map {
 impl sprite::Drawable for Map {
 	/// Draws current state to `display`
 	fn draw(&self, graphics: &graphics::Graphics) {
-		for a in range(0, self.foreground_sprites.len()) {
-			for b in range(0, self.foreground_sprites[a].len()) {
-				match self.foreground_sprites[a][b] {
+		for a in range(0, self.tiles.len()) {
+			for b in range(0, self.tiles[a].len()) {
+				match self.tiles[a][b].borrow().sprite {
 					Some(ref elem) => {
 						// draw sprite at x,y coordinates.
 						// a => row (y-axis)
