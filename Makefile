@@ -9,6 +9,10 @@ all: clean compile
 compile:
 	$(CC) $(CFLAGS) -o bin/rust-story $(LDFLAGS) src/main.rs
 
+veyron: CFLAGS += -O -Z time-passes
+veyron: all
+
+
 debug: CFLAGS += -g -Z time-passes
 debug: compile
 
