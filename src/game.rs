@@ -5,7 +5,6 @@ use std::io::Timer;
 use sdl2::sdl;
 
 use sdl2::event;
-use sdl2::mouse;
 use sdl2::keycode;
 
 pub mod graphics;
@@ -37,7 +36,6 @@ impl Game {
 		// initialize all major subsystems
 		// hide the mouse cursor in our drawing context
 		sdl::init([sdl::InitEverything]);
-		mouse::show_cursor(false);
 
 		self.event_loop();
 	}

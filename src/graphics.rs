@@ -3,6 +3,7 @@ extern mod sdl2;
 use sdl2::rect;
 use sdl2::surface;
 use sdl2::render;
+use sdl2::mouse;
 use sdl2::video;
 
 
@@ -45,7 +46,7 @@ impl Graphics {
 			Err(_) => {fail!("Could not create a renderer using SDL2.");}
 		};
 		
-
+		mouse::show_cursor(false);
 		return graphics;
 	}
 
