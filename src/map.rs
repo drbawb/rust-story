@@ -9,12 +9,30 @@ pub struct Map {
 	priv foreground_sprites: ~[~[Option<Rc<RefCell<~sprite::Updatable:> > >]]
 }
 
+
+
+
+fn new_tile(graphics: &mut graphics::Graphics) -> Option<Rc<RefCell<~sprite::Updatable:>>> {
+	Some(
+		Rc::new(
+			RefCell::new(
+				~sprite::Sprite::new(
+					graphics, 
+					(0,0), 
+					(2,0),
+					~"assets/PrtCave.bmp"
+				) as ~sprite::Updatable:
+			)
+		)
+	)
+}
+
 impl Map {
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
 		static num_rows: uint = 15; // 480
 		static num_cols: uint = 20; // 640
 
-		let mut test_map = Map {
+		let mut map = Map {
 			foreground_sprites: vec::from_elem(num_rows,
 				vec::from_elem(num_cols, None)
 			)
@@ -22,21 +40,17 @@ impl Map {
 	
 		// init very top row
 		for i in range(0, num_cols) {
-			test_map.foreground_sprites[11][i] = Some(
-				Rc::new(
-					RefCell::new(
-						~sprite::Sprite::new(
-							graphics, 
-							(0,0), 
-							(2,0),
-							~"assets/PrtCave.bmp"
-						) as ~sprite::Updatable:
-					)
-				)
-			); // store a reference
+			map.foreground_sprites[11][i] = new_tile(graphics); // store a reference
 		}
 
-		test_map
+		map.foreground_sprites[10][5] 	= new_tile(graphics);
+		map.foreground_sprites[9][4] 	= new_tile(graphics);
+		map.foreground_sprites[8][3] 	= new_tile(graphics);
+		map.foreground_sprites[7][2] 	= new_tile(graphics);
+		map.foreground_sprites[10][3] 	= new_tile(graphics);
+
+
+		map
 	}
 }
 
