@@ -16,7 +16,7 @@ static JUMP_SPEED: f64				= 0.325;
 static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
 
 // player sprite animation
-static CHAR_OFFSET: i32				= 0;
+static CHAR_OFFSET: i32				= 12;
 static SPRITE_NUM_FRAMES: i32		= 3;
 static SPRITE_FPS: i32				= 20;
 

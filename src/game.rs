@@ -10,7 +10,9 @@ use sdl2::keycode;
 pub mod graphics;
 pub mod input;
 pub mod sprite;
+pub mod map;
 pub mod player;
+
 
 static TARGET_FRAMERATE: int = 60;
 
@@ -55,9 +57,10 @@ impl Game {
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
 
-
+		// load default tilemap
 		// load quote's sprite
-		let mut quote= player::Player::new(&mut display, 320,240);
+		let mut map = map::Map::create_test_map(&mut display);
+		let mut quote = player::Player::new(&mut display, 320,240);
 
 		while running {
 			let start_time_ms = sdl::get_ticks();
@@ -115,6 +118,7 @@ impl Game {
 
 			// update
 			let current_time_ms = sdl::get_ticks();
+			self.update(&mut map, current_time_ms - last_update_time);
 			self.update(&mut quote, current_time_ms - last_update_time);
 			last_update_time = current_time_ms;
 
@@ -122,6 +126,7 @@ impl Game {
 			// draw
 			display.clear_buffer(); // clear back-buffer
 			self.draw(&quote, &display);
+			self.draw(&map, &display);
 			display.switch_buffers();
 
 
