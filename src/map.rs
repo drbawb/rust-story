@@ -19,7 +19,7 @@ fn new_tile(graphics: &mut graphics::Graphics) -> Option<Rc<RefCell<~sprite::Upd
 				~sprite::Sprite::new(
 					graphics, 
 					(0,0), 
-					(2,0),
+					(1,0),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable:
 			)
