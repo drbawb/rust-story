@@ -5,19 +5,48 @@ use std::cell::RefCell;
 use game::graphics;
 use game::sprite;
 
-pub struct Map {
-	priv foreground_sprites: ~[~[Option<Rc<RefCell<~sprite::Updatable:> > >]]
+priv enum TileType {
+	Air,
+	Wall
 }
 
+struct Tile {
+	tile_type: TileType,
+	sprite: Option<Rc<RefCell<~sprite::Updatable:>>>
+}
 
+impl Tile {
+	/// Creates n air tile w/ no sprite.
+	fn new() -> Tile {
+		Tile {
+			tile_type: Air,
+			sprite: None
+		}
+	}
 
+	/// Creates a tile of `tile_type` with `sprite.`
+	fn from_sprite(
+		sprite: Rc<RefCell<~sprite::Updatable:>>, 
+		tile_type: TileType
+	) -> Tile {
+		// Return tile with Some(sprite)
+		Tile {
+			tile_type: tile_type,
+			sprite: Some(sprite)
+		}
+	}
+}
+
+pub struct Map {
+	priv tiles: ~[~[Rc<Tile>]]
+}
 
 impl Map {
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
 		static num_rows: uint = 15; // 480
 		static num_cols: uint = 20; // 640
 
-		let tile = Rc::new(
+		let sprite = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
@@ -27,24 +56,27 @@ impl Map {
 				) as ~sprite::Updatable:
 			)
 		);
+
+		let blank_tile = Rc::new(Tile::new());
+		let wall_tile = Rc::new(Tile::from_sprite(sprite, Wall));
 		
 		let mut map = Map {
-			foreground_sprites: vec::from_elem(num_rows,
-				vec::from_elem(num_cols, None)
+			tiles: vec::from_elem(num_rows,
+				vec::from_elem(num_cols, blank_tile.clone())
 			)
 		};
 	
 		// init very top row
 		for i in range(0, num_cols) {
-			map.foreground_sprites[11][i] = Some(tile.clone()); // store a reference
+			map.tiles[11][i] = wall_tile.clone(); // store a reference
 		}
 
-		map.foreground_sprites[10][3] 	= Some(tile.clone());
-		map.foreground_sprites[10][5] 	= Some(tile.clone());
+		map.tiles[10][3] 	= wall_tile.clone();
+		map.tiles[10][5] 	= wall_tile.clone();
 		
-		map.foreground_sprites[9][4] 	= Some(tile.clone());
-		map.foreground_sprites[8][3] 	= Some(tile.clone());
-		map.foreground_sprites[7][2] 	= Some(tile.clone());
+		map.tiles[9][4] 	= wall_tile.clone();
+		map.tiles[8][3] 	= wall_tile.clone();
+		map.tiles[7][2] 	= wall_tile.clone();
 		
 		map
 	}
@@ -68,8 +100,6 @@ impl sprite::Updatable for Map {
 	#[allow(unused_variable)]
 	fn set_position(&mut self, coords: (i32,i32)) {}
 }
-
-
 
 impl sprite::Drawable for Map {
 	/// Draws current state to `display`
