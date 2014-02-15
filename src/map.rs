@@ -20,20 +20,20 @@ impl Map {
 			)
 		};
 	
-		let cave_tile = Rc::new(
-				RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(0,0), 
-					(0,1),
-					~"assets/PrtCave.bmp"
-				) as ~sprite::Updatable:
-			)
-		);
-
 		// init very top row
 		for i in range(0, num_cols) {
-			test_map.foreground_sprites[0][i] = Some(cave_tile.clone()); // store a reference
+			test_map.foreground_sprites[11][i] = Some(
+				Rc::new(
+					RefCell::new(
+						~sprite::Sprite::new(
+							graphics, 
+							(0,0), 
+							(2,0),
+							~"assets/PrtCave.bmp"
+						) as ~sprite::Updatable:
+					)
+				)
+			); // store a reference
 		}
 
 		test_map
@@ -42,12 +42,18 @@ impl Map {
 
 impl sprite::Updatable for Map {
 	fn update(&mut self, elapsed_time: sprite::Millis) {
-		for row in self.foreground_sprites.iter() {
-			for col in row.iter() {
-				match *col {
+		for x in range(0, self.foreground_sprites.len()) {
+			for y in range(0, self.foreground_sprites[x].len()) {
+				match self.foreground_sprites[x][y] {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().update(elapsed_time);
+						sprite.get().set_position(
+							(
+								(y * sprite::TILE_SIZE as uint) as i32, 
+								(x * sprite::TILE_SIZE as uint) as i32
+							)
+						);
 					}
 					_ => {}
 				};
@@ -55,19 +61,8 @@ impl sprite::Updatable for Map {
 		}
 	}
 
-	fn set_position(&mut self, coords: (i32,i32)) {
-		for row in self.foreground_sprites.iter() {
-			for col in row.iter() {
-				match *col {
-					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
-						sprite.get().set_position(coords);
-					}
-					_ => {}
-				};
-			}
-		}
-	}
+	#[allow(unused_variable)]
+	fn set_position(&mut self, coords: (i32,i32)) {}
 }
 
 impl sprite::Drawable for Map {
