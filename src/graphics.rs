@@ -10,8 +10,8 @@ use sdl2::video;
 use std::rc::Rc;
 use std::hashmap::HashMap;
 
-static SCREEN_WIDTH: 	int 	 	= 1280;
-static SCREEN_HEIGHT: 	int 	 	= 1024;
+static SCREEN_WIDTH: 	int 	 	= 640;
+static SCREEN_HEIGHT: 	int 	 	= 480;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {

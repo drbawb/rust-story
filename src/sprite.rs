@@ -6,7 +6,7 @@ use sdl2::render;
 use std::rc::Rc;
 use game::graphics;
 
-static TILE_SIZE: i32 = 32;
+pub static TILE_SIZE: i32 = 32;
 
 
 #[deriving(IterBytes,Eq)]
