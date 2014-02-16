@@ -335,7 +335,8 @@ impl Player {
 
 			match movement {
 				// static: standing in place
-				(sprite::Standing, _, looking) => {
+				  (sprite::Standing, _, looking)
+				| (sprite::Interacting, _, looking) => {
 					let looking_frame = match looking {
 						sprite::Up => WALK_UP_OFFSET,
 						_ => 0
@@ -344,16 +345,8 @@ impl Player {
 					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 
 				}
 
-				(sprite::Interacting, _, looking) => {
-					let looking_frame = match looking {
-						sprite::Down => STAND_DOWN_FRAME,
-						_ => 0
-					};
-
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 	
-				}
-
-				// static: jumping
+				// static: jumping or falling
+				// (overrides 'STAND_DOWN_FRAME')
 				(sprite::Jumping, _, looking)
 				| (sprite::Falling, _, looking) => {
 					let looking_frame = match looking { // ignored while jumping / falling for now
@@ -380,6 +373,7 @@ impl Player {
 	/// The player will immediately face `West`
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_left(&mut self) {
+		self.is_interacting = false;
 		self.set_facing(sprite::West);
 		self.accel_x = -1;
 	}
@@ -387,6 +381,7 @@ impl Player {
 	/// The player will immediately face `East`
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_right(&mut self) {
+		self.is_interacting = false;
 		self.set_facing(sprite::East);
 		self.accel_x = 1;
 	}
@@ -398,10 +393,12 @@ impl Player {
 	}
 
 	pub fn look_up(&mut self) {
+		self.is_interacting = false;
 		self.set_looking(sprite::Up);
 	}
 
 	pub fn look_down(&mut self) {
+		self.is_interacting = true;
 		self.set_looking(sprite::Down);
 	}
 
@@ -417,6 +414,7 @@ impl Player {
 	/// consider acceleration.
 	pub fn start_jump(&mut self) {
 		self.is_jump_active = true;
+		self.is_interacting = false;
 
 		if self.on_ground() {
 			self.velocity_y = -JUMP_SPEED;
@@ -445,7 +443,9 @@ impl Player {
 		let (_, last_facing, last_looking) = self.movement;
 
 		self.movement = if self.on_ground() {
-			if self.accel_x == 0 {
+			if self.is_interacting {
+				(sprite::Interacting, last_facing, last_looking)
+			} else if self.accel_x == 0 {
 				(sprite::Standing, last_facing, last_looking)
 			} else {
 				(sprite::Walking, last_facing, last_looking)
@@ -456,7 +456,7 @@ impl Player {
 			} else {
 				(sprite::Falling, last_facing, last_looking)
 			}
-		}
+		};
 	}
 
 	// x-axis collision detection
