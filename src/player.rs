@@ -123,16 +123,18 @@ impl Player {
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
 
 		// run physics sim
-		self.update_x(elapsed_time, map);
-		self.update_y(elapsed_time, map);
+		self.update_x(map);
+		self.update_y(map);
 	}
 
-	fn update_x(&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
+	fn update_x(&mut self, map: &map::Map) {
 		// calculate next position
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
-		self.x += f64::round(
+		
+
+		let delta = f64::round(
 			self.velocity_x * elapsed_time_ms as f64
-		) as i32;
+		) as int;
 
 		// compute velocity x for next frame
 		self.velocity_x += 
@@ -145,9 +147,47 @@ impl Player {
 		} else if self.on_ground() {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
+
+		// check collision in direction of delta
+		if delta > 0 {
+			// moving right
+			let mut info = self.get_collision_info(&self.right_collision(delta), map);
+			self.x = if info.collided {
+				self.velocity_x = 0.0;
+				((info.col * sprite::TILE_SIZE as int) - X_BOX.right()) as i32
+			} else {
+				(self.x as int + delta) as i32
+			};
+
+			// colliding left
+			info = self.get_collision_info(&self.left_collision(0), map);
+			self.x = if info.collided {
+				((info.col * sprite::TILE_SIZE as int) + X_BOX.right()) as i32
+			} else {
+				self.x
+			};
+
+		} else {
+			// moving left
+			let mut info = self.get_collision_info(&self.left_collision(delta), map);
+			self.x = if info.collided {
+				self.velocity_x = 0.0;
+				((info.col * sprite::TILE_SIZE as int) + X_BOX.right()) as i32
+			} else {
+				(self.x as int + delta) as i32
+			};
+
+			// colliding right
+			info = self.get_collision_info(&self.right_collision(0), map);
+			self.x = if info.collided {
+				((info.col * sprite::TILE_SIZE as int) - X_BOX.right()) as i32
+			} else {
+				self.x
+			};
+		}
 	}
 
-	fn update_y (&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
+	fn update_y (&mut self, map: &map::Map) {
 		// determine effects of gravity
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
 		
@@ -165,7 +205,7 @@ impl Player {
 		) as int;
 
 		// check collision in direction of delta
-		if (delta > 0) {
+		if delta > 0 {
 			// react to collision
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
 			self.y = if info.collided {
@@ -179,7 +219,7 @@ impl Player {
 			};
 
 			info = self.get_collision_info(&self.top_collision(0), map);
-			self.y = if (info.collided) {
+			self.y = if info.collided {
 				((info.row * sprite::TILE_SIZE as int) + Y_BOX.height()) as i32
 			} else {
 				self.y
@@ -198,7 +238,7 @@ impl Player {
 			};
 
 			info = self.get_collision_info(&self.bottom_collision(0), map);
-			self.y = if (info.collided) {
+			self.y = if info.collided {
 				self.on_ground = true;
 
 				((info.row * sprite::TILE_SIZE as int) - Y_BOX.bottom()) as i32
