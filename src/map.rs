@@ -96,47 +96,8 @@ impl Map {
 		map
 	}
 
-	pub fn get_colliding_tiles(&mut self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let first_row 	= rectangle.top() / sprite::TILE_SIZE as int;
-		let last_row 	= rectangle.bottom() / sprite::TILE_SIZE as int;
-		let first_col 	= rectangle.left() 	/ sprite::TILE_SIZE as int;
-		let last_col 	= rectangle.right() / sprite::TILE_SIZE as int;
-
-		let mut collision_tiles: ~[CollisionTile] = ~[];
-		for row in range(first_row, last_row + 1) {
-			for col in range(first_col, last_col + 1) {
-				collision_tiles.push( 
-					CollisionTile::new(row, col, self.tiles[row][col].borrow().tile_type)
-				);
-			}
-		}
-
-		fail!("unimplemented.")
-	}
-}
-
-impl sprite::Updatable for Map {
-	fn update(&mut self, elapsed_time: sprite::Millis) {
-		for row in self.tiles.iter() {
-			for col in row.iter() {
-				match col.borrow().sprite {
-					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
-						sprite.get().update(elapsed_time);
-					}
-					_ => {}
-				};
-			}
-		}
-	}
-
-	#[allow(unused_variable)]
-	fn set_position(&mut self, coords: (i32,i32)) {}
-}
-
-impl sprite::Drawable for Map {
 	/// Draws current state to `display`
-	fn draw(&self, graphics: &graphics::Graphics) {
+	pub fn draw(&self, graphics: &graphics::Graphics) {
 		for a in range(0, self.tiles.len()) {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].borrow().sprite {
@@ -159,4 +120,37 @@ impl sprite::Drawable for Map {
 			}
 		}
 	}
+
+	pub fn update(&mut self, elapsed_time: sprite::Millis) {
+		for row in self.tiles.iter() {
+			for col in row.iter() {
+				match col.borrow().sprite {
+					Some(ref elem) => {
+						let mut sprite = elem.borrow().borrow_mut();
+						sprite.get().update(elapsed_time);
+					}
+					_ => {}
+				};
+			}
+		}
+	}
+
+	pub fn get_colliding_tiles(&mut self, rectangle: &Rectangle) -> ~[CollisionTile] {
+		let first_row 	= rectangle.top() / sprite::TILE_SIZE as int;
+		let last_row 	= rectangle.bottom() / sprite::TILE_SIZE as int;
+		let first_col 	= rectangle.left() 	/ sprite::TILE_SIZE as int;
+		let last_col 	= rectangle.right() / sprite::TILE_SIZE as int;
+
+		let mut collision_tiles: ~[CollisionTile] = ~[];
+		for row in range(first_row, last_row + 1) {
+			for col in range(first_col, last_col + 1) {
+				collision_tiles.push( 
+					CollisionTile::new(row, col, self.tiles[row][col].borrow().tile_type)
+				);
+			}
+		}
+
+		fail!("unimplemented.")
+	}
 }
+

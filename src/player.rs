@@ -94,6 +94,67 @@ impl Player {
 		new_player
 	}
 
+	/// Draws player to screen
+	pub fn draw(&self, display: &graphics::Graphics) {
+		self.sprites.get(&self.movement).draw(display);
+	}
+
+	/// Updates player-state that relies on time data. (Namely physics calculations.)
+	/// Determines which sprite-sheet should be used for thsi frame.
+	/// Forwards the elapsed time to the current sprite.
+	pub fn update(&mut self, elapsed_time: sprite::Millis) {
+		// calculate current position
+		self.elapsed_time = elapsed_time;
+		self.jump.update(elapsed_time);
+
+		// update sprite
+		self.current_motion(); // update motion once at beginning of frame for consistency
+		self.set_position((self.x, self.y));
+		self.sprites.get_mut(&self.movement).update(elapsed_time);
+
+		// calculate next position
+		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
+		self.x += f64::round(
+			self.velocity_x * elapsed_time_ms as f64
+		) as i32;
+
+		// compute velocity x for next frame
+		self.velocity_x += 
+			self.accel_x * elapsed_time_ms as f64;
+
+		if self.accel_x < 0.0 {
+			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
+		} else if self.accel_x > 0.0 {
+			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
+		} else if self.on_ground() {
+			self.velocity_x *= SLOWDOWN_VELOCITY;
+		}
+
+		// determine effects of gravity
+		self.y += f64::round(
+			self.velocity_y * elapsed_time_ms as f64
+		) as i32;
+
+		if !self.jump.active() {
+			self.velocity_y = cmp::min(
+				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
+				MAX_VELOCITY_Y
+			)
+		}
+
+		// TODO: HACK FLOOR
+		if self.y > 320 {
+			self.y = 320;
+			self.velocity_y = 0.0;
+		}
+	}
+
+	/// Instructs the current sprite-sheet to position itself
+	/// at the coordinates specified by `coords:(x,y)`.
+	fn set_position(&mut self, coords: (i32,i32)) {
+		self.sprites.get_mut(&self.movement).set_position(coords);
+	}
+
 	/// Loads a sprite for the selected `movement`, stores it in the player's sprite map.
 	/// This exhaustively matches all tuples of (Motion,Facing,Looking), though certain
 	/// sprites are considered invalid states [for e.g: walking + looking down]
@@ -256,74 +317,6 @@ impl Player {
 	/// Gravity cannot pull them below this floor.
 	pub fn on_ground(&self) -> bool {			
 		self.y == 320
-	}
-}
-
-/* Proxies for drawable sprite traits */
-/// Proxies update calls to underlying sprite
-impl sprite::Updatable for Player {
-	/// Updates player-state that relies on time data. (Namely physics calculations.)
-	/// Determines which sprite-sheet should be used for thsi frame.
-	/// Forwards the elapsed time to the current sprite.
-	fn update(&mut self, elapsed_time: sprite::Millis) {
-		// calculate current position
-		self.elapsed_time = elapsed_time;
-		self.jump.update(elapsed_time);
-
-		// update sprite
-		self.current_motion(); // update motion once at beginning of frame for consistency
-		self.set_position((self.x, self.y));
-		self.sprites.get_mut(&self.movement).update(elapsed_time);
-
-		// calculate next position
-		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
-		self.x += f64::round(
-			self.velocity_x * elapsed_time_ms as f64
-		) as i32;
-
-		// compute velocity x for next frame
-		self.velocity_x += 
-			self.accel_x * elapsed_time_ms as f64;
-
-		if self.accel_x < 0.0 {
-			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
-		} else if self.accel_x > 0.0 {
-			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
-		} else if self.on_ground() {
-			self.velocity_x *= SLOWDOWN_VELOCITY;
-		}
-
-		// determine effects of gravity
-		self.y += f64::round(
-			self.velocity_y * elapsed_time_ms as f64
-		) as i32;
-
-		if !self.jump.active() {
-			self.velocity_y = cmp::min(
-				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
-				MAX_VELOCITY_Y
-			)
-		}
-
-		// TODO: HACK FLOOR
-		if self.y > 320 {
-			self.y = 320;
-			self.velocity_y = 0.0;
-		}
-	}
-
-	/// Instructs the current sprite-sheet to position itself
-	/// at the coordinates specified by `coords:(x,y)`.
-	fn set_position(&mut self, coords: (i32,i32)) {
-		self.sprites.get_mut(&self.movement).set_position(coords);
-	}
-}
-
-/// Proxies draw calls to underlying sprite
-impl sprite::Drawable for Player {
-	/// Draws current state to `display`
-	fn draw(&self, display: &graphics::Graphics) {
-		self.sprites.get(&self.movement).draw(display);
 	}
 }
 
