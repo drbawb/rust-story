@@ -401,7 +401,6 @@ impl Player {
 	/// temporarily suspended.
 	pub fn stop_jump(&mut self) {
 		self.is_jump_active = false;
-		self.velocity_y = 0.0;
 	}
 
 	/// This is called to update the player's `movement` based on
