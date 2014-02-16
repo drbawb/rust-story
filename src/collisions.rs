@@ -1,14 +1,23 @@
 pub struct Rectangle {
-	priv x: int, priv y: int,
-	priv width: int, priv height: int
+	x: int, 
+	y: int,
+	width: int, 
+	height: int
 }
 
 impl Rectangle {
-	pub fn left(&self) 		-> int {0}
-	pub fn right(&self) 	-> int {0}
-	pub fn top(&self) 		-> int {0}
-	pub fn bottom(&self) 	-> int {0}
+	pub fn new(width: int, height: int) -> Rectangle {
+		Rectangle {
+			x: 0, y: 0,
+			width: width, height: height
+		}
+	}
 
-	pub fn width(&self) {}
-	pub fn height(&self) {}
+	pub fn left(&self) 		-> int { self.x }
+	pub fn right(&self) 	-> int { self.x + self.width }
+	pub fn top(&self) 		-> int { self.y }
+	pub fn bottom(&self) 	-> int { self.y + self.height}
+
+	pub fn width(&self) 	-> int { self.width }
+	pub fn height(&self) 	-> int { self.height }
 }

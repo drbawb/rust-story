@@ -19,9 +19,21 @@ static TARGET_FRAMERATE: int = 60;
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
-	sprite: int
+	priv quote: player::Player,
+	priv map: 	map::Map,
+
+	priv display: 		graphics::Graphics,
+	priv controller: 	input::Input 
 }
 
+
+#[unsafe_destructor]
+// Both `quote` & `map` own Rc<...>'s which point
+// into `display`.
+//
+// Since all `Rc<T>`'s pointing too one another
+// are owned by `Game`, `Game` will not leak 
+// references upon destruction.
 impl Drop for Game {
 	/// Cleanly shuts down the SDL rendering context.
 	fn drop(&mut self) {
@@ -33,13 +45,24 @@ impl Drop for Game {
 impl Game {
 	/// Starts running this games event loop, note that this will block indefinitely.
 	/// This function will return to the caller when the escape key is pressed.
-	pub fn start(&self) {
+	pub fn new() -> Game {
 		println!("initalizing sdl ...");
 		
 		// initialize all major subsystems
 		// hide the mouse cursor in our drawing context
 		sdl::init([sdl::InitEverything]);
+		let mut display = graphics::Graphics::new();
+		let controller =  input::Input::new();		
 
+		Game {
+			map: 	map::Map::create_test_map(&mut display),
+			quote: 	player::Player::new(&mut display, 320,240),
+			display: display,
+			controller: controller
+		}
+	}
+
+	pub fn start(&mut self) {
 		self.event_loop();
 	}
 
@@ -48,87 +71,79 @@ impl Game {
 	///
 	/// Then renders a snapshot of the world-state and then waits
 	/// until its next frame deadline.
-	fn event_loop(&self) {
-		let mut display = graphics::Graphics::new();
-		let mut input = input::Input::new();
+	fn event_loop(&mut self) {
+		
 		
 		// event loop control
 		let frame_delay = (1000 / TARGET_FRAMERATE) as uint;
 		let mut last_update_time = sdl::get_ticks();
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
-
-		// load default tilemap
-		// load quote's sprite
-		let mut map = map::Map::create_test_map(&mut display);
-		let mut quote = player::Player::new(&mut display, 320,240);
-
+		
 		while running {
 			let start_time_ms = sdl::get_ticks();
-			input.begin_new_frame();
+			self.controller.begin_new_frame();
 
 			// drain event queue once per frame
 			// ideally should do in separate task
 			match event::poll_event() {
 				event::KeyDownEvent(_,_,keyCap,_,_) => {
-					input.key_down_event(keyCap);
+					self.controller.key_down_event(keyCap);
 				}
 				event::KeyUpEvent(_,_,keyCap,_,_) => {
-					input.key_up_event(keyCap);
+					self.controller.key_up_event(keyCap);
 				}
 				_ => {}
 			}
 
 			// Handle exit game
-			if input.was_key_released(keycode::EscapeKey) {
+			if self.controller.was_key_released(keycode::EscapeKey) {
 				running = false;
 			}
 
 			// Handle player movement
-			if input.is_key_held(keycode::LeftKey)
-				&& input.is_key_held(keycode::RightKey) {
+			if self.controller.is_key_held(keycode::LeftKey)
+				&& self.controller.is_key_held(keycode::RightKey) {
 
-				quote.stop_moving();
-			} else if input.is_key_held(keycode::LeftKey) {
-				quote.start_moving_left();
-			} else if input.is_key_held(keycode::RightKey) {
-				quote.start_moving_right();
+				self.quote.stop_moving();
+			} else if self.controller.is_key_held(keycode::LeftKey) {
+				self.quote.start_moving_left();
+			} else if self.controller.is_key_held(keycode::RightKey) {
+				self.quote.start_moving_right();
 			} else {
-				quote.stop_moving();
+				self.quote.stop_moving();
 			}
 
 			// Handle player looking
-			if input.is_key_held(keycode::UpKey)
-				&& input.is_key_held(keycode::DownKey) {
+			if self.controller.is_key_held(keycode::UpKey)
+				&& self.controller.is_key_held(keycode::DownKey) {
 
-				quote.look_horizontal();
-			} else if input.is_key_held(keycode::UpKey) {
-				quote.look_up();
-			} else if input.is_key_held(keycode::DownKey) {
-				quote.look_down();
+				self.quote.look_horizontal();
+			} else if self.controller.is_key_held(keycode::UpKey) {
+				self.quote.look_up();
+			} else if self.controller.is_key_held(keycode::DownKey) {
+				self.quote.look_down();
 			} else {
-				quote.look_horizontal();
+				self.quote.look_horizontal();
 			}
 
 			// Handle player jump
-			if input.was_key_pressed(keycode::ZKey) {
-				quote.start_jump();
-			} else if input.was_key_released(keycode::ZKey) {
-				quote.stop_jump();
+			if self.controller.was_key_pressed(keycode::ZKey) {
+				self.quote.start_jump();
+			} else if self.controller.was_key_released(keycode::ZKey) {
+				self.quote.stop_jump();
 			}
 
 			// update
 			let current_time_ms = sdl::get_ticks();
-			self.update(&mut map, current_time_ms - last_update_time);
-			self.update(&mut quote, current_time_ms - last_update_time);
+			self.update(current_time_ms - last_update_time);
 			last_update_time = current_time_ms;
 
 
 			// draw
-			display.clear_buffer(); // clear back-buffer
-			self.draw(&quote, &display);
-			self.draw(&map, &display);
-			display.switch_buffers();
+			self.display.clear_buffer(); // clear back-buffer
+			self.draw();
+			self.display.switch_buffers();
 
 
 			// throttle event-loop
@@ -150,13 +165,16 @@ impl Game {
 	}
 
 	/// Draws current state of sprites to the screen
-	fn draw<T: sprite::Drawable>(&self, actor: &T, display: &graphics::Graphics) {
-		actor.draw(display);
+	fn draw(&self) {
+		self.quote.draw(&self.display);
+		self.map.draw(&self.display);
 	}
 
 	/// Updates an actor's concept of time.
 	/// Then instructs them to mutate their state accordingly.
-	fn update<T: sprite::Updatable>(&self, actor: &mut T, elapsed_time: uint) {
-		actor.update(sprite::Millis(elapsed_time));
+	fn update(&mut self, elapsed_time: uint) {
+		let elapsed = sprite::Millis(elapsed_time);
+		self.map.update(elapsed);
+		self.quote.update(elapsed, &self.map);
 	}
 }
