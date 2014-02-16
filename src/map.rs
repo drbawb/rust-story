@@ -82,17 +82,22 @@ impl Map {
 			)
 		};
 	
-		// init very top row
+		// init `floor`
 		for i in range(0, num_cols) {
-			map.tiles[11][i] = wall_tile.clone(); // store a reference
+			map.tiles[num_rows - 1][i] = wall_tile.clone(); // store a reference
 		}
 
-		map.tiles[10][3] 	= wall_tile.clone();
-		map.tiles[10][5] 	= wall_tile.clone();
+		// "safety wall"
+		for i in range (0, num_rows) {
+			map.tiles[i][0] = wall_tile.clone();
+			map.tiles[i][num_cols - 1] = wall_tile.clone();
+		}
+
+		map.tiles[num_rows - 2][3] 	= wall_tile.clone();
+		map.tiles[num_rows - 2][5] 	= wall_tile.clone();
 		
-		map.tiles[9][4] 	= wall_tile.clone();
-		map.tiles[8][3] 	= wall_tile.clone();
-		map.tiles[7][2] 	= wall_tile.clone();
+		map.tiles[num_rows - 3][4] 	= wall_tile.clone();
+		map.tiles[num_rows - 4][3] 	= wall_tile.clone();
 		
 		map
 	}

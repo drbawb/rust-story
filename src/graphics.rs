@@ -25,7 +25,7 @@ impl Graphics {
 		let current_mode = ~video::Window::new(
 			"rust-story v0.0",							// title
 			video::PosCentered, video::PosCentered,		// position (x,y)
-			SCREEN_HEIGHT, SCREEN_WIDTH, 				// width, height
+			SCREEN_WIDTH, SCREEN_HEIGHT, 				// width, height
 			[video::InputGrabbed]
 		);
 
