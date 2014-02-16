@@ -9,7 +9,7 @@ use game::map;
 use game::collisions::{Info,Rectangle};
 
 // physics
-static SLOWDOWN_VELOCITY: f64 		= 0.00049804687;	// (pixels / ms) / ms
+static FRICTION: f64 				= 0.00049804687;	// (pixels / ms) / ms
 static GRAVITY: f64					= 0.00078125;		// (pixels / ms) / ms
 
 static WALKING_ACCEL: f64 			= 0.00083007812;	// (pixels / ms) / ms
@@ -156,7 +156,11 @@ impl Player {
 		} else if self.accel_x > 0 {
 			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
 		} else if self.on_ground() {
-			self.velocity_x *= SLOWDOWN_VELOCITY;
+			self.velocity_x = if self.velocity_x > 0.0 {
+				cmp::max(0.0, self.velocity_x - (FRICTION * elapsed_time_ms as f64))
+			} else {
+				cmp::min(0.0, self.velocity_x + (FRICTION * elapsed_time_ms as f64))
+			};
 		}
 
 		let delta = f64::round(
