@@ -120,6 +120,12 @@ impl Player {
 		self.set_position((self.x, self.y));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
 
+		// run physics sim
+		self.update_x(elapsed_time, map);
+		self.update_y(elapsed_time, map);
+	}
+
+	fn update_x(&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
 		// calculate next position
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
 		self.x += f64::round(
@@ -137,8 +143,11 @@ impl Player {
 		} else if self.on_ground() {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
+	}
 
+	fn update_y (&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
 		// determine effects of gravity
+		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
 		self.y += f64::round(
 			self.velocity_y * elapsed_time_ms as f64
 		) as i32;
