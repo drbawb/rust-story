@@ -148,9 +148,9 @@ impl Player {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
 
-		// check collision in direction of delta
-		if delta > 0 {
-			// moving right
+		// x-axis collision checking 
+		if delta > 0 { // moving right
+			// collisions right-side
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
@@ -159,7 +159,7 @@ impl Player {
 				(self.x as int + delta) as i32
 			};
 
-			// colliding left
+			// collisions left-side
 			info = self.get_collision_info(&self.left_collision(0), map);
 			self.x = if info.collided {
 				((info.col * sprite::TILE_SIZE as int) + X_BOX.right()) as i32
@@ -167,8 +167,8 @@ impl Player {
 				self.x
 			};
 
-		} else {
-			// moving left
+		} else { // moving left
+			// collisions left-side
 			let mut info = self.get_collision_info(&self.left_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
@@ -177,7 +177,7 @@ impl Player {
 				(self.x as int + delta) as i32
 			};
 
-			// colliding right
+			// collisions right-side
 			info = self.get_collision_info(&self.right_collision(0), map);
 			self.x = if info.collided {
 				((info.col * sprite::TILE_SIZE as int) - X_BOX.right()) as i32
