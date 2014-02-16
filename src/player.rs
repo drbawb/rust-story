@@ -4,7 +4,9 @@ use std::hashmap::HashMap;
 
 use game::graphics;
 use game::sprite;
+
 use game::map;
+use game::collisions::Rectangle;
 
 // physics
 static SLOWDOWN_VELOCITY: f64 		= 0.8;
@@ -34,6 +36,11 @@ static FACING_EAST: i32 			= 1 + CHAR_OFFSET;
 static WALK_UP_OFFSET: i32			= 3;
 static JUMP_DOWN_FRAME:  i32		= 6;
 static STAND_DOWN_FRAME: i32 		= 7;
+
+// collision detection boxes
+static X_BOX: Rectangle = 	Rectangle {x: 6, y: 10, width: 20, height: 12 };
+static Y_BOX: Rectangle = 	Rectangle {x: 10, y: 2, width: 12, height: 30 };
+
 
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
