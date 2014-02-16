@@ -12,6 +12,7 @@ pub mod input;
 pub mod sprite;
 pub mod map;
 pub mod player;
+pub mod collisions;
 
 
 static TARGET_FRAMERATE: int = 60;

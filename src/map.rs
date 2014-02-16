@@ -4,10 +4,16 @@ use std::cell::RefCell;
 
 use game::graphics;
 use game::sprite;
+use game::collisions::Rectangle;
 
 priv enum TileType {
 	Air,
 	Wall
+}
+
+struct CollisionTile {
+	tile_type: TileType,
+	row: int, col: int
 }
 
 struct Tile {
@@ -79,6 +85,10 @@ impl Map {
 		map.tiles[7][2] 	= wall_tile.clone();
 		
 		map
+	}
+
+	pub fn get_colliding_tiles(&mut self, rectangle: &Rectangle) -> ~[CollisionTile] {
+		fail!("unimplemented.")
 	}
 }
 
