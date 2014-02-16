@@ -16,6 +16,15 @@ struct CollisionTile {
 	row: int, col: int
 }
 
+impl CollisionTile {
+	pub fn new(row: int, col: int, tile_type: TileType) -> CollisionTile {
+		CollisionTile {
+			tile_type: tile_type,
+			row: row, col: col
+		}
+	}
+}
+
 struct Tile {
 	tile_type: TileType,
 	sprite: Option<Rc<RefCell<~sprite::Updatable:>>>
@@ -88,6 +97,20 @@ impl Map {
 	}
 
 	pub fn get_colliding_tiles(&mut self, rectangle: &Rectangle) -> ~[CollisionTile] {
+		let first_row 	= rectangle.top() / sprite::TILE_SIZE as int;
+		let last_row 	= rectangle.bottom() / sprite::TILE_SIZE as int;
+		let first_col 	= rectangle.left() 	/ sprite::TILE_SIZE as int;
+		let last_col 	= rectangle.right() / sprite::TILE_SIZE as int;
+
+		let mut collision_tiles: ~[CollisionTile] = ~[];
+		for row in range(first_row, last_row + 1) {
+			for col in range(first_col, last_col + 1) {
+				collision_tiles.push( 
+					CollisionTile::new(row, col, self.tiles[row][col].borrow().tile_type)
+				);
+			}
+		}
+
 		fail!("unimplemented.")
 	}
 }
