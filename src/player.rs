@@ -466,14 +466,12 @@ impl Player {
 	fn bottom_collision(&self, delta: int) -> Rectangle {
 		assert!(delta >= 0);
 		
-		let result = Rectangle {
+		Rectangle {
 			x: self.x as int + Y_BOX.left(),
 			y: self.y as int + Y_BOX.top() + (Y_BOX.height() / 2),
 			width: 	Y_BOX.width(),
 			height: (Y_BOX.height() / 2) + delta
-		};
-		
-		return result;
+		}
 	}
 	
 
