@@ -398,7 +398,10 @@ impl Player {
 	}
 
 	pub fn look_down(&mut self) {
-		self.is_interacting = true;
+		let(_,_,looking) = self.movement;
+		if looking == sprite::Down {return;}
+		
+		self.is_interacting = self.on_ground();
 		self.set_looking(sprite::Down);
 	}
 
