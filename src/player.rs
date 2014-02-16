@@ -4,6 +4,7 @@ use std::hashmap::HashMap;
 
 use game::graphics;
 use game::sprite;
+use game::map;
 
 // physics
 static SLOWDOWN_VELOCITY: f64 		= 0.8;
@@ -102,7 +103,7 @@ impl Player {
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
 	/// Determines which sprite-sheet should be used for thsi frame.
 	/// Forwards the elapsed time to the current sprite.
-	pub fn update(&mut self, elapsed_time: sprite::Millis) {
+	pub fn update(&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
 		self.jump.update(elapsed_time);

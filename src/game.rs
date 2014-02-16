@@ -27,13 +27,13 @@ pub struct Game {
 }
 
 
+#[unsafe_destructor]
 // Both `quote` & `map` own Rc<...>'s which point
 // into `display`.
 //
 // Since all `Rc<T>`'s pointing too one another
 // are owned by `Game`, `Game` will not leak 
 // references upon destruction.
-#[unsafe_destructor]
 impl Drop for Game {
 	/// Cleanly shuts down the SDL rendering context.
 	fn drop(&mut self) {
@@ -175,6 +175,6 @@ impl Game {
 	fn update(&mut self, elapsed_time: uint) {
 		let elapsed = sprite::Millis(elapsed_time);
 		self.map.update(elapsed);
-		self.quote.update(elapsed);
+		self.quote.update(elapsed, &self.map);
 	}
 }
