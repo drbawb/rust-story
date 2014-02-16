@@ -10,13 +10,15 @@ use game::collisions::{Info,Rectangle};
 
 // physics
 static SLOWDOWN_VELOCITY: f64 		= 0.8;
+static GRAVITY: f64					= 0.0012;
+
 static WALKING_ACCEL: f64 			= 0.0012;
 static MAX_VELOCITY_X: f64 			= 0.325;
 static MAX_VELOCITY_Y: f64			= 0.325;
 
-static GRAVITY: f64					= 0.0012;
-static JUMP_SPEED: f64				= 0.325;
-static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
+static	AIR_ACCELERATION: f64		= 0.0003125;	
+static 	JUMP_SPEED: f64				= 0.250;
+static 	JUMP_GRAVITY: f64			= 0.0003125;
 
 // player sprite animation
 static CHAR_OFFSET: i32				= 12;
@@ -59,7 +61,7 @@ pub struct Player {
 	priv velocity_y: f64,
 	priv accel_x: f64,
 
-	priv jump: Jump
+	priv is_jump_active: bool
 }
 
 
@@ -89,7 +91,7 @@ impl Player {
 			velocity_y: 0.0,
 			accel_x: 0.0,
 
-			jump: Jump::new()
+			is_jump_active: false
 		};
 
 		// load sprites for every possible movement tuple.
@@ -115,8 +117,7 @@ impl Player {
 	pub fn update(&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
-		self.jump.update(elapsed_time);
-
+		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
 		self.set_position((self.x, self.y));
@@ -192,12 +193,16 @@ impl Player {
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
 		
 		// update velocity
-		if !self.jump.active() {
-			self.velocity_y = cmp::min(
-				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
-				MAX_VELOCITY_Y
-			)
-		}
+		let gravity: f64 = if self.is_jump_active && self.velocity_y < 0.0 {
+			JUMP_GRAVITY
+		} else {
+			GRAVITY
+		};
+
+		self.velocity_y = cmp::min(
+			self.velocity_y + gravity * elapsed_time_ms as f64, 
+			MAX_VELOCITY_Y
+		);
 
 		// calculate delta
 		let delta: int = f64::round(
@@ -382,11 +387,10 @@ impl Player {
 	/// The effects of a jump against gravity are `instantaneous` and do not
 	/// consider acceleration.
 	pub fn start_jump(&mut self) {
+		self.is_jump_active = true;
+
 		if self.on_ground() {
-			self.jump.reset();
 			self.velocity_y = -JUMP_SPEED;
-		} else if self.velocity_y < 0.0 {
-			self.jump.reactivate();
 		}
 	}
 
@@ -396,8 +400,8 @@ impl Player {
 	/// While the player is in this state: their remaining `jump time` is
 	/// temporarily suspended.
 	pub fn stop_jump(&mut self) {
+		self.is_jump_active = false;
 		self.velocity_y = 0.0;
-		self.jump.deactivate();
 	}
 
 	/// This is called to update the player's `movement` based on
@@ -479,63 +483,5 @@ impl Player {
 	/// Gravity cannot pull them below this floor.
 	fn on_ground(&self) -> bool {			
 		self.on_ground
-	}
-}
-
-/// Maintains track of a player's available `jump time`.
-pub struct Jump {
-	priv active: bool,
-	priv time_remaining: sprite::Millis
-}
-
-impl Jump {
-	/// Initializes a jump which is not active and has no time remaining.
-	pub fn new() -> Jump {
-		return Jump{
-			active: false,
-			time_remaining: sprite::Millis(0)
-		};
-	}
-
-	/// Returns true if the jump is currently using up `jump time`.
-	pub fn active(&self) -> bool {
-		self.active
-	}
-
-	/// If the jump is active: `elapsed_time` will be removed from
-	/// the jump's remaining time.
-	pub fn update(&mut self, elapsed_time: sprite::Millis) {
-		if self.active {
-			self.time_remaining = {
-				// unpack millis to do calcs
-				let sprite::Millis(elapsed_time_ms) = elapsed_time;
-				let sprite::Millis(remaining_ms) = self.time_remaining;
-
-				sprite::Millis(remaining_ms - elapsed_time_ms)
-			};
-
-			// check overflow because `sprite::Millis` is unsigned.
-			if self.time_remaining <= sprite::Millis(0) 
-				|| self.time_remaining > JUMP_TIME {
-				self.active = false;
-			}
-		}
-	}
-
-	/// Resets jump's remaining time to some constant factor.
-	/// NOTE: this also activates the jump.
-	pub fn reset(&mut self) {
-		self.time_remaining = JUMP_TIME;
-		self.reactivate();
-	}
-
-	/// Activates the jump if there is time remaining.
-	pub fn reactivate(&mut self) {
-		self.active = self.time_remaining > sprite::Millis(0);
-	}
-
-	/// Suspends the jump timer.
-	pub fn deactivate(&mut self) {
-		self.active = false;
 	}
 }
