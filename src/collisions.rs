@@ -1,3 +1,8 @@
+pub struct Info {
+	collided: bool,
+	row: int, col: int
+}
+
 pub struct Rectangle {
 	x: int, 
 	y: int,
