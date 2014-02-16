@@ -13,10 +13,11 @@ pub static TILE_SIZE: i32 = 32;
 pub enum Motion {
 	Walking,
 	Standing,
+	Interacting,
 	Jumping,
 	Falling
 }
-pub static MOTIONS: [Motion, ..4] = [Walking, Standing, Jumping, Falling];
+pub static MOTIONS: [Motion, ..5] = [Walking, Standing, Interacting, Jumping, Falling];
 
 
 #[deriving(IterBytes,Eq)]

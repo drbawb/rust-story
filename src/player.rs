@@ -62,6 +62,7 @@ pub struct Player {
 	priv velocity_y: f64,
 	priv accel_x: int,
 
+	priv is_interacting: bool,
 	priv is_jump_active: bool
 }
 
@@ -92,6 +93,7 @@ impl Player {
 			velocity_y: 0.0,
 			accel_x: 1,
 
+			is_interacting: false,
 			is_jump_active: false
 		};
 
@@ -321,6 +323,7 @@ impl Player {
 			let (motion, facing, _) = *key;
 			let motion_frame = match motion {
 				sprite::Standing | sprite::Walking => STAND_FRAME,
+				sprite::Interacting => STAND_DOWN_FRAME,
 				sprite::Jumping => JUMP_FRAME,
 				sprite::Falling => FALL_FRAME
 			};
@@ -335,11 +338,19 @@ impl Player {
 				(sprite::Standing, _, looking) => {
 					let looking_frame = match looking {
 						sprite::Up => WALK_UP_OFFSET,
-						sprite::Down => STAND_DOWN_FRAME,
 						_ => 0
 					};
 				
 					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 
+				}
+
+				(sprite::Interacting, _, looking) => {
+					let looking_frame = match looking {
+						sprite::Down => STAND_DOWN_FRAME,
+						_ => 0
+					};
+
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 	
 				}
 
 				// static: jumping
