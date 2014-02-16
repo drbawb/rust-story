@@ -9,16 +9,17 @@ use game::map;
 use game::collisions::{Info,Rectangle};
 
 // physics
-static SLOWDOWN_VELOCITY: f64 		= 0.8;
-static GRAVITY: f64					= 0.0012;
+static SLOWDOWN_VELOCITY: f64 		= 0.00049804687;	// (pixels / ms) / ms
+static GRAVITY: f64					= 0.00078125;		// (pixels / ms) / ms
 
-static WALKING_ACCEL: f64 			= 0.0012;
-static MAX_VELOCITY_X: f64 			= 0.325;
-static MAX_VELOCITY_Y: f64			= 0.325;
+static WALKING_ACCEL: f64 			= 0.00083007812;	// (pixels / ms) / ms
+static MAX_VELOCITY_X: f64 			= 0.15859375;		// (pixels / ms)
+static MAX_VELOCITY_Y: f64			= 0.2998046875;		// (pixels / ms)
 
-static	AIR_ACCELERATION: f64		= 0.0003125;	
-static 	JUMP_SPEED: f64				= 0.250;
-static 	JUMP_GRAVITY: f64			= 0.0003125;
+static	AIR_ACCELERATION: f64		= 0.0003125;		// (pixels / ms) / ms
+static 	JUMP_GRAVITY: f64			= 0.0003125;		// (pixels / ms) / ms
+static 	JUMP_SPEED: f64				= 0.25;				// (pixels / ms)
+
 
 // player sprite animation
 static CHAR_OFFSET: i32				= 12;
@@ -59,7 +60,7 @@ pub struct Player {
 	priv elapsed_time: sprite::Millis,
 	priv velocity_x: f64,
 	priv velocity_y: f64,
-	priv accel_x: f64,
+	priv accel_x: int,
 
 	priv is_jump_active: bool
 }
@@ -89,7 +90,7 @@ impl Player {
 			
 			velocity_x: 0.0,
 			velocity_y: 0.0,
-			accel_x: 0.0,
+			accel_x: 1,
 
 			is_jump_active: false
 		};
@@ -129,25 +130,38 @@ impl Player {
 	}
 
 	fn update_x(&mut self, map: &map::Map) {
-		// calculate next position
-		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
-		
+		// compute next velocity
+		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;	
+		let accel_x = if self.accel_x < 0  {
+			if self.on_ground() {
+				-WALKING_ACCEL
+			} else {
+				-AIR_ACCELERATION
+			}
+		} else if self.accel_x > 0 {
+			if self.on_ground() {
+				WALKING_ACCEL
+			} else {
+				AIR_ACCELERATION
+			}
+		} else {
+			0.0
+		};
 
-		let delta = f64::round(
-			self.velocity_x * elapsed_time_ms as f64
-		) as int;
-
-		// compute velocity x for next frame
 		self.velocity_x += 
-			self.accel_x * elapsed_time_ms as f64;
+			accel_x * elapsed_time_ms as f64;
 
-		if self.accel_x < 0.0 {
+		if self.accel_x < 0 {
 			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
-		} else if self.accel_x > 0.0 {
+		} else if self.accel_x > 0 {
 			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
 		} else if self.on_ground() {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
+
+		let delta = f64::round(
+			self.velocity_x * elapsed_time_ms as f64
+		) as int;
 
 		// x-axis collision checking 
 		if delta > 0 { // moving right
@@ -352,20 +366,20 @@ impl Player {
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_left(&mut self) {
 		self.set_facing(sprite::West);
-		self.accel_x = -WALKING_ACCEL;
+		self.accel_x = -1;
 	}
 
 	/// The player will immediately face `East`
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_right(&mut self) {
 		self.set_facing(sprite::East);
-		self.accel_x = WALKING_ACCEL;
+		self.accel_x = 1;
 	}
 
 	/// The player will immediately cease acceleration.
 	/// They will still be facing the same direction as before this call.
 	pub fn stop_moving(&mut self) {
-		self.accel_x = 0.0;
+		self.accel_x = 0;
 	}
 
 	pub fn look_up(&mut self) {
@@ -416,7 +430,7 @@ impl Player {
 		let (_, last_facing, last_looking) = self.movement;
 
 		self.movement = if self.on_ground() {
-			if self.accel_x == 0.0 {
+			if self.accel_x == 0 {
 				(sprite::Standing, last_facing, last_looking)
 			} else {
 				(sprite::Walking, last_facing, last_looking)
