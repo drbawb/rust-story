@@ -9,14 +9,17 @@ use game::map;
 use game::collisions::{Info,Rectangle};
 
 // physics
-static SLOWDOWN_VELOCITY: f64 		= 0.8;
-static WALKING_ACCEL: f64 			= 0.0012;
-static MAX_VELOCITY_X: f64 			= 0.325;
-static MAX_VELOCITY_Y: f64			= 0.325;
+static FRICTION: f64 				= 0.00049804687;	// (pixels / ms) / ms
+static GRAVITY: f64					= 0.00078125;		// (pixels / ms) / ms
 
-static GRAVITY: f64					= 0.0012;
-static JUMP_SPEED: f64				= 0.325;
-static JUMP_TIME: sprite::Millis	= sprite::Millis(275);
+static WALKING_ACCEL: f64 			= 0.00083007812;	// (pixels / ms) / ms
+static MAX_VELOCITY_X: f64 			= 0.15859375;		// (pixels / ms)
+static MAX_VELOCITY_Y: f64			= 0.2998046875;		// (pixels / ms)
+
+static	AIR_ACCELERATION: f64		= 0.0003125;		// (pixels / ms) / ms
+static 	JUMP_GRAVITY: f64			= 0.0003125;		// (pixels / ms) / ms
+static 	JUMP_SPEED: f64				= 0.25;				// (pixels / ms)
+
 
 // player sprite animation
 static CHAR_OFFSET: i32				= 12;
@@ -57,9 +60,10 @@ pub struct Player {
 	priv elapsed_time: sprite::Millis,
 	priv velocity_x: f64,
 	priv velocity_y: f64,
-	priv accel_x: f64,
+	priv accel_x: int,
 
-	priv jump: Jump
+	priv is_interacting: bool,
+	priv is_jump_active: bool
 }
 
 
@@ -87,9 +91,10 @@ impl Player {
 			
 			velocity_x: 0.0,
 			velocity_y: 0.0,
-			accel_x: 0.0,
+			accel_x: 1,
 
-			jump: Jump::new()
+			is_interacting: false,
+			is_jump_active: false
 		};
 
 		// load sprites for every possible movement tuple.
@@ -115,8 +120,7 @@ impl Player {
 	pub fn update(&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
-		self.jump.update(elapsed_time);
-
+		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
 		self.set_position((self.x, self.y));
@@ -128,25 +132,42 @@ impl Player {
 	}
 
 	fn update_x(&mut self, map: &map::Map) {
-		// calculate next position
-		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
-		
+		// compute next velocity
+		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;	
+		let accel_x = if self.accel_x < 0  {
+			if self.on_ground() {
+				-WALKING_ACCEL
+			} else {
+				-AIR_ACCELERATION
+			}
+		} else if self.accel_x > 0 {
+			if self.on_ground() {
+				WALKING_ACCEL
+			} else {
+				AIR_ACCELERATION
+			}
+		} else {
+			0.0
+		};
+
+		self.velocity_x += 
+			accel_x * elapsed_time_ms as f64;
+
+		if self.accel_x < 0 {
+			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
+		} else if self.accel_x > 0 {
+			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
+		} else if self.on_ground() {
+			self.velocity_x = if self.velocity_x > 0.0 {
+				cmp::max(0.0, self.velocity_x - (FRICTION * elapsed_time_ms as f64))
+			} else {
+				cmp::min(0.0, self.velocity_x + (FRICTION * elapsed_time_ms as f64))
+			};
+		}
 
 		let delta = f64::round(
 			self.velocity_x * elapsed_time_ms as f64
 		) as int;
-
-		// compute velocity x for next frame
-		self.velocity_x += 
-			self.accel_x * elapsed_time_ms as f64;
-
-		if self.accel_x < 0.0 {
-			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
-		} else if self.accel_x > 0.0 {
-			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
-		} else if self.on_ground() {
-			self.velocity_x *= SLOWDOWN_VELOCITY;
-		}
 
 		// x-axis collision checking 
 		if delta > 0 { // moving right
@@ -192,12 +213,16 @@ impl Player {
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
 		
 		// update velocity
-		if !self.jump.active() {
-			self.velocity_y = cmp::min(
-				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
-				MAX_VELOCITY_Y
-			)
-		}
+		let gravity: f64 = if self.is_jump_active && self.velocity_y < 0.0 {
+			JUMP_GRAVITY
+		} else {
+			GRAVITY
+		};
+
+		self.velocity_y = cmp::min(
+			self.velocity_y + gravity * elapsed_time_ms as f64, 
+			MAX_VELOCITY_Y
+		);
 
 		// calculate delta
 		let delta: int = f64::round(
@@ -298,6 +323,7 @@ impl Player {
 			let (motion, facing, _) = *key;
 			let motion_frame = match motion {
 				sprite::Standing | sprite::Walking => STAND_FRAME,
+				sprite::Interacting => STAND_DOWN_FRAME,
 				sprite::Jumping => JUMP_FRAME,
 				sprite::Falling => FALL_FRAME
 			};
@@ -309,17 +335,18 @@ impl Player {
 
 			match movement {
 				// static: standing in place
-				(sprite::Standing, _, looking) => {
+				  (sprite::Standing, _, looking)
+				| (sprite::Interacting, _, looking) => {
 					let looking_frame = match looking {
 						sprite::Up => WALK_UP_OFFSET,
-						sprite::Down => STAND_DOWN_FRAME,
 						_ => 0
 					};
 				
 					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 
 				}
 
-				// static: jumping
+				// static: jumping or falling
+				// (overrides 'STAND_DOWN_FRAME')
 				(sprite::Jumping, _, looking)
 				| (sprite::Falling, _, looking) => {
 					let looking_frame = match looking { // ignored while jumping / falling for now
@@ -346,28 +373,35 @@ impl Player {
 	/// The player will immediately face `West`
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_left(&mut self) {
+		self.is_interacting = false;
 		self.set_facing(sprite::West);
-		self.accel_x = -WALKING_ACCEL;
+		self.accel_x = -1;
 	}
 
 	/// The player will immediately face `East`
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_right(&mut self) {
+		self.is_interacting = false;
 		self.set_facing(sprite::East);
-		self.accel_x = WALKING_ACCEL;
+		self.accel_x = 1;
 	}
 
 	/// The player will immediately cease acceleration.
 	/// They will still be facing the same direction as before this call.
 	pub fn stop_moving(&mut self) {
-		self.accel_x = 0.0;
+		self.accel_x = 0;
 	}
 
 	pub fn look_up(&mut self) {
+		self.is_interacting = false;
 		self.set_looking(sprite::Up);
 	}
 
 	pub fn look_down(&mut self) {
+		let(_,_,looking) = self.movement;
+		if looking == sprite::Down {return;}
+		
+		self.is_interacting = self.on_ground();
 		self.set_looking(sprite::Down);
 	}
 
@@ -382,11 +416,11 @@ impl Player {
 	/// The effects of a jump against gravity are `instantaneous` and do not
 	/// consider acceleration.
 	pub fn start_jump(&mut self) {
+		self.is_jump_active = true;
+		self.is_interacting = false;
+
 		if self.on_ground() {
-			self.jump.reset();
 			self.velocity_y = -JUMP_SPEED;
-		} else if self.velocity_y < 0.0 {
-			self.jump.reactivate();
 		}
 	}
 
@@ -396,8 +430,7 @@ impl Player {
 	/// While the player is in this state: their remaining `jump time` is
 	/// temporarily suspended.
 	pub fn stop_jump(&mut self) {
-		self.velocity_y = 0.0;
-		self.jump.deactivate();
+		self.is_jump_active = false;
 	}
 
 	/// This is called to update the player's `movement` based on
@@ -413,7 +446,9 @@ impl Player {
 		let (_, last_facing, last_looking) = self.movement;
 
 		self.movement = if self.on_ground() {
-			if self.accel_x == 0.0 {
+			if self.is_interacting {
+				(sprite::Interacting, last_facing, last_looking)
+			} else if self.accel_x == 0 {
 				(sprite::Standing, last_facing, last_looking)
 			} else {
 				(sprite::Walking, last_facing, last_looking)
@@ -424,7 +459,7 @@ impl Player {
 			} else {
 				(sprite::Falling, last_facing, last_looking)
 			}
-		}
+		};
 	}
 
 	// x-axis collision detection
@@ -479,63 +514,5 @@ impl Player {
 	/// Gravity cannot pull them below this floor.
 	fn on_ground(&self) -> bool {			
 		self.on_ground
-	}
-}
-
-/// Maintains track of a player's available `jump time`.
-pub struct Jump {
-	priv active: bool,
-	priv time_remaining: sprite::Millis
-}
-
-impl Jump {
-	/// Initializes a jump which is not active and has no time remaining.
-	pub fn new() -> Jump {
-		return Jump{
-			active: false,
-			time_remaining: sprite::Millis(0)
-		};
-	}
-
-	/// Returns true if the jump is currently using up `jump time`.
-	pub fn active(&self) -> bool {
-		self.active
-	}
-
-	/// If the jump is active: `elapsed_time` will be removed from
-	/// the jump's remaining time.
-	pub fn update(&mut self, elapsed_time: sprite::Millis) {
-		if self.active {
-			self.time_remaining = {
-				// unpack millis to do calcs
-				let sprite::Millis(elapsed_time_ms) = elapsed_time;
-				let sprite::Millis(remaining_ms) = self.time_remaining;
-
-				sprite::Millis(remaining_ms - elapsed_time_ms)
-			};
-
-			// check overflow because `sprite::Millis` is unsigned.
-			if self.time_remaining <= sprite::Millis(0) 
-				|| self.time_remaining > JUMP_TIME {
-				self.active = false;
-			}
-		}
-	}
-
-	/// Resets jump's remaining time to some constant factor.
-	/// NOTE: this also activates the jump.
-	pub fn reset(&mut self) {
-		self.time_remaining = JUMP_TIME;
-		self.reactivate();
-	}
-
-	/// Activates the jump if there is time remaining.
-	pub fn reactivate(&mut self) {
-		self.active = self.time_remaining > sprite::Millis(0);
-	}
-
-	/// Suspends the jump timer.
-	pub fn deactivate(&mut self) {
-		self.active = false;
 	}
 }
