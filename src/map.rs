@@ -6,14 +6,15 @@ use game::graphics;
 use game::sprite;
 use game::collisions::Rectangle;
 
-priv enum TileType {
+#[deriving(Eq)]
+pub enum TileType {
 	Air,
 	Wall
 }
 
 struct CollisionTile {
-	tile_type: TileType,
-	row: int, col: int
+	pub tile_type: TileType,
+	pub row: int, pub col: int
 }
 
 impl CollisionTile {
@@ -135,7 +136,7 @@ impl Map {
 		}
 	}
 
-	pub fn get_colliding_tiles(&mut self, rectangle: &Rectangle) -> ~[CollisionTile] {
+	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
 		let first_row 	= rectangle.top() / sprite::TILE_SIZE as int;
 		let last_row 	= rectangle.bottom() / sprite::TILE_SIZE as int;
 		let first_col 	= rectangle.left() 	/ sprite::TILE_SIZE as int;
@@ -150,7 +151,7 @@ impl Map {
 			}
 		}
 
-		fail!("unimplemented.")
+		collision_tiles
 	}
 }
 

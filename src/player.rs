@@ -6,7 +6,7 @@ use game::graphics;
 use game::sprite;
 
 use game::map;
-use game::collisions::Rectangle;
+use game::collisions::{Info,Rectangle};
 
 // physics
 static SLOWDOWN_VELOCITY: f64 		= 0.8;
@@ -51,6 +51,7 @@ pub struct Player {
 	priv x: i32,
 	priv y: i32,
 	priv movement: (sprite::Motion, sprite::Facing, sprite::Looking),
+	priv on_ground: bool,
 
 	// physics
 	priv elapsed_time: sprite::Millis,
@@ -82,6 +83,7 @@ impl Player {
 			x: x, 
 			y: y,
 			movement: (sprite::Standing, sprite::East, sprite::Horizontal),
+			on_ground: false,
 			
 			velocity_x: 0.0,
 			velocity_y: 0.0,
@@ -120,11 +122,19 @@ impl Player {
 		self.set_position((self.x, self.y));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
 
+		// run physics sim
+		self.update_x(map);
+		self.update_y(map);
+	}
+
+	fn update_x(&mut self, map: &map::Map) {
 		// calculate next position
 		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
-		self.x += f64::round(
+		
+
+		let delta = f64::round(
 			self.velocity_x * elapsed_time_ms as f64
-		) as i32;
+		) as int;
 
 		// compute velocity x for next frame
 		self.velocity_x += 
@@ -138,11 +148,50 @@ impl Player {
 			self.velocity_x *= SLOWDOWN_VELOCITY;
 		}
 
-		// determine effects of gravity
-		self.y += f64::round(
-			self.velocity_y * elapsed_time_ms as f64
-		) as i32;
+		// x-axis collision checking 
+		if delta > 0 { // moving right
+			// collisions right-side
+			let mut info = self.get_collision_info(&self.right_collision(delta), map);
+			self.x = if info.collided {
+				self.velocity_x = 0.0;
+				((info.col * sprite::TILE_SIZE as int) - X_BOX.right()) as i32
+			} else {
+				(self.x as int + delta) as i32
+			};
 
+			// collisions left-side
+			info = self.get_collision_info(&self.left_collision(0), map);
+			self.x = if info.collided {
+				((info.col * sprite::TILE_SIZE as int) + X_BOX.right()) as i32
+			} else {
+				self.x
+			};
+
+		} else { // moving left
+			// collisions left-side
+			let mut info = self.get_collision_info(&self.left_collision(delta), map);
+			self.x = if info.collided {
+				self.velocity_x = 0.0;
+				((info.col * sprite::TILE_SIZE as int) + X_BOX.right()) as i32
+			} else {
+				(self.x as int + delta) as i32
+			};
+
+			// collisions right-side
+			info = self.get_collision_info(&self.right_collision(0), map);
+			self.x = if info.collided {
+				((info.col * sprite::TILE_SIZE as int) - X_BOX.right()) as i32
+			} else {
+				self.x
+			};
+		}
+	}
+
+	fn update_y (&mut self, map: &map::Map) {
+		// determine effects of gravity
+		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
+		
+		// update velocity
 		if !self.jump.active() {
 			self.velocity_y = cmp::min(
 				self.velocity_y + GRAVITY * elapsed_time_ms as f64, 
@@ -150,11 +199,68 @@ impl Player {
 			)
 		}
 
-		// TODO: HACK FLOOR
-		if self.y > 320 {
-			self.y = 320;
-			self.velocity_y = 0.0;
+		// calculate delta
+		let delta: int = f64::round(
+			self.velocity_y * elapsed_time_ms as f64
+		) as int;
+
+		// check collision in direction of delta
+		if delta > 0 {
+			// react to collision
+			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
+			self.y = if info.collided {
+				self.velocity_y = 0.0;
+				self.on_ground = true;
+
+				((info.row * sprite::TILE_SIZE as int) - Y_BOX.bottom()) as i32
+			} else {
+				self.on_ground = false;
+				(self.y as int + delta) as i32
+			};
+
+			info = self.get_collision_info(&self.top_collision(0), map);
+			self.y = if info.collided {
+				((info.row * sprite::TILE_SIZE as int) + Y_BOX.height()) as i32
+			} else {
+				self.y
+			};
+
+		} else {
+			// react to collision
+			let mut info = self.get_collision_info(&self.top_collision(delta), map);
+			self.y = if info.collided {
+				self.velocity_y = 0.0;
+
+				((info.row * sprite::TILE_SIZE as int) + Y_BOX.height()) as i32
+			} else {
+				self.on_ground = false;
+				(self.y as int + delta) as i32
+			};
+
+			info = self.get_collision_info(&self.bottom_collision(0), map);
+			self.y = if info.collided {
+				self.on_ground = true;
+
+				((info.row * sprite::TILE_SIZE as int) - Y_BOX.bottom()) as i32
+			} else {
+				self.y
+			};
 		}
+	}
+
+	fn get_collision_info(&self, hitbox: &Rectangle, tile_map: &map::Map) -> Info {
+		let tiles = 
+			tile_map.get_colliding_tiles(hitbox);
+
+		let mut info = Info { collided: false, row: 0, col: 0 };
+		for tile in tiles.iter() {
+			if tile.tile_type == map::Wall {
+				info = Info {collided: true, row: tile.row, col: tile.col};
+				break;
+			}
+		}
+
+		info
 	}
 
 	/// This updates the `self.movement` tuple
@@ -360,19 +466,21 @@ impl Player {
 	fn bottom_collision(&self, delta: int) -> Rectangle {
 		assert!(delta >= 0);
 		
-		Rectangle {
+		let result = Rectangle {
 			x: self.x as int + Y_BOX.left(),
 			y: self.y as int + Y_BOX.top() + (Y_BOX.height() / 2),
 			width: 	Y_BOX.width(),
 			height: (Y_BOX.height() / 2) + delta
-		}
+		};
+		
+		return result;
 	}
 	
 
 	/// The player will collide w/ the ground at y-coord `320`
 	/// Gravity cannot pull them below this floor.
 	fn on_ground(&self) -> bool {			
-		self.y == 320
+		self.on_ground
 	}
 }
 
