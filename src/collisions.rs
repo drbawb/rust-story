@@ -13,16 +13,11 @@ impl Rectangle {
 		}
 	}
 
-	pub fn left(&self) 		-> int {0}
-	pub fn right(&self) 	-> int {0}
-	pub fn top(&self) 		-> int {0}
-	pub fn bottom(&self) 	-> int {0}
+	pub fn left(&self) 		-> int { self.x }
+	pub fn right(&self) 	-> int { self.x + self.width }
+	pub fn top(&self) 		-> int { self.y }
+	pub fn bottom(&self) 	-> int { self.y + self.height}
 
-	pub fn width(&self) -> int { 
-		self.width 
-	}
-
-	pub fn height(&self) -> int { 
-		self.height
-	}
+	pub fn width(&self) 	-> int { self.width }
+	pub fn height(&self) 	-> int { self.height }
 }

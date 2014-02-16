@@ -157,6 +157,22 @@ impl Player {
 		}
 	}
 
+	/// This updates the `self.movement` tuple
+	/// The `Motion` is kept as-is, but the `Facing` portion of the tuple
+	/// is replaced with `direction`.
+	pub fn set_facing(&mut self, direction: sprite::Facing) {
+		let (last_action, _, last_looking) = self.movement;
+		self.movement = (last_action, direction, last_looking);
+	}
+
+	/// This updates the `self.movement` tuple
+	/// The `Motion` is kept as-is, but the `Facing` portion of the tuple
+	/// is replaced with `direction`.
+	pub fn set_looking(&mut self, direction: sprite::Looking) {
+		let (last_action, last_facing, _) = self.movement;
+		self.movement = (last_action, last_facing, direction);
+	}
+
 	/// Instructs the current sprite-sheet to position itself
 	/// at the coordinates specified by `coords:(x,y)`.
 	fn set_position(&mut self, coords: (i32,i32)) {
@@ -268,20 +284,14 @@ impl Player {
 		}
 	}
 
-	/// This updates the `self.movement` tuple
-	/// The `Motion` is kept as-is, but the `Facing` portion of the tuple
-	/// is replaced with `direction`.
-	pub fn set_facing(&mut self, direction: sprite::Facing) {
-		let (last_action, _, last_looking) = self.movement;
-		self.movement = (last_action, direction, last_looking);
-	}
-
-	/// This updates the `self.movement` tuple
-	/// The `Motion` is kept as-is, but the `Facing` portion of the tuple
-	/// is replaced with `direction`.
-	pub fn set_looking(&mut self, direction: sprite::Looking) {
-		let (last_action, last_facing, _) = self.movement;
-		self.movement = (last_action, last_facing, direction);
+	/// A player will immediately cease their jump and become subject
+	/// to the effects of gravity.
+	///
+	/// While the player is in this state: their remaining `jump time` is
+	/// temporarily suspended.
+	pub fn stop_jump(&mut self) {
+		self.velocity_y = 0.0;
+		self.jump.deactivate();
 	}
 
 	/// This is called to update the player's `movement` based on
@@ -311,19 +321,57 @@ impl Player {
 		}
 	}
 
-	/// A player will immediately cease their jump and become subject
-	/// to the effects of gravity.
-	///
-	/// While the player is in this state: their remaining `jump time` is
-	/// temporarily suspended.
-	pub fn stop_jump(&mut self) {
-		self.velocity_y = 0.0;
-		self.jump.deactivate();
+	// x-axis collision detection
+	fn left_collision(&self, delta: int) -> Rectangle {
+		assert!(delta <= 0);
+
+		Rectangle {
+			x: self.x as int + (X_BOX.left() + delta),
+			y: self.y as int + X_BOX.top(),
+			width: (X_BOX.width() / 2) - delta,
+			height: X_BOX.height()
+		}
 	}
+
+	
+	fn right_collision(&self, delta: int) -> Rectangle {
+		assert!(delta >= 0);
+		
+		Rectangle {
+			x: self.x as int + X_BOX.left() + (X_BOX.width() / 2),
+			y: self.y as int + X_BOX.top(),
+			width: 	(X_BOX.width() / 2) + delta,
+			height: X_BOX.height()
+		}
+	}
+
+	// y-axis collision detection
+	fn top_collision(&self, delta: int) -> Rectangle {
+		assert!(delta <= 0);
+
+		Rectangle {
+			x: self.x as int + Y_BOX.left(),
+			y: self.y as int + (Y_BOX.top() + delta),
+			width: Y_BOX.width(),
+			height: (Y_BOX.height() / 2) - delta
+		}
+	}
+
+	fn bottom_collision(&self, delta: int) -> Rectangle {
+		assert!(delta >= 0);
+		
+		Rectangle {
+			x: self.x as int + Y_BOX.left(),
+			y: self.y as int + Y_BOX.top() + (Y_BOX.height() / 2),
+			width: 	Y_BOX.width(),
+			height: (Y_BOX.height() / 2) + delta
+		}
+	}
+	
 
 	/// The player will collide w/ the ground at y-coord `320`
 	/// Gravity cannot pull them below this floor.
-	pub fn on_ground(&self) -> bool {			
+	fn on_ground(&self) -> bool {			
 		self.y == 320
 	}
 }
