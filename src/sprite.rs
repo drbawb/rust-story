@@ -1,4 +1,4 @@
-extern mod sdl2;
+extern crate sdl2;
 
 use sdl2::rect;
 use sdl2::render;
