@@ -2,6 +2,7 @@ extern crate sdl2;
 
 use sdl2::rect;
 use sdl2::surface;
+use sdl2::surface::ll;
 use sdl2::render;
 use sdl2::mouse;
 use sdl2::video;
@@ -51,7 +52,7 @@ impl Graphics {
 	/// Loads a bitmap which resides at `file_path` and returns a handle
 	/// This handle can safely be used in any of the graphics subsystem's rendering
 	/// contexts.
-	pub fn load_image(&mut self, file_path: ~str) -> Rc<~render::Texture> {
+	pub fn load_image(&mut self, file_path: ~str, transparent_black: bool) -> Rc<~render::Texture> {
 		// Retrieve a handle or generate a new one if it exists already.
 		let borrowed_display = &self.screen;	
 		let sprite_handle = self.sprite_cache.find_or_insert_with(file_path, |key| {
@@ -63,6 +64,10 @@ impl Graphics {
 			match sprite_window {
 				Ok(sprite) => {
 					// wrap surface in texture and store it
+					if transparent_black {
+						unsafe { ll::SDL_SetColorKey(sprite.raw, 1, 0); }	
+					}
+					
 					let sprite_texture = borrowed_display.create_texture_from_surface(sprite);
 					match sprite_texture {
 						Ok(texture) => {
