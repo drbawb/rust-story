@@ -91,7 +91,7 @@ impl Sprite {
 		let (a,b) = offset;
 		let origin = rect::Rect::new(a * TILE_SIZE, b * TILE_SIZE, 32, 32);
 
-		let sheet = graphics.load_image(file_name); // request graphics subsystem cache this sprite.
+		let sheet = graphics.load_image(file_name, true); // request graphics subsystem cache this sprite.
 
 		let sprite = Sprite{
 			sprite_sheet: sheet,
@@ -176,7 +176,7 @@ impl AnimatedSprite {
 		let (x,y) = offset;
 		let origin = rect::Rect::new(x * TILE_SIZE, y * TILE_SIZE, 32, 32);
 		
-		let sheet = graphics.load_image(sheet_path); // request graphics subsystem cache this sprite.
+		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
 			offset: offset,
 			coords: (0,0),

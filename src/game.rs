@@ -7,15 +7,18 @@ use sdl2::sdl;
 use sdl2::event;
 use sdl2::keycode;
 
+pub mod backdrop;
+pub mod collisions;
 pub mod graphics;
 pub mod input;
-pub mod sprite;
 pub mod map;
 pub mod player;
-pub mod collisions;
-
+pub mod sprite;
 
 static TARGET_FRAMERATE: int = 60;
+
+pub static SCREEN_WIDTH: 	int 	 	= 640;
+pub static SCREEN_HEIGHT: 	int 	 	= 480;
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
@@ -57,6 +60,7 @@ impl Game {
 		Game {
 			map: 	map::Map::create_test_map(&mut display),
 			quote: 	player::Player::new(&mut display, 320,240),
+
 			display: display,
 			controller: controller
 		}
@@ -166,6 +170,7 @@ impl Game {
 
 	/// Draws current state of sprites to the screen
 	fn draw(&self) {
+		self.map.draw_background(&self.display);
 		self.quote.draw(&self.display);
 		self.map.draw(&self.display);
 	}

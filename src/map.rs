@@ -2,9 +2,11 @@ use std::vec;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+use game::backdrop;
+use game::collisions::Rectangle;
 use game::graphics;
 use game::sprite;
-use game::collisions::Rectangle;
+
 
 #[deriving(Eq)]
 pub enum TileType {
@@ -54,7 +56,8 @@ impl Tile {
 }
 
 pub struct Map {
-	priv tiles: ~[~[Rc<Tile>]]
+	priv tiles: 		~[~[Rc<Tile>]],
+	priv background: 	backdrop::FixedBackdrop
 }
 
 impl Map {
@@ -77,6 +80,9 @@ impl Map {
 		let wall_tile = Rc::new(Tile::from_sprite(sprite, Wall));
 		
 		let mut map = Map {
+			background:	backdrop::FixedBackdrop::new(
+				~"assets/bkBlue.bmp", graphics
+			),
 			tiles: vec::from_elem(num_rows,
 				vec::from_elem(num_cols, blank_tile.clone())
 			)
@@ -100,6 +106,10 @@ impl Map {
 		map.tiles[num_rows - 4][3] 	= wall_tile.clone();
 		
 		map
+	}
+
+	pub fn draw_background(&self, graphics: &graphics::Graphics) {
+		self.background.draw(graphics);
 	}
 
 	/// Draws current state to `display`
