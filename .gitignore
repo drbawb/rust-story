@@ -1,0 +1,4 @@
+.rust/*
+lib/*.rlib
+bin/**
+doc/**
