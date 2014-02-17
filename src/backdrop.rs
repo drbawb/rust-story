@@ -19,7 +19,7 @@ impl FixedBackdrop {
 				graphics: &mut graphics::Graphics) 
 				-> FixedBackdrop {
 
-		let asset = graphics.load_image(path);
+		let asset = graphics.load_image(path, false);
 
 		FixedBackdrop { surface: asset }
 	}
