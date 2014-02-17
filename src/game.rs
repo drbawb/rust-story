@@ -24,7 +24,6 @@ pub static SCREEN_HEIGHT: 	int 	 	= 480;
 pub struct Game {
 	priv quote: player::Player,
 	priv map: 	map::Map,
-	priv bg: 	backdrop::FixedBackdrop,
 
 	priv display: 		graphics::Graphics,
 	priv controller: 	input::Input 
@@ -60,8 +59,8 @@ impl Game {
 
 		Game {
 			map: 	map::Map::create_test_map(&mut display),
-			bg:		backdrop::FixedBackdrop::new(~"assets/bkBlue.bmp", &mut display),
 			quote: 	player::Player::new(&mut display, 320,240),
+
 			display: display,
 			controller: controller
 		}
@@ -171,7 +170,6 @@ impl Game {
 
 	/// Draws current state of sprites to the screen
 	fn draw(&self) {
-		self.bg.draw(&self.display);
 		self.quote.draw(&self.display);
 		self.map.draw(&self.display);
 	}
