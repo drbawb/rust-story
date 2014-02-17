@@ -7,12 +7,13 @@ use sdl2::sdl;
 use sdl2::event;
 use sdl2::keycode;
 
+pub mod backdrop;
+pub mod collisions;
 pub mod graphics;
 pub mod input;
-pub mod sprite;
 pub mod map;
 pub mod player;
-pub mod collisions;
+pub mod sprite;
 
 
 static TARGET_FRAMERATE: int = 60;
