@@ -40,8 +40,8 @@ For the most part this program reads much like it's [`C++`][1] and [`C++11`][2] 
 
  * Most things are stack allocated; owned pointers are used for heap allocations.
  	* `rustc` makes sure that other classes may only _borrow references_ to this memory. 
- * `Rc<>` is used for reference counting shared references (which would be `"const"` in the C++ version).
- * `Rc< RefCell<> >` is used for shared references which must be mutable (not `"const"`).
+ * `Arc<>` is used for reference counting shared references (which would be `"const"` in the C++ version).
+ * `Arc< RefCell<> >` is used for shared references which must be mutable (not `"const"`).
  
 
 [1]: https://github.com/chebert/cavestory-screencast
