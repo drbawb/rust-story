@@ -108,12 +108,12 @@ impl Map {
 		map
 	}
 
+	pub fn draw_background(&self, graphics: &graphics::Graphics) {
+		self.background.draw(graphics);
+	}
+
 	/// Draws current state to `display`
 	pub fn draw(&self, graphics: &graphics::Graphics) {
-		// draw backdrop first
-		self.background.draw(graphics);
-
-		// then draw tilemap
 		for a in range(0, self.tiles.len()) {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].borrow().sprite {
