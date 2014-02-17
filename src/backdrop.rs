@@ -24,34 +24,25 @@ impl FixedBackdrop {
 		FixedBackdrop { surface: asset }
 	}
 
+	/// Repeatedly paints the asset across the entire screen.
+	/// Moving the destination rectangle `BACKGROUND_SIZE` pixels
+	/// in either direction as it progresses.
 	pub fn draw(&self, graphics: &graphics::Graphics) {
 		let (mut x, mut y) = (0,0);
-		
 		while x < game::SCREEN_WIDTH {
 			while y < game::SCREEN_HEIGHT {
-				// draw background tile to screen
-				let src = Rect::new(
-					0, 0, 
-					BACKGROUND_SIZE, BACKGROUND_SIZE
-				);
-
+				let src = Rect::new(0, 0, BACKGROUND_SIZE, BACKGROUND_SIZE);
 				let dest = Rect::new(
 					x as i32, y as i32, 
 					BACKGROUND_SIZE, BACKGROUND_SIZE
 				);
 
-				graphics.blit_surface(
-					*(self.surface.borrow()), 
-					&src, &dest
-				);
-
-				// repeat
+				graphics.blit_surface(*(self.surface.borrow()), &src, &dest);
 				y+= BACKGROUND_SIZE as int;
 			}
 
 			x += BACKGROUND_SIZE as int;
 			y = 0;
 		}
-
 	}
 }
