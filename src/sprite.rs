@@ -1,9 +1,7 @@
-extern crate sdl2;
-
 use sdl2::rect;
 use sdl2::render;
 
-use std::rc::Rc;
+use sync::Arc;
 use game::graphics;
 
 pub static TILE_SIZE: i32 = 32;
@@ -54,7 +52,7 @@ pub trait Updatable : Drawable {
 
 /// Represents a static 32x32 2D character
 pub struct Sprite {
-	sprite_sheet: Rc<~render::Texture>, 
+	sprite_sheet: Arc<~render::Texture>, 
 	source_rect: rect::Rect,
 	coords: (i32,i32)
 }
@@ -64,7 +62,7 @@ impl Drawable for Sprite {
 	fn draw(&self, display: &graphics::Graphics) {
 		let (x,y) = self.coords;
 		let dest_rect = rect::Rect::new(x, y, 32, 32);
-		display.blit_surface(*(self.sprite_sheet.borrow()), &self.source_rect, &dest_rect);
+		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }
 
@@ -107,7 +105,7 @@ impl Sprite {
 /// Frames will be selected based on time-deltas supplied through update
 pub struct AnimatedSprite {
 	source_rect: rect::Rect,
-	sprite_sheet: Rc<~render::Texture>, 
+	sprite_sheet: Arc<~render::Texture>, 
 
 	priv coords: (i32, i32),
 	priv offset: (i32,i32),
@@ -156,7 +154,7 @@ impl Drawable for AnimatedSprite {
 	fn draw(&self, display: &graphics::Graphics) {
 		let (x,y) = self.coords;
 		let dest_rect = rect::Rect::new(x, y, 32, 32);
-		display.blit_surface(*(self.sprite_sheet.borrow()), &self.source_rect, &dest_rect);
+		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }
 

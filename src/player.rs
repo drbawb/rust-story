@@ -48,7 +48,7 @@ static Y_BOX: Rectangle = 	Rectangle {x: 10, y: 2, width: 12, height: 30 };
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites: HashMap<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable:>,
+	priv sprites: HashMap<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable>,
 	
 	// positioning
 	priv x: i32,
@@ -77,7 +77,7 @@ impl Player {
 	pub fn new(graphics: &mut graphics::Graphics, x: i32, y: i32) -> Player {
 		// insert sprites into map
 		let sprite_map = 
-			HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable:>::new();
+			HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable>::new();
 
 		// construct new player
 		let mut new_player = Player{
@@ -318,7 +318,7 @@ impl Player {
 		graphics: &mut graphics::Graphics, 
 		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
 	) {
-		self.sprites.find_or_insert_with(movement, |key| -> ~sprite::Updatable: {
+		self.sprites.find_or_insert_with(movement, |key| -> ~sprite::Updatable {
 			let file_path = ~"assets/MyChar.bmp";
 			let (motion, facing, _) = *key;
 			let motion_frame = match motion {
@@ -342,7 +342,7 @@ impl Player {
 						_ => 0
 					};
 				
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable: 
+					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable 
 				}
 
 				// static: jumping or falling
@@ -354,7 +354,7 @@ impl Player {
 						_ => motion_frame
 					};
 					
-					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), file_path) as ~sprite::Updatable: 
+					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), file_path) as ~sprite::Updatable 
 				}
 
 				// dynamic: 
@@ -364,7 +364,7 @@ impl Player {
 						_ => 0
 					};
 	
-					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame + looking_frame, facing_frame), SPRITE_NUM_FRAMES, SPRITE_FPS).unwrap() as ~sprite::Updatable:
+					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame + looking_frame, facing_frame), SPRITE_NUM_FRAMES, SPRITE_FPS).unwrap() as ~sprite::Updatable
 				}
 			}
 		});
