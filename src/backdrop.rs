@@ -1,6 +1,6 @@
 extern crate sdl2;
 
-use std::rc::Rc;
+use sync::Arc;
 
 use sdl2::rect::Rect;
 use sdl2::render::Texture;
@@ -11,7 +11,7 @@ use game::graphics;
 static BACKGROUND_SIZE: i32 = 128; //px
 
 pub struct FixedBackdrop {
-	surface: Rc<~Texture>
+	surface: Arc<~Texture>
 }
 
 impl FixedBackdrop {
@@ -37,7 +37,7 @@ impl FixedBackdrop {
 					BACKGROUND_SIZE, BACKGROUND_SIZE
 				);
 
-				graphics.blit_surface(*(self.surface.borrow()), &src, &dest);
+				graphics.blit_surface(*(self.surface.get()), &src, &dest);
 				y+= BACKGROUND_SIZE as int;
 			}
 
