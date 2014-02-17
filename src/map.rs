@@ -30,7 +30,7 @@ impl CollisionTile {
 
 struct Tile {
 	tile_type: TileType,
-	sprite: Option<Rc<RefCell<~sprite::Updatable:>>>
+	sprite: Option<Rc<RefCell<~sprite::Updatable>>>
 }
 
 impl Tile {
@@ -44,7 +44,7 @@ impl Tile {
 
 	/// Creates a tile of `tile_type` with `sprite.`
 	fn from_sprite(
-		sprite: Rc<RefCell<~sprite::Updatable:>>, 
+		sprite: Rc<RefCell<~sprite::Updatable>>, 
 		tile_type: TileType
 	) -> Tile {
 		// Return tile with Some(sprite)
@@ -72,7 +72,7 @@ impl Map {
 					(0,0), 
 					(1,0),
 					~"assets/PrtCave.bmp"
-				) as ~sprite::Updatable:
+				) as ~sprite::Updatable
 			)
 		);
 
