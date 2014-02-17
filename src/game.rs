@@ -15,8 +15,10 @@ pub mod map;
 pub mod player;
 pub mod sprite;
 
-
 static TARGET_FRAMERATE: int = 60;
+
+pub static SCREEN_WIDTH: 	int 	 	= 640;
+pub static SCREEN_HEIGHT: 	int 	 	= 480;
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {

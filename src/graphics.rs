@@ -6,12 +6,10 @@ use sdl2::render;
 use sdl2::mouse;
 use sdl2::video;
 
-
 use std::rc::Rc;
 use std::hashmap::HashMap;
 
-static SCREEN_WIDTH: 	int 	 	= 640;
-static SCREEN_HEIGHT: 	int 	 	= 480;
+use game;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
@@ -25,7 +23,7 @@ impl Graphics {
 		let current_mode = ~video::Window::new(
 			"rust-story v0.0",							// title
 			video::PosCentered, video::PosCentered,		// position (x,y)
-			SCREEN_WIDTH, SCREEN_HEIGHT, 				// width, height
+			game::SCREEN_WIDTH, game::SCREEN_HEIGHT,	// width, height
 			[video::InputGrabbed]
 		);
 

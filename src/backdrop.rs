@@ -3,14 +3,15 @@ extern crate sdl2;
 use std::rc::Rc;
 
 use sdl2::rect::Rect;
-use sdl2::render;
+use sdl2::render::Texture;
 
+use game;
 use game::graphics;
 
 static BACKGROUND_SIZE: i32 = 128; //px
 
 pub struct FixedBackdrop {
-	resource: Rc<~render::Texture>
+	surface: Rc<~Texture>
 }
 
 impl FixedBackdrop {
@@ -20,17 +21,14 @@ impl FixedBackdrop {
 
 		let asset = graphics.load_image(path);
 
-		FixedBackdrop { resource: asset }
+		FixedBackdrop { surface: asset }
 	}
 
 	pub fn draw(&self, graphics: &graphics::Graphics) {
-		let width = 640;
-		let height = 480;
-
-		let mut x = 0;
-		let mut y = 0;
-		while x < width {
-			while y < height {
+		let (mut x, mut y) = (0,0);
+		
+		while x < game::SCREEN_WIDTH {
+			while y < game::SCREEN_HEIGHT {
 				// draw background tile to screen
 				let src = Rect::new(
 					0, 0, 
@@ -38,20 +36,20 @@ impl FixedBackdrop {
 				);
 
 				let dest = Rect::new(
-					x, y, 
+					x as i32, y as i32, 
 					BACKGROUND_SIZE, BACKGROUND_SIZE
 				);
 
 				graphics.blit_surface(
-					*(self.resource.borrow()), 
+					*(self.surface.borrow()), 
 					&src, &dest
 				);
 
 				// repeat
-				y+= BACKGROUND_SIZE;
+				y+= BACKGROUND_SIZE as int;
 			}
 
-			x += BACKGROUND_SIZE;
+			x += BACKGROUND_SIZE as int;
 			y = 0;
 		}
 
