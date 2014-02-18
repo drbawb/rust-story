@@ -171,8 +171,10 @@ impl Game {
 	/// Draws current state of sprites to the screen
 	fn draw(&self) {
 		self.map.draw_background(&self.display);
+		self.map.draw_sprites(&self.display);
 		self.quote.draw(&self.display);
 		self.map.draw(&self.display);
+
 	}
 
 	/// Updates an actor's concept of time.
