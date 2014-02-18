@@ -108,7 +108,7 @@ pub struct AnimatedSprite {
 	priv num_frames: i32,
 	priv fps: i32,
 
-	priv elapsed_time: Millis
+	priv last_update: Millis
 }
 
 impl Updatable for AnimatedSprite {
@@ -122,13 +122,13 @@ impl Updatable for AnimatedSprite {
 		// let Millis(mut last_elapsed) = self.elapsed_time;
 		// last_elapsed += world_elapsed;
 
-		self.elapsed_time = self.elapsed_time + elapsed_time;
+		self.last_update = self.last_update + elapsed_time;
 
 		// determine next frame
-		if self.elapsed_time > frame_time {
+		if self.last_update > frame_time {
 			let (ox,_) = self.offset;
 
-			self.elapsed_time = Millis(0); // reset timer
+			self.last_update = Millis(0); // reset timer
 			self.current_frame += 1;
 			if self.current_frame > self.num_frames + ox {
 				self.current_frame = match self.offset {(ox,_) => {ox}};
@@ -174,7 +174,7 @@ impl AnimatedSprite {
 			offset: offset,
 			coords: (0,0),
 			current_frame: match offset {(ox, _) => {ox}}, 
-			elapsed_time: Millis(0),
+			last_update: Millis(0),
 			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
 			fps: fps,
 			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
