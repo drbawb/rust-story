@@ -2,11 +2,12 @@ use std::vec;
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use game::backdrop;
-use game::collisions::Rectangle;
 use game::graphics;
 use game::sprite;
 
+use game::backdrop;
+use game::collisions::Rectangle;
+use game::units::Millis;
 
 #[deriving(Eq)]
 pub enum TileType {
@@ -178,7 +179,7 @@ impl Map {
 		}
 	}
 
-	pub fn update(&mut self, elapsed_time: sprite::Millis) {
+	pub fn update(&mut self, elapsed_time: Millis) {
 		for row in self.tiles.iter() {
 			for col in row.iter() {
 				match col.borrow().sprite {
