@@ -56,8 +56,9 @@ impl Tile {
 }
 
 pub struct Map {
-	priv tiles: 		~[~[Rc<Tile>]],
-	priv background: 	backdrop::FixedBackdrop
+	priv background: 	backdrop::FixedBackdrop,
+	priv sprites:		~[~[Rc<Tile>]],
+	priv tiles: 		~[~[Rc<Tile>]]
 }
 
 impl Map {
@@ -83,9 +84,10 @@ impl Map {
 			background:	backdrop::FixedBackdrop::new(
 				~"assets/bkBlue.bmp", graphics
 			),
+			sprites: vec::from_elem(num_rows,
+				vec::from_elem(num_cols, blank_tile.clone())),
 			tiles: vec::from_elem(num_rows,
-				vec::from_elem(num_cols, blank_tile.clone())
-			)
+				vec::from_elem(num_cols, blank_tile.clone()))
 		};
 	
 		// init `floor`
@@ -104,12 +106,40 @@ impl Map {
 		
 		map.tiles[num_rows - 3][4] 	= wall_tile.clone();
 		map.tiles[num_rows - 4][3] 	= wall_tile.clone();
+
+		for i in range(0, num_rows) {
+			map.sprites[i][7] = wall_tile.clone();
+		}
 		
 		map
 	}
 
 	pub fn draw_background(&self, graphics: &graphics::Graphics) {
 		self.background.draw(graphics);
+	}
+
+	pub fn draw_sprites(&self, graphics: &graphics::Graphics) {
+		for a in range(0, self.sprites.len()) {
+			for b in range(0, self.sprites[a].len()) {
+				match self.sprites[a][b].borrow().sprite {
+					Some(ref elem) => {
+						// draw sprite at x,y coordinates.
+						// a => row (y-axis)
+						// b => col (x-axis)
+						let mut sprite = elem.borrow().borrow_mut();
+						sprite.get().set_position(
+							(
+								(b * sprite::TILE_SIZE as uint) as i32,
+								(a * sprite::TILE_SIZE as uint) as i32
+							)
+						);
+
+						sprite.get().draw(graphics);
+					}
+					_ => {}
+				};
+			}
+		}
 	}
 
 	/// Draws current state to `display`

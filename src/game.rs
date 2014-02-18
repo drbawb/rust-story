@@ -172,7 +172,9 @@ impl Game {
 	fn draw(&self) {
 		self.map.draw_background(&self.display);
 		self.quote.draw(&self.display);
+		self.map.draw_sprites(&self.display);
 		self.map.draw(&self.display);
+
 	}
 
 	/// Updates an actor's concept of time.
