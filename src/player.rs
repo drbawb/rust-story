@@ -6,6 +6,7 @@ use game::graphics;
 use game::sprite;
 
 use game::map;
+use game::units::Millis;
 use game::collisions::{Info,Rectangle};
 
 // physics
@@ -57,7 +58,7 @@ pub struct Player {
 	priv on_ground: bool,
 
 	// physics
-	priv elapsed_time: sprite::Millis,
+	priv elapsed_time: Millis,
 	priv velocity_x: f64,
 	priv velocity_y: f64,
 	priv accel_x: int,
@@ -81,7 +82,7 @@ impl Player {
 
 		// construct new player
 		let mut new_player = Player{
-			elapsed_time: sprite::Millis(0),
+			elapsed_time: Millis(0),
 			sprites: sprite_map,
 
 			x: x, 
@@ -117,7 +118,7 @@ impl Player {
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
 	/// Determines which sprite-sheet should be used for thsi frame.
 	/// Forwards the elapsed time to the current sprite.
-	pub fn update(&mut self, elapsed_time: sprite::Millis, map: &map::Map) {
+	pub fn update(&mut self, elapsed_time: Millis, map: &map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
 		
@@ -133,7 +134,6 @@ impl Player {
 
 	fn update_x(&mut self, map: &map::Map) {
 		// compute next velocity
-		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;	
 		let accel_x = if self.accel_x < 0  {
 			if self.on_ground() {
 				-WALKING_ACCEL
@@ -151,7 +151,7 @@ impl Player {
 		};
 
 		self.velocity_x += 
-			accel_x * elapsed_time_ms as f64;
+			self.elapsed_time * accel_x;
 
 		if self.accel_x < 0 {
 			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
@@ -159,14 +159,14 @@ impl Player {
 			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
 		} else if self.on_ground() {
 			self.velocity_x = if self.velocity_x > 0.0 {
-				cmp::max(0.0, self.velocity_x - (FRICTION * elapsed_time_ms as f64))
+				cmp::max(0.0, self.velocity_x - (self.elapsed_time * FRICTION))
 			} else {
-				cmp::min(0.0, self.velocity_x + (FRICTION * elapsed_time_ms as f64))
+				cmp::min(0.0, self.velocity_x + (self.elapsed_time * FRICTION))
 			};
 		}
 
 		let delta = f64::round(
-			self.velocity_x * elapsed_time_ms as f64
+			self.elapsed_time * self.velocity_x
 		) as int;
 
 		// x-axis collision checking 
@@ -210,7 +210,7 @@ impl Player {
 
 	fn update_y (&mut self, map: &map::Map) {
 		// determine effects of gravity
-		let sprite::Millis(elapsed_time_ms) = self.elapsed_time;
+		let Millis(elapsed_time_ms) = self.elapsed_time;
 		
 		// update velocity
 		let gravity: f64 = if self.is_jump_active && self.velocity_y < 0.0 {
