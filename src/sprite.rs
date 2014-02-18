@@ -3,6 +3,7 @@ use sdl2::render;
 
 use sync::Arc;
 use game::graphics;
+use game::units::Millis;
 
 pub static TILE_SIZE: i32 = 32;
 
@@ -32,12 +33,6 @@ pub enum Looking {
 	Horizontal
 }
 pub static LOOKINGS: [Looking, ..3] = [Up, Down, Horizontal];
-
-/// Milliseconds expressed as a large positive integer
-/// This will be used at module boundaries in place of raw types.
-#[deriving(Ord)]
-pub struct Millis(uint);
-
 
 /// Any object which can be represented in 2D space
 pub trait Drawable { 
@@ -119,18 +114,18 @@ pub struct AnimatedSprite {
 impl Updatable for AnimatedSprite {
 	//! Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self, elapsed_time: Millis) {
-		let frame_time = (1000 /self.fps) as uint;
+		let frame_time = Millis((1000 /self.fps) as uint);
 		
 		// unpack milliseconds to do integer math
 		// then store the result
-		let Millis(world_elapsed) = elapsed_time;
-		let Millis(mut last_elapsed) = self.elapsed_time;
-		last_elapsed += world_elapsed;
-		self.elapsed_time = Millis(last_elapsed);
+		// let Millis(world_elapsed) = elapsed_time;
+		// let Millis(mut last_elapsed) = self.elapsed_time;
+		// last_elapsed += world_elapsed;
 
+		self.elapsed_time = self.elapsed_time + elapsed_time;
 
 		// determine next frame
-		if last_elapsed > frame_time {
+		if elapsed_time > frame_time {
 			let (ox,_) = self.offset;
 
 			self.elapsed_time = Millis(0); // reset timer

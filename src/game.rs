@@ -14,6 +14,7 @@ pub mod input;
 pub mod map;
 pub mod player;
 pub mod sprite;
+pub mod units;
 
 static TARGET_FRAMERATE: int = 60;
 
@@ -22,7 +23,7 @@ pub static SCREEN_HEIGHT: 	int 	 	= 480;
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
-	priv quote: player::Player,
+	priv quote: 	player::Player,
 	priv map: 	map::Map,
 
 	priv display: 		graphics::Graphics,
@@ -168,19 +169,17 @@ impl Game {
 
 	}
 
-	/// Draws current state of sprites to the screen
+	/// Instructs our actors to draw their current state to the screen. 
 	fn draw(&self) {
 		self.map.draw_background(&self.display);
 		self.map.draw_sprites(&self.display);
 		self.quote.draw(&self.display);
 		self.map.draw(&self.display);
-
 	}
 
-	/// Updates an actor's concept of time.
-	/// Then instructs them to mutate their state accordingly.
+	/// Passes the current time in milliseconds to our underlying actors.	
 	fn update(&mut self, elapsed_time: uint) {
-		let elapsed = sprite::Millis(elapsed_time);
+		let elapsed = units::Millis(elapsed_time);
 		self.map.update(elapsed);
 		self.quote.update(elapsed, &self.map);
 	}
