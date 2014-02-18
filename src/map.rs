@@ -36,22 +36,15 @@ struct Tile {
 impl Tile {
 	/// Creates n air tile w/ no sprite.
 	fn new() -> Tile {
-		Tile {
-			tile_type: Air,
-			sprite: None
-		}
+		Tile { tile_type: Air, sprite: None }
 	}
 
 	/// Creates a tile of `tile_type` with `sprite.`
 	fn from_sprite(
-		sprite: Rc<RefCell<~sprite::Updatable>>, 
-		tile_type: TileType
+		sprite: Rc<RefCell<~sprite::Updatable>>, tile_type: TileType
 	) -> Tile {
 		// Return tile with Some(sprite)
-		Tile {
-			tile_type: tile_type,
-			sprite: Some(sprite)
-		}
+		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
 }
 
@@ -69,9 +62,34 @@ impl Map {
 		let sprite = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
-					graphics, 
-					(0,0), 
-					(1,0),
+					graphics, (0,0), (1,0),
+					~"assets/PrtCave.bmp"
+				) as ~sprite::Updatable
+			)
+		);
+
+		let chain_top = Rc::new(
+			RefCell::new(
+				~sprite::Sprite::new(
+					graphics, (0,0), (11,2),
+					~"assets/PrtCave.bmp"
+				) as ~sprite::Updatable
+			)
+		);
+
+		let chain_middle = Rc::new(
+			RefCell::new(
+				~sprite::Sprite::new(
+					graphics, (0,0), (12,2),
+					~"assets/PrtCave.bmp"
+				) as ~sprite::Updatable
+			)
+		);
+
+		let chain_bottom = Rc::new(
+			RefCell::new(
+				~sprite::Sprite::new(
+					graphics, (0,0), (13,2),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -79,6 +97,9 @@ impl Map {
 
 		let blank_tile = Rc::new(Tile::new());
 		let wall_tile = Rc::new(Tile::from_sprite(sprite, Wall));
+		let ct_tile = Rc::new(Tile::from_sprite(chain_top, Air));
+		let cm_tile = Rc::new(Tile::from_sprite(chain_middle, Air));
+		let cb_tile = Rc::new(Tile::from_sprite(chain_bottom, Air));
 		
 		let mut map = Map {
 			background:	backdrop::FixedBackdrop::new(
@@ -101,16 +122,18 @@ impl Map {
 			map.tiles[i][num_cols - 1] = wall_tile.clone();
 		}
 
+
 		map.tiles[num_rows - 2][3] 	= wall_tile.clone();
 		map.tiles[num_rows - 2][5] 	= wall_tile.clone();
 		
 		map.tiles[num_rows - 3][4] 	= wall_tile.clone();
 		map.tiles[num_rows - 4][3] 	= wall_tile.clone();
+		map.tiles[num_rows - 5][2] 	= wall_tile.clone();
 
-		for i in range(0, num_rows) {
-			map.sprites[i][7] = wall_tile.clone();
-		}
-		
+		map.sprites[num_rows - 4][2] = ct_tile.clone();
+		map.sprites[num_rows - 3][2] = cm_tile.clone();
+		map.sprites[num_rows - 2][2] = cb_tile.clone();
+	
 		map
 	}
 
@@ -123,16 +146,10 @@ impl Map {
 			for b in range(0, self.sprites[a].len()) {
 				match self.sprites[a][b].borrow().sprite {
 					Some(ref elem) => {
-						// draw sprite at x,y coordinates.
-						// a => row (y-axis)
-						// b => col (x-axis)
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().set_position(
-							(
-								(b * sprite::TILE_SIZE as uint) as i32,
-								(a * sprite::TILE_SIZE as uint) as i32
-							)
-						);
+							((b * sprite::TILE_SIZE as uint) as i32,
+							 (a * sprite::TILE_SIZE as uint) as i32));
 
 						sprite.get().draw(graphics);
 					}
@@ -148,16 +165,10 @@ impl Map {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].borrow().sprite {
 					Some(ref elem) => {
-						// draw sprite at x,y coordinates.
-						// a => row (y-axis)
-						// b => col (x-axis)
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().set_position(
-							(
-								(b * sprite::TILE_SIZE as uint) as i32,
-								(a * sprite::TILE_SIZE as uint) as i32
-							)
-						);
+							((b * sprite::TILE_SIZE as uint) as i32,
+							 (a * sprite::TILE_SIZE as uint) as i32));
 
 						sprite.get().draw(graphics);
 					}
@@ -199,4 +210,3 @@ impl Map {
 		collision_tiles
 	}
 }
-
