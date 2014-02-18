@@ -125,7 +125,7 @@ impl Updatable for AnimatedSprite {
 		self.elapsed_time = self.elapsed_time + elapsed_time;
 
 		// determine next frame
-		if elapsed_time > frame_time {
+		if self.elapsed_time > frame_time {
 			let (ox,_) = self.offset;
 
 			self.elapsed_time = Millis(0); // reset timer
