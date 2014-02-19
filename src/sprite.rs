@@ -128,9 +128,9 @@ impl Updatable for AnimatedSprite {
 			}
 		}
 
-		let (ox, oy) = self.offset;
+		let (_, oy) = self.offset;
 		self.source_rect = rect::Rect::new(
-			units::tile_to_pixel(ox + self.current_frame),
+			units::tile_to_pixel(self.current_frame),
 			units::tile_to_pixel(oy),
 			32, 32
 		)
