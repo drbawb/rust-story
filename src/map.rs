@@ -18,11 +18,12 @@ pub enum TileType {
 
 struct CollisionTile {
 	pub tile_type: TileType,
-	pub row: int, pub col: int
+	pub row: units::Tile,
+	pub col: units::Tile
 }
 
 impl CollisionTile {
-	pub fn new(row: int, col: int, tile_type: TileType) -> CollisionTile {
+	pub fn new(row: units::Tile, col: units::Tile, tile_type: TileType) -> CollisionTile {
 		CollisionTile {
 			tile_type: tile_type,
 			row: row, col: col
@@ -58,13 +59,15 @@ pub struct Map {
 
 impl Map {
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		static num_rows: uint = 15; // 480
-		static num_cols: uint = 20; // 640
+		static num_rows: units::Tile = 15; // 480
+		static num_cols: units::Tile = 20; // 640
 
 		let sprite = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
-					graphics, (0,0), (1,0),
+					graphics, 
+					(0.0 as units::Game, 0.0 as units::Game), 
+					(1 as units::Pixel, 0 as units::Pixel),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -73,7 +76,9 @@ impl Map {
 		let chain_top = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
-					graphics, (0,0), (11,2),
+					graphics, 
+					(0.0 as units::Game, 0.0 as units::Game), 
+					(11 as units::Pixel, 2 as units::Pixel),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -82,7 +87,9 @@ impl Map {
 		let chain_middle = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
-					graphics, (0,0), (12,2),
+					graphics, 
+					(0.0 as units::Game, 0.0 as units::Game), 
+					(12 as units::Pixel, 2 as units::Pixel),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -91,7 +98,9 @@ impl Map {
 		let chain_bottom = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
-					graphics, (0,0), (13,2),
+					graphics, 
+					(0.0 as units::Game, 0.0 as units::Game), 
+					(13 as units::Pixel, 2 as units::Pixel),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -150,8 +159,8 @@ impl Map {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().set_position(
-							((b * units::TILE_SIZE as uint) as i32,
-							 (a * units::TILE_SIZE as uint) as i32));
+							(units::tile_to_game(b),
+							 units::tile_to_game(a)));
 
 						sprite.get().draw(graphics);
 					}
@@ -169,8 +178,8 @@ impl Map {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().set_position(
-							((b * units::TILE_SIZE as uint) as i32,
-							 (a * units::TILE_SIZE as uint) as i32));
+							(units::tile_to_game(b),	
+							 units::tile_to_game(a)));
 
 						sprite.get().draw(graphics);
 					}
@@ -195,10 +204,10 @@ impl Map {
 	}
 
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let first_row 	= rectangle.top() / units::TILE_SIZE as int;
-		let last_row 	= rectangle.bottom() / units::TILE_SIZE as int;
-		let first_col 	= rectangle.left() 	/ units::TILE_SIZE as int;
-		let last_col 	= rectangle.right() / units::TILE_SIZE as int;
+		let first_row 	= units::game_to_tile(rectangle.top());
+		let last_row 	= units::game_to_tile(rectangle.bottom());
+		let first_col 	= units::game_to_tile(rectangle.left());
+		let last_col 	= units::game_to_tile(rectangle.right());
 
 		let mut collision_tiles: ~[CollisionTile] = ~[];
 		for row in range(first_row, last_row + 1) {
