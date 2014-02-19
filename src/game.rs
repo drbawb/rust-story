@@ -23,7 +23,7 @@ pub static SCREEN_HEIGHT: 	int 	 	= 480;
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
-	priv quote: 	player::Player,
+	priv quote: player::Player,
 	priv map: 	map::Map,
 
 	priv display: 		graphics::Graphics,
@@ -60,7 +60,8 @@ impl Game {
 
 		Game {
 			map: 	map::Map::create_test_map(&mut display),
-			quote: 	player::Player::new(&mut display, 320,240),
+			quote: 	player::Player::new(&mut display, 
+				(SCREEN_WIDTH / 2) as i32,(SCREEN_HEIGHT / 2) as i32),
 
 			display: display,
 			controller: controller

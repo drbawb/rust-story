@@ -4,10 +4,11 @@ use std::cell::RefCell;
 
 use game::graphics;
 use game::sprite;
+use game::units;
 
 use game::backdrop;
 use game::collisions::Rectangle;
-use game::units::Millis;
+
 
 #[deriving(Eq)]
 pub enum TileType {
@@ -149,8 +150,8 @@ impl Map {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().set_position(
-							((b * sprite::TILE_SIZE as uint) as i32,
-							 (a * sprite::TILE_SIZE as uint) as i32));
+							((b * units::TILE_SIZE as uint) as i32,
+							 (a * units::TILE_SIZE as uint) as i32));
 
 						sprite.get().draw(graphics);
 					}
@@ -168,8 +169,8 @@ impl Map {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().set_position(
-							((b * sprite::TILE_SIZE as uint) as i32,
-							 (a * sprite::TILE_SIZE as uint) as i32));
+							((b * units::TILE_SIZE as uint) as i32,
+							 (a * units::TILE_SIZE as uint) as i32));
 
 						sprite.get().draw(graphics);
 					}
@@ -179,7 +180,7 @@ impl Map {
 		}
 	}
 
-	pub fn update(&mut self, elapsed_time: Millis) {
+	pub fn update(&mut self, elapsed_time: units::Millis) {
 		for row in self.tiles.iter() {
 			for col in row.iter() {
 				match col.borrow().sprite {
@@ -194,10 +195,10 @@ impl Map {
 	}
 
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let first_row 	= rectangle.top() / sprite::TILE_SIZE as int;
-		let last_row 	= rectangle.bottom() / sprite::TILE_SIZE as int;
-		let first_col 	= rectangle.left() 	/ sprite::TILE_SIZE as int;
-		let last_col 	= rectangle.right() / sprite::TILE_SIZE as int;
+		let first_row 	= rectangle.top() / units::TILE_SIZE as int;
+		let last_row 	= rectangle.bottom() / units::TILE_SIZE as int;
+		let first_col 	= rectangle.left() 	/ units::TILE_SIZE as int;
+		let last_col 	= rectangle.right() / units::TILE_SIZE as int;
 
 		let mut collision_tiles: ~[CollisionTile] = ~[];
 		for row in range(first_row, last_row + 1) {

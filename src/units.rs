@@ -1,3 +1,5 @@
+pub static TILE_SIZE: i32 = 32;
+
 /// Milliseconds expressed as a large positive integer
 /// This will be used at module boundaries in place of raw types.
 #[deriving(Ord,Eq)]

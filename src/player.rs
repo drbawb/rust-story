@@ -5,9 +5,10 @@ use std::hashmap::HashMap;
 use game::graphics;
 use game::sprite;
 
-use game::map;
-use game::units::Millis;
+
 use game::collisions::{Info,Rectangle};
+use game::map;
+use game::units;
 
 // physics
 static FRICTION: f64 				= 0.00049804687;	// (pixels / ms) / ms
@@ -58,7 +59,7 @@ pub struct Player {
 	priv on_ground: bool,
 
 	// physics
-	priv elapsed_time: Millis,
+	priv elapsed_time: units::Millis,
 	priv velocity_x: f64,
 	priv velocity_y: f64,
 	priv accel_x: int,
@@ -82,7 +83,7 @@ impl Player {
 
 		// construct new player
 		let mut new_player = Player{
-			elapsed_time: Millis(0),
+			elapsed_time: units::Millis(0),
 			sprites: sprite_map,
 
 			x: x, 
@@ -118,7 +119,7 @@ impl Player {
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
 	/// Determines which sprite-sheet should be used for thsi frame.
 	/// Forwards the elapsed time to the current sprite.
-	pub fn update(&mut self, elapsed_time: Millis, map: &map::Map) {
+	pub fn update(&mut self, elapsed_time: units::Millis, map: &map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
 		
@@ -175,7 +176,7 @@ impl Player {
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				((info.col * sprite::TILE_SIZE as int) - X_BOX.right()) as i32
+				((info.col * units::TILE_SIZE as int) - X_BOX.right()) as i32
 			} else {
 				(self.x as int + delta) as i32
 			};
@@ -183,7 +184,7 @@ impl Player {
 			// collisions left-side
 			info = self.get_collision_info(&self.left_collision(0), map);
 			self.x = if info.collided {
-				((info.col * sprite::TILE_SIZE as int) + X_BOX.right()) as i32
+				((info.col * units::TILE_SIZE as int) + X_BOX.right()) as i32
 			} else {
 				self.x
 			};
@@ -193,7 +194,7 @@ impl Player {
 			let mut info = self.get_collision_info(&self.left_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				((info.col * sprite::TILE_SIZE as int) + X_BOX.right()) as i32
+				((info.col * units::TILE_SIZE as int) + X_BOX.right()) as i32
 			} else {
 				(self.x as int + delta) as i32
 			};
@@ -201,7 +202,7 @@ impl Player {
 			// collisions right-side
 			info = self.get_collision_info(&self.right_collision(0), map);
 			self.x = if info.collided {
-				((info.col * sprite::TILE_SIZE as int) - X_BOX.right()) as i32
+				((info.col * units::TILE_SIZE as int) - X_BOX.right()) as i32
 			} else {
 				self.x
 			};
@@ -210,7 +211,7 @@ impl Player {
 
 	fn update_y (&mut self, map: &map::Map) {
 		// determine effects of gravity
-		let Millis(elapsed_time_ms) = self.elapsed_time;
+		let units::Millis(elapsed_time_ms) = self.elapsed_time;
 		
 		// update velocity
 		let gravity: f64 = if self.is_jump_active && self.velocity_y < 0.0 {
@@ -237,7 +238,7 @@ impl Player {
 				self.velocity_y = 0.0;
 				self.on_ground = true;
 
-				((info.row * sprite::TILE_SIZE as int) - Y_BOX.bottom()) as i32
+				((info.row * units::TILE_SIZE as int) - Y_BOX.bottom()) as i32
 			} else {
 				self.on_ground = false;
 				(self.y as int + delta) as i32
@@ -245,7 +246,7 @@ impl Player {
 
 			info = self.get_collision_info(&self.top_collision(0), map);
 			self.y = if info.collided {
-				((info.row * sprite::TILE_SIZE as int) + Y_BOX.height()) as i32
+				((info.row * units::TILE_SIZE as int) + Y_BOX.height()) as i32
 			} else {
 				self.y
 			};
@@ -256,7 +257,7 @@ impl Player {
 			self.y = if info.collided {
 				self.velocity_y = 0.0;
 
-				((info.row * sprite::TILE_SIZE as int) + Y_BOX.height()) as i32
+				((info.row * units::TILE_SIZE as int) + Y_BOX.height()) as i32
 			} else {
 				self.on_ground = false;
 				(self.y as int + delta) as i32
@@ -266,7 +267,7 @@ impl Player {
 			self.y = if info.collided {
 				self.on_ground = true;
 
-				((info.row * sprite::TILE_SIZE as int) - Y_BOX.bottom()) as i32
+				((info.row * units::TILE_SIZE as int) - Y_BOX.bottom()) as i32
 			} else {
 				self.y
 			};

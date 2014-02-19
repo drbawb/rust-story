@@ -4,9 +4,7 @@ use sdl2::render;
 use sync::Arc;
 use game::graphics;
 use game::units::Millis;
-
-pub static TILE_SIZE: i32 = 32;
-
+use game::units::TILE_SIZE;
 
 #[deriving(IterBytes,Eq)]
 pub enum Motion {

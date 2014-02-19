@@ -7,8 +7,9 @@ use sdl2::render::Texture;
 
 use game;
 use game::graphics;
+use game::units;
 
-static BACKGROUND_SIZE: i32 = 128; //px
+static BACKGROUND_SIZE: i32 = units::TILE_SIZE * 4; //px
 
 pub struct FixedBackdrop {
 	surface: Arc<~Texture>
