@@ -1,7 +1,25 @@
+use std::f64;
+
 pub static TILE_SIZE: i32 = 32;
 
+type Game 	= f64;	// Resolution independent units of position.
+type Pixel 	= int;	// An absolute position on the screen.
+type Tile 	= uint;	
+
+type Fps = uint;	// Hz or (1 / Second)
+
+type Velocity 		= f64; 	// Game / Millis()
+type Acceleration 	= f64;	// Game / Millis() / Millis()
+
+#[inline]
+fn game_to_pixel(gunit: Game) -> Pixel {
+	// TODO: assuming 32px
+	return f64::round(gunit) as Pixel
+}
+
+
+
 /// Milliseconds expressed as a large positive integer
-/// This will be used at module boundaries in place of raw types.
 #[deriving(Ord,Eq)]
 pub struct Millis(uint);
 
