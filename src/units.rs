@@ -17,7 +17,20 @@ fn game_to_pixel(gunit: Game) -> Pixel {
 	return f64::round(gunit) as Pixel
 }
 
+#[inline]
+fn game_to_tile(gunit: Game) -> Tile {
+	(gunit / TILE_SIZE as f64) as Tile
+}
 
+#[inline]
+fn tile_to_game(tunit: Tile) -> Game {
+	(tunit * (TILE_SIZE as uint)) as Game
+}
+
+#[inline]
+fn tile_to_pixel(tunit: Tile) -> Pixel {
+	game_to_pixel(tile_to_game(tunit))
+}
 
 /// Milliseconds expressed as a large positive integer
 #[deriving(Ord,Eq)]
