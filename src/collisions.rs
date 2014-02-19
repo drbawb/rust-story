@@ -2,7 +2,8 @@ use game::units;
 
 pub struct Info {
 	collided: bool,
-	row: int, col: int
+	row: units::Tile, 
+	col: units::Tile 
 }
 
 pub struct Rectangle {

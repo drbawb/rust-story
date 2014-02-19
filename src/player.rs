@@ -43,8 +43,9 @@ static JUMP_DOWN_FRAME:  i32		= 6;
 static STAND_DOWN_FRAME: i32 		= 7;
 
 // collision detection boxes
-static X_BOX: Rectangle = 	Rectangle {x: 6, y: 10, width: 20, height: 12 };
-static Y_BOX: Rectangle = 	Rectangle {x: 10, y: 2, width: 12, height: 30 };
+// (expressed as `units::Game`)
+static X_BOX: Rectangle = 	Rectangle {x: 6.0, y: 10.0, width: 20.0, height: 12.0 };
+static Y_BOX: Rectangle = 	Rectangle {x: 10.0, y: 2.0, width: 12.0, height: 30.0 };
 
 
 /// Encapsulates the pysical motion of a player as it relates to
@@ -176,7 +177,7 @@ impl Player {
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				((info.col * units::TILE_SIZE as int) - X_BOX.right()) as i32
+				(units::tile_to_game(info.col) - X_BOX.right()) as i32
 			} else {
 				(self.x as int + delta) as i32
 			};
@@ -184,7 +185,7 @@ impl Player {
 			// collisions left-side
 			info = self.get_collision_info(&self.left_collision(0), map);
 			self.x = if info.collided {
-				((info.col * units::TILE_SIZE as int) + X_BOX.right()) as i32
+				(units::tile_to_game(info.col) + X_BOX.right()) as i32
 			} else {
 				self.x
 			};
@@ -194,7 +195,7 @@ impl Player {
 			let mut info = self.get_collision_info(&self.left_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				((info.col * units::TILE_SIZE as int) + X_BOX.right()) as i32
+				(units::tile_to_game(info.col) + X_BOX.right()) as i32
 			} else {
 				(self.x as int + delta) as i32
 			};
@@ -202,7 +203,7 @@ impl Player {
 			// collisions right-side
 			info = self.get_collision_info(&self.right_collision(0), map);
 			self.x = if info.collided {
-				((info.col * units::TILE_SIZE as int) - X_BOX.right()) as i32
+				(units::tile_to_game(info.col) - X_BOX.right()) as i32
 			} else {
 				self.x
 			};
@@ -235,7 +236,7 @@ impl Player {
 				self.velocity_y = 0.0;
 				self.on_ground = true;
 
-				((info.row * units::TILE_SIZE as int) - Y_BOX.bottom()) as i32
+				(units::tile_to_game(info.row) - Y_BOX.bottom()) as i32
 			} else {
 				self.on_ground = false;
 				(self.y as int + delta) as i32
@@ -243,7 +244,7 @@ impl Player {
 
 			info = self.get_collision_info(&self.top_collision(0), map);
 			self.y = if info.collided {
-				((info.row * units::TILE_SIZE as int) + Y_BOX.height()) as i32
+				(units::tile_to_game(info.row) + Y_BOX.height()) as i32
 			} else {
 				self.y
 			};
@@ -254,7 +255,7 @@ impl Player {
 			self.y = if info.collided {
 				self.velocity_y = 0.0;
 
-				((info.row * units::TILE_SIZE as int) + Y_BOX.height()) as i32
+				(units::tile_to_game(info.row) + Y_BOX.height()) as i32
 			} else {
 				self.on_ground = false;
 				(self.y as int + delta) as i32
@@ -264,7 +265,7 @@ impl Player {
 			self.y = if info.collided {
 				self.on_ground = true;
 
-				((info.row * units::TILE_SIZE as int) - Y_BOX.bottom()) as i32
+				(units::tile_to_game(info.row) - Y_BOX.bottom()) as i32
 			} else {
 				self.y
 			};
