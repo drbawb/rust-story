@@ -54,8 +54,8 @@ pub struct Player {
 	priv sprites: HashMap<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable>,
 	
 	// positioning
-	priv x: i32,
-	priv y: i32,
+	priv x: units::Game,
+	priv y: units::Game,
 	priv movement: (sprite::Motion, sprite::Facing, sprite::Looking),
 	priv on_ground: bool,
 
@@ -77,7 +77,7 @@ impl Player {
 	/// The player will spawn at `x` and `y`, though it will immediately be subject to gravity.
 	/// The player is initailized `standing` facing `east`.
 	/// The player will continue to fall until some collision is detected.
-	pub fn new(graphics: &mut graphics::Graphics, x: i32, y: i32) -> Player {
+	pub fn new(graphics: &mut graphics::Graphics, x: units::Game, y: units::Game) -> Player {
 		// insert sprites into map
 		let sprite_map = 
 			HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable>::new();
@@ -126,7 +126,7 @@ impl Player {
 		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
-		self.set_position((self.x, self.y));
+		self.set_position((self.x as units::Game, self.y as units::Game));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
 
 		// run physics sim
@@ -167,25 +167,22 @@ impl Player {
 			};
 		}
 
-		let delta = f64::round(
-			(self.elapsed_time as f64) * self.velocity_x
-		) as int;
-
 		// x-axis collision checking 
-		if delta > 0 { // moving right
+		let delta: units::Game = self.velocity_x * (self.elapsed_time as f64);
+		if delta > 0.0 { // moving right
 			// collisions right-side
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				(units::tile_to_game(info.col) - X_BOX.right()) as i32
+				(units::tile_to_game(info.col) - X_BOX.right())
 			} else {
-				(self.x as int + delta) as i32
+				(self.x + delta)
 			};
 
 			// collisions left-side
-			info = self.get_collision_info(&self.left_collision(0), map);
+			info = self.get_collision_info(&self.left_collision(0.0), map);
 			self.x = if info.collided {
-				(units::tile_to_game(info.col) + X_BOX.right()) as i32
+				(units::tile_to_game(info.col) + X_BOX.right())
 			} else {
 				self.x
 			};
@@ -195,15 +192,15 @@ impl Player {
 			let mut info = self.get_collision_info(&self.left_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				(units::tile_to_game(info.col) + X_BOX.right()) as i32
+				(units::tile_to_game(info.col) + X_BOX.right())
 			} else {
-				(self.x as int + delta) as i32
+				(self.x + delta) 
 			};
 
 			// collisions right-side
-			info = self.get_collision_info(&self.right_collision(0), map);
+			info = self.get_collision_info(&self.right_collision(0.0), map);
 			self.x = if info.collided {
-				(units::tile_to_game(info.col) - X_BOX.right()) as i32
+				(units::tile_to_game(info.col) - X_BOX.right()) 
 			} else {
 				self.x
 			};
@@ -224,27 +221,25 @@ impl Player {
 		);
 
 		// calculate delta
-		let delta: int = f64::round(
-			self.velocity_y * (self.elapsed_time as f64)
-		) as int;
+		let delta: units::Game = self.velocity_y * (self.elapsed_time as f64);
 
 		// check collision in direction of delta
-		if delta > 0 {
+		if delta > 0.0 {
 			// react to collision
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
 			self.y = if info.collided {
 				self.velocity_y = 0.0;
 				self.on_ground = true;
 
-				(units::tile_to_game(info.row) - Y_BOX.bottom()) as i32
+				(units::tile_to_game(info.row) - Y_BOX.bottom())
 			} else {
 				self.on_ground = false;
-				(self.y as int + delta) as i32
+				(self.y + delta)
 			};
 
-			info = self.get_collision_info(&self.top_collision(0), map);
+			info = self.get_collision_info(&self.top_collision(0.0), map);
 			self.y = if info.collided {
-				(units::tile_to_game(info.row) + Y_BOX.height()) as i32
+				(units::tile_to_game(info.row) + Y_BOX.height())
 			} else {
 				self.y
 			};
@@ -255,17 +250,16 @@ impl Player {
 			self.y = if info.collided {
 				self.velocity_y = 0.0;
 
-				(units::tile_to_game(info.row) + Y_BOX.height()) as i32
+				(units::tile_to_game(info.row) + Y_BOX.height())
 			} else {
 				self.on_ground = false;
-				(self.y as int + delta) as i32
+				(self.y + delta)
 			};
 
-			info = self.get_collision_info(&self.bottom_collision(0), map);
+			info = self.get_collision_info(&self.bottom_collision(0.0), map);
 			self.y = if info.collided {
 				self.on_ground = true;
-
-				(units::tile_to_game(info.row) - Y_BOX.bottom()) as i32
+				(units::tile_to_game(info.row) - Y_BOX.bottom())
 			} else {
 				self.y
 			};
@@ -305,7 +299,7 @@ impl Player {
 
 	/// Instructs the current sprite-sheet to position itself
 	/// at the coordinates specified by `coords:(x,y)`.
-	fn set_position(&mut self, coords: (i32,i32)) {
+	fn set_position(&mut self, coords: (units::Game, units::Game)) {
 		self.sprites.get_mut(&self.movement).set_position(coords);
 	}
 
@@ -341,7 +335,7 @@ impl Player {
 						_ => 0
 					};
 				
-					~sprite::Sprite::new(graphics, (0,0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable 
+					~sprite::Sprite::new(graphics, (0.0, 0.0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable 
 				}
 
 				// static: jumping or falling
@@ -353,7 +347,7 @@ impl Player {
 						_ => motion_frame
 					};
 					
-					~sprite::Sprite::new(graphics, (0,0), (looking_frame, facing_frame), file_path) as ~sprite::Updatable 
+					~sprite::Sprite::new(graphics, (0.0 ,0.0), (looking_frame, facing_frame), file_path) as ~sprite::Updatable 
 				}
 
 				// dynamic: 
@@ -462,49 +456,49 @@ impl Player {
 	}
 
 	// x-axis collision detection
-	fn left_collision(&self, delta: int) -> Rectangle {
-		assert!(delta <= 0);
+	fn left_collision(&self, delta: units::Game) -> Rectangle {
+		assert!(delta <= 0.0);
 
 		Rectangle {
-			x: self.x as int + (X_BOX.left() + delta),
-			y: self.y as int + X_BOX.top(),
-			width: (X_BOX.width() / 2) - delta,
+			x: self.x + (X_BOX.left() + delta),
+			y: self.y + X_BOX.top(),
+			width: (X_BOX.width() / 2.0) - delta,
 			height: X_BOX.height()
 		}
 	}
 
 	
-	fn right_collision(&self, delta: int) -> Rectangle {
-		assert!(delta >= 0);
+	fn right_collision(&self, delta: units::Game) -> Rectangle {
+		assert!(delta >= 0.0);
 		
 		Rectangle {
-			x: self.x as int + X_BOX.left() + (X_BOX.width() / 2),
-			y: self.y as int + X_BOX.top(),
-			width: 	(X_BOX.width() / 2) + delta,
+			x: self.x + X_BOX.left() + (X_BOX.width() / 2.0),
+			y: self.y + X_BOX.top(),
+			width: 	(X_BOX.width() / 2.0) + delta,
 			height: X_BOX.height()
 		}
 	}
 
 	// y-axis collision detection
-	fn top_collision(&self, delta: int) -> Rectangle {
-		assert!(delta <= 0);
+	fn top_collision(&self, delta: units::Game) -> Rectangle {
+		assert!(delta <= 0.0);
 
 		Rectangle {
-			x: self.x as int + Y_BOX.left(),
-			y: self.y as int + (Y_BOX.top() + delta),
+			x: self.x + Y_BOX.left(),
+			y: self.y + (Y_BOX.top() + delta),
 			width: Y_BOX.width(),
-			height: (Y_BOX.height() / 2) - delta
+			height: (Y_BOX.height() / 2.0) - delta
 		}
 	}
 
-	fn bottom_collision(&self, delta: int) -> Rectangle {
-		assert!(delta >= 0);
+	fn bottom_collision(&self, delta: units::Game) -> Rectangle {
+		assert!(delta >= 0.0);
 		
 		Rectangle {
-			x: self.x as int + Y_BOX.left(),
-			y: self.y as int + Y_BOX.top() + (Y_BOX.height() / 2),
+			x: self.x + Y_BOX.left(),
+			y: self.y + Y_BOX.top() + (Y_BOX.height() / 2.0),
 			width: 	Y_BOX.width(),
-			height: (Y_BOX.height() / 2) + delta
+			height: (Y_BOX.height() / 2.0) + delta
 		}
 	}
 	
