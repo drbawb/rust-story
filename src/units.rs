@@ -13,23 +13,23 @@ pub type Millis = int;
 pub type Velocity 		= f64; 	// Game / Millis()
 pub type Acceleration 	= f64;	// Game / Millis() / Millis()
 
-#[inline]
+#[inline(always)]
 pub fn game_to_pixel(gunit: Game) -> Pixel {
 	// TODO: assuming 32px
 	return f64::round(gunit) as Pixel
 }
 
-#[inline]
+#[inline(always)]
 pub fn game_to_tile(gunit: Game) -> Tile {
 	(gunit / TILE_SIZE as f64) as Tile
 }
 
-#[inline]
+#[inline(always)]
 pub fn tile_to_game(tunit: Tile) -> Game {
 	(tunit * (TILE_SIZE as uint)) as Game
 }
 
-#[inline]
+#[inline(always)]
 pub fn tile_to_pixel(tunit: Tile) -> Pixel {
 	game_to_pixel(tile_to_game(tunit))
 }
