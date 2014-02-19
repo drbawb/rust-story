@@ -18,8 +18,8 @@ pub mod units;
 
 static TARGET_FRAMERATE: units::Fps = 60;
 
-pub static SCREEN_WIDTH: 	int 	 	= 640;
-pub static SCREEN_HEIGHT: 	int 	 	= 480;
+pub static SCREEN_WIDTH: 	units::Tile 	 	= 20;
+pub static SCREEN_HEIGHT: 	units::Tile 	 	= 15;
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {

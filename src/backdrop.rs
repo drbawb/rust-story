@@ -9,7 +9,7 @@ use game;
 use game::graphics;
 use game::units;
 
-static BACKGROUND_SIZE: i32 = units::TILE_SIZE * 4; //px
+static BACKGROUND_SIZE: units::Tile = 4;
 
 pub struct FixedBackdrop {
 	surface: Arc<~Texture>
@@ -29,20 +29,25 @@ impl FixedBackdrop {
 	/// Moving the destination rectangle `BACKGROUND_SIZE` pixels
 	/// in either direction as it progresses.
 	pub fn draw(&self, graphics: &graphics::Graphics) {
-		let (mut x, mut y) = (0,0);
-		while x < game::SCREEN_WIDTH {
-			while y < game::SCREEN_HEIGHT {
-				let src = Rect::new(0, 0, BACKGROUND_SIZE, BACKGROUND_SIZE);
+		let (mut x, mut y) = (0i32,0i32);
+		while x < units::tile_to_pixel(game::SCREEN_WIDTH) {
+			while y < units::tile_to_pixel(game::SCREEN_HEIGHT) {
+				let src = Rect::new(
+					0, 0, 
+					units::tile_to_pixel(BACKGROUND_SIZE), 
+					units::tile_to_pixel(BACKGROUND_SIZE));
+
 				let dest = Rect::new(
-					x as i32, y as i32, 
-					BACKGROUND_SIZE, BACKGROUND_SIZE
+					x, y,
+					units::tile_to_pixel(BACKGROUND_SIZE),
+					units::tile_to_pixel(BACKGROUND_SIZE)
 				);
 
 				graphics.blit_surface(*(self.surface.get()), &src, &dest);
-				y+= BACKGROUND_SIZE as int;
+				y+= units::tile_to_pixel(BACKGROUND_SIZE);
 			}
 
-			x += BACKGROUND_SIZE as int;
+			x += units::tile_to_pixel(BACKGROUND_SIZE);
 			y = 0;
 		}
 	}
