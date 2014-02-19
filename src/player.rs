@@ -23,23 +23,23 @@ static 	JUMP_SPEED: units::Velocity				= 0.25;
 
 
 // player sprite animation
-static CHAR_OFFSET: i32				= 12;
-static SPRITE_NUM_FRAMES: i32		= 3;
+static CHAR_OFFSET: units::Tile		= 12;
+static SPRITE_NUM_FRAMES: units::Frame	= 3; 
 static SPRITE_FPS: units::Fps		= 20;
 
 // motion
-static STAND_FRAME: i32 			= 0;
-static JUMP_FRAME: i32 				= 1;
-static FALL_FRAME: i32 				= 2;
+static STAND_FRAME: units::Tile 	= 0;
+static JUMP_FRAME: units::Tile 		= 1;
+static FALL_FRAME: units::Tile 		= 2;
 
 // horizontal facing (Facing)
-static FACING_WEST: i32 			= 0 + CHAR_OFFSET;
-static FACING_EAST: i32 			= 1 + CHAR_OFFSET;
+static FACING_WEST: units::Tile			= 0 + CHAR_OFFSET;
+static FACING_EAST: units::Tile 		= 1 + CHAR_OFFSET;
 
 // vertical facing (Looking)
-static WALK_UP_OFFSET: i32			= 3;
-static JUMP_DOWN_FRAME:  i32		= 6;
-static STAND_DOWN_FRAME: i32 		= 7;
+static WALK_UP_OFFSET: units::Tile		= 3;
+static JUMP_DOWN_FRAME:  units::Tile		= 6;
+static STAND_DOWN_FRAME: units::Tile 		= 7;
 
 // collision detection boxes
 // (expressed as `units::Game`)
@@ -334,7 +334,12 @@ impl Player {
 						_ => 0
 					};
 				
-					~sprite::Sprite::new(graphics, (0.0, 0.0), (motion_frame + (looking_frame), facing_frame), file_path) as ~sprite::Updatable 
+					~sprite::Sprite::new(
+						graphics, 
+						(0.0, 0.0), 
+						(motion_frame + (looking_frame), facing_frame), 
+						file_path
+					) as ~sprite::Updatable 
 				}
 
 				// static: jumping or falling
@@ -356,7 +361,11 @@ impl Player {
 						_ => 0
 					};
 	
-					~sprite::AnimatedSprite::new(graphics, file_path, (motion_frame + looking_frame, facing_frame), SPRITE_NUM_FRAMES, SPRITE_FPS).unwrap() as ~sprite::Updatable
+					~sprite::AnimatedSprite::new(
+						graphics, file_path, 
+						(motion_frame + looking_frame, facing_frame), 
+						SPRITE_NUM_FRAMES, SPRITE_FPS
+					).unwrap() as ~sprite::Updatable
 				}
 			}
 		});
