@@ -1,10 +1,11 @@
 use std::f64;
 
-pub static TILE_SIZE: i32 = 32;
+static TILE_SIZE: i32 = 32;
 
 pub type Game 	= f64;	// Resolution independent units of position.
 pub type Pixel 	= i32;	// An absolute position on the screen.
 pub type Tile 	= uint;	
+pub type Frame 	= uint;
 
 pub type Fps = uint;	// Hz or (1 / Second)
 pub type Millis = int;

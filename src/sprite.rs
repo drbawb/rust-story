@@ -4,7 +4,6 @@ use sdl2::render;
 use sync::Arc;
 use game::graphics;
 use game::units;
-use game::units::TILE_SIZE;
 
 #[deriving(IterBytes,Eq)]
 pub enum Motion {
@@ -79,11 +78,11 @@ impl Sprite {
 	pub fn new(
 		graphics: &mut graphics::Graphics, 
 		coords: (units::Game,units::Game), // position on screen
-		offset: (units::Pixel,units::Pixel), // source_x, source_y
+		offset: (units::Tile,units::Tile), // source_x, source_y
 		file_name: ~str
 	) -> Sprite {
 		let (a,b) = offset;
-		let origin = rect::Rect::new(a * TILE_SIZE, b * TILE_SIZE, 32, 32);
+		let origin = rect::Rect::new(units::tile_to_pixel(a), units::tile_to_pixel(b), 32, 32);
 
 		let sheet = graphics.load_image(file_name, true); // request graphics subsystem cache this sprite.
 
@@ -104,9 +103,9 @@ pub struct AnimatedSprite {
 	sprite_sheet: Arc<~render::Texture>, 
 
 	priv coords: (units::Game, units::Game),
-	priv offset: (i32,i32),
-	priv current_frame: i32,
-	priv num_frames: i32,
+	priv offset: (units::Tile, units::Tile),
+	priv current_frame: units::Frame,
+	priv num_frames: units::Frame,
 	priv fps: units::Fps,
 
 	priv last_update: units::Millis
@@ -120,7 +119,7 @@ impl Updatable for AnimatedSprite {
 
 		// determine next frame
 		if self.last_update as uint > frame_time {
-			let (ox,_) = self.offset;
+			let (ox,_) = self.offset; 
 
 			self.last_update = 0; // reset timer
 			self.current_frame += 1;
@@ -130,7 +129,11 @@ impl Updatable for AnimatedSprite {
 		}
 
 		let (ox, oy) = self.offset;
-		self.source_rect = rect::Rect::new(ox + (self.current_frame * TILE_SIZE), oy * TILE_SIZE, 32, 32)
+		self.source_rect = rect::Rect::new(
+			units::tile_to_pixel(ox + self.current_frame),
+			units::tile_to_pixel(oy),
+			32, 32
+		)
 	}
 
 	fn set_position(&mut self, coords: (units::Game,units::Game)) {
@@ -158,13 +161,16 @@ impl AnimatedSprite {
 	pub fn new(
 		graphics: &mut graphics::Graphics, 
 		sheet_path: ~str, 
-		offset: (i32,i32),
-		num_frames: i32, 
+		offset: (units::Tile, units::Tile),
+		num_frames: units::Frame,
 		fps: units::Fps
 	) -> Result<AnimatedSprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let (x,y) = offset;
-		let origin = rect::Rect::new(x * TILE_SIZE, y * TILE_SIZE, 32, 32);
+		let origin = rect::Rect::new(
+			units::tile_to_pixel(x), units::tile_to_pixel(y) ,
+			32, 32
+		);
 		
 		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
