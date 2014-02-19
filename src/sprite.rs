@@ -40,21 +40,24 @@ pub trait Drawable {
 /// Any object which understands time and placement in 2D space.
 pub trait Updatable : Drawable { 
 	fn update(&mut self, elapsed_time: units::Millis); 
-	fn set_position(&mut self, coords: (i32,i32));
+	fn set_position(&mut self, coords: (units::Game,units::Game));
 }
 
 /// Represents a static 32x32 2D character
 pub struct Sprite {
 	sprite_sheet: Arc<~render::Texture>, 
 	source_rect: rect::Rect,
-	coords: (i32,i32)
+	coords: (units::Game,units::Game)
 }
 
 impl Drawable for Sprite {
 	/// Draws selfs @ coordinates provided by 
 	fn draw(&self, display: &graphics::Graphics) {
 		let (x,y) = self.coords;
-		let dest_rect = rect::Rect::new(x, y, 32, 32);
+		let dest_rect = rect::Rect::new(
+			units::game_to_pixel(x), units::game_to_pixel(y),
+			32, 32
+		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }
@@ -65,7 +68,7 @@ impl Updatable for Sprite {
 		// no-op for static sprite.
 	}
 
-	fn set_position(&mut self, coords: (i32,i32)) {
+	fn set_position(&mut self, coords: (units::Game,units::Game)) {
 		self.coords = coords;
 	}
 }
@@ -75,8 +78,8 @@ impl Sprite {
 	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
 	pub fn new(
 		graphics: &mut graphics::Graphics, 
-		coords: (i32,i32), 
-		offset: (i32,i32), 
+		coords: (units::Game,units::Game), // position on screen
+		offset: (units::Pixel,units::Pixel), // source_x, source_y
 		file_name: ~str
 	) -> Sprite {
 		let (a,b) = offset;
@@ -100,7 +103,7 @@ pub struct AnimatedSprite {
 	source_rect: rect::Rect,
 	sprite_sheet: Arc<~render::Texture>, 
 
-	priv coords: (i32, i32),
+	priv coords: (units::Game, units::Game),
 	priv offset: (i32,i32),
 	priv current_frame: i32,
 	priv num_frames: i32,
@@ -130,7 +133,7 @@ impl Updatable for AnimatedSprite {
 		self.source_rect = rect::Rect::new(ox + (self.current_frame * TILE_SIZE), oy * TILE_SIZE, 32, 32)
 	}
 
-	fn set_position(&mut self, coords: (i32,i32)) {
+	fn set_position(&mut self, coords: (units::Game,units::Game)) {
 		self.coords = coords;
 	}
 }
@@ -139,7 +142,10 @@ impl Drawable for AnimatedSprite {
 	/// Draws selfs @ coordinates provided by 
 	fn draw(&self, display: &graphics::Graphics) {
 		let (x,y) = self.coords;
-		let dest_rect = rect::Rect::new(x, y, 32, 32);
+		let dest_rect = rect::Rect::new(
+			units::game_to_pixel(x), units::game_to_pixel(y),
+			 32, 32
+		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }
@@ -163,7 +169,7 @@ impl AnimatedSprite {
 		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
 			offset: offset,
-			coords: (0,0),
+			coords: (0.0, 0.0),
 			current_frame: match offset {(ox, _) => {ox}}, 
 			last_update: 0,
 			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
