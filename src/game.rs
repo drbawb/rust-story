@@ -60,8 +60,11 @@ impl Game {
 
 		Game {
 			map: 	map::Map::create_test_map(&mut display),
-			quote: 	player::Player::new(&mut display, 
-				(SCREEN_WIDTH / 2) as i32,(SCREEN_HEIGHT / 2) as i32),
+			quote: 	player::Player::new(
+					&mut display, 
+					units::tile_to_game(SCREEN_WIDTH / 2), 
+					units::tile_to_game(SCREEN_HEIGHT / 2)
+				),
 
 			display: display,
 			controller: controller
