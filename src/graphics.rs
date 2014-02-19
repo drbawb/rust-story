@@ -9,6 +9,7 @@ use sync::Arc;
 use std::hashmap::HashMap;
 
 use game;
+use game::units;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
@@ -22,7 +23,8 @@ impl Graphics {
 		let current_mode = ~video::Window::new(
 			"rust-story v0.0",							// title
 			video::PosCentered, video::PosCentered,		// position (x,y)
-			game::SCREEN_WIDTH, game::SCREEN_HEIGHT,	// width, height
+			units::tile_to_pixel(game::SCREEN_WIDTH) as int, 
+			units::tile_to_pixel(game::SCREEN_HEIGHT) as int,	// width, height
 			[video::InputGrabbed]
 		);
 
