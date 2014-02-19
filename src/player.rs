@@ -1,4 +1,3 @@
-use std::f64;
 use std::cmp;
 use std::hashmap::HashMap;
 
