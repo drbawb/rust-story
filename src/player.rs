@@ -11,16 +11,16 @@ use game::map;
 use game::units;
 
 // physics
-static FRICTION: f64 				= 0.00049804687;	// (pixels / ms) / ms
-static GRAVITY: f64					= 0.00078125;		// (pixels / ms) / ms
+static FRICTION: units::Acceleration = 0.00049804687;
+static GRAVITY: units::Acceleration	 = 0.00078125;
 
-static WALKING_ACCEL: f64 			= 0.00083007812;	// (pixels / ms) / ms
-static MAX_VELOCITY_X: f64 			= 0.15859375;		// (pixels / ms)
-static MAX_VELOCITY_Y: f64			= 0.2998046875;		// (pixels / ms)
+static WALKING_ACCEL: units::Acceleration 	= 0.00083007812;
+static MAX_VELOCITY_X: units::Velocity 		= 0.15859375;
+static MAX_VELOCITY_Y: units::Velocity		= 0.2998046875;
 
-static	AIR_ACCELERATION: f64		= 0.0003125;		// (pixels / ms) / ms
-static 	JUMP_GRAVITY: f64			= 0.0003125;		// (pixels / ms) / ms
-static 	JUMP_SPEED: f64				= 0.25;				// (pixels / ms)
+static	AIR_ACCELERATION: units::Acceleration 	= 0.0003125;
+static 	JUMP_GRAVITY: units::Acceleration		= 0.0003125;
+static 	JUMP_SPEED: units::Velocity				= 0.25;
 
 
 // player sprite animation
@@ -60,8 +60,8 @@ pub struct Player {
 
 	// physics
 	priv elapsed_time: units::Millis,
-	priv velocity_x: f64,
-	priv velocity_y: f64,
+	priv velocity_x: units::Velocity,
+	priv velocity_y: units::Velocity,
 	priv accel_x: int,
 
 	priv is_interacting: bool,
@@ -135,7 +135,7 @@ impl Player {
 
 	fn update_x(&mut self, map: &map::Map) {
 		// compute next velocity
-		let accel_x = if self.accel_x < 0  {
+		let accel_x: units::Acceleration = if self.accel_x < 0  {
 			if self.on_ground() {
 				-WALKING_ACCEL
 			} else {
@@ -214,7 +214,7 @@ impl Player {
 		let units::Millis(elapsed_time_ms) = self.elapsed_time;
 		
 		// update velocity
-		let gravity: f64 = if self.is_jump_active && self.velocity_y < 0.0 {
+		let gravity: units::Acceleration = if self.is_jump_active && self.velocity_y < 0.0 {
 			JUMP_GRAVITY
 		} else {
 			GRAVITY
