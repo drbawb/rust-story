@@ -26,7 +26,7 @@ static 	JUMP_SPEED: units::Velocity				= 0.25;
 // player sprite animation
 static CHAR_OFFSET: i32				= 12;
 static SPRITE_NUM_FRAMES: i32		= 3;
-static SPRITE_FPS: i32				= 20;
+static SPRITE_FPS: units::Fps		= 20;
 
 // motion
 static STAND_FRAME: i32 			= 0;
@@ -83,7 +83,7 @@ impl Player {
 
 		// construct new player
 		let mut new_player = Player{
-			elapsed_time: units::Millis(0),
+			elapsed_time: 0,
 			sprites: sprite_map,
 
 			x: x, 
@@ -152,7 +152,7 @@ impl Player {
 		};
 
 		self.velocity_x += 
-			self.elapsed_time * accel_x;
+			self.elapsed_time as f64 * accel_x;
 
 		if self.accel_x < 0 {
 			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
@@ -160,14 +160,14 @@ impl Player {
 			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
 		} else if self.on_ground() {
 			self.velocity_x = if self.velocity_x > 0.0 {
-				cmp::max(0.0, self.velocity_x - (self.elapsed_time * FRICTION))
+				cmp::max(0.0, self.velocity_x - (self.elapsed_time as f64 * FRICTION))
 			} else {
-				cmp::min(0.0, self.velocity_x + (self.elapsed_time * FRICTION))
+				cmp::min(0.0, self.velocity_x + (self.elapsed_time as f64 * FRICTION))
 			};
 		}
 
 		let delta = f64::round(
-			self.elapsed_time * self.velocity_x
+			(self.elapsed_time as f64) * self.velocity_x
 		) as int;
 
 		// x-axis collision checking 
@@ -210,9 +210,6 @@ impl Player {
 	}
 
 	fn update_y (&mut self, map: &map::Map) {
-		// determine effects of gravity
-		let units::Millis(elapsed_time_ms) = self.elapsed_time;
-		
 		// update velocity
 		let gravity: units::Acceleration = if self.is_jump_active && self.velocity_y < 0.0 {
 			JUMP_GRAVITY
@@ -221,13 +218,13 @@ impl Player {
 		};
 
 		self.velocity_y = cmp::min(
-			self.velocity_y + gravity * elapsed_time_ms as f64, 
+			self.velocity_y + gravity * (self.elapsed_time as f64), 
 			MAX_VELOCITY_Y
 		);
 
 		// calculate delta
 		let delta: int = f64::round(
-			self.velocity_y * elapsed_time_ms as f64
+			self.velocity_y * (self.elapsed_time as f64)
 		) as int;
 
 		// check collision in direction of delta

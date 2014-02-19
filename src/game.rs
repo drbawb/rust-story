@@ -16,7 +16,7 @@ pub mod player;
 pub mod sprite;
 pub mod units;
 
-static TARGET_FRAMERATE: int = 60;
+static TARGET_FRAMERATE: units::Fps = 60;
 
 pub static SCREEN_WIDTH: 	int 	 	= 640;
 pub static SCREEN_HEIGHT: 	int 	 	= 480;
@@ -81,13 +81,13 @@ impl Game {
 		
 		
 		// event loop control
-		let frame_delay = (1000 / TARGET_FRAMERATE) as uint;
-		let mut last_update_time = sdl::get_ticks();
+		let frame_delay = (1000 / TARGET_FRAMERATE) as units::Millis;
+		let mut last_update_time = sdl::get_ticks() as units::Millis;
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
 		
 		while running {
-			let start_time_ms = sdl::get_ticks();
+			let start_time_ms = sdl::get_ticks() as units::Millis;
 			self.controller.begin_new_frame();
 
 			// drain event queue once per frame
@@ -141,8 +141,8 @@ impl Game {
 			}
 
 			// update
-			let current_time_ms = sdl::get_ticks();
-			self.update(current_time_ms - last_update_time);
+			let current_time_ms = sdl::get_ticks() as units::Millis;
+			self.update(current_time_ms as int - last_update_time);
 			last_update_time = current_time_ms;
 
 
@@ -153,7 +153,7 @@ impl Game {
 
 
 			// throttle event-loop
-			let iter_time = sdl::get_ticks() - start_time_ms;	// time in ms that this iteration of event loop took
+			let iter_time = (sdl::get_ticks() as units::Millis) - start_time_ms;
 			let next_frame_time: u64 = if frame_delay > iter_time {	// if we did not miss our deadline: adjust delay accordingly
 				(frame_delay - iter_time) as u64
 			} else { 0 as u64 };									// otherwise missed frame-deadline, skip waiting period
@@ -179,9 +179,8 @@ impl Game {
 	}
 
 	/// Passes the current time in milliseconds to our underlying actors.	
-	fn update(&mut self, elapsed_time: uint) {
-		let elapsed = units::Millis(elapsed_time);
-		self.map.update(elapsed);
-		self.quote.update(elapsed, &self.map);
+	fn update(&mut self, elapsed_time: units::Millis) {
+		self.map.update(elapsed_time);
+		self.quote.update(elapsed_time, &self.map);
 	}
 }

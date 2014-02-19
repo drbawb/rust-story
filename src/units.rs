@@ -7,6 +7,7 @@ pub type Pixel 	= int;	// An absolute position on the screen.
 pub type Tile 	= uint;	
 
 pub type Fps = uint;	// Hz or (1 / Second)
+pub type Millis = int;
 
 pub type Velocity 		= f64; 	// Game / Millis()
 pub type Acceleration 	= f64;	// Game / Millis() / Millis()
@@ -30,30 +31,4 @@ pub fn tile_to_game(tunit: Tile) -> Game {
 #[inline]
 pub fn tile_to_pixel(tunit: Tile) -> Pixel {
 	game_to_pixel(tile_to_game(tunit))
-}
-
-/// Milliseconds expressed as a large positive integer
-#[deriving(Ord,Eq)]
-pub struct Millis(uint);
-
-impl Add<Millis,Millis> for Millis {
-	/// The `uint`s inside LHS & RHS will be added together and wrapped 
-	/// inside a new `Millis()`
-	fn add(&self, rhs: &Millis) -> Millis {
-		let Millis(a) = *self;
-		let Millis(b) = *rhs;
-
-		Millis(a+b)
-	}	
-}
-
-impl Mul<f64, f64> for Millis {
-	/// The `uint` inside LHS will be cast to f64.
-	/// Multiplication will then proceed as normal, returning
-	/// an f64 as a result.
-	fn mul(&self, rhs: &f64) -> f64 {
-		let Millis(a) = *self;
-
-		(*rhs) * (a as f64)
-	}
 }

@@ -3,7 +3,7 @@ use sdl2::render;
 
 use sync::Arc;
 use game::graphics;
-use game::units::Millis;
+use game::units;
 use game::units::TILE_SIZE;
 
 #[deriving(IterBytes,Eq)]
@@ -39,7 +39,7 @@ pub trait Drawable {
 
 /// Any object which understands time and placement in 2D space.
 pub trait Updatable : Drawable { 
-	fn update(&mut self, elapsed_time: Millis); 
+	fn update(&mut self, elapsed_time: units::Millis); 
 	fn set_position(&mut self, coords: (i32,i32));
 }
 
@@ -61,7 +61,7 @@ impl Drawable for Sprite {
 
 #[allow(unused_variable)]
 impl Updatable for Sprite {
-	fn update(&mut self, elapsed_time: Millis) {
+	fn update(&mut self, elapsed_time: units::Millis) {
 		// no-op for static sprite.
 	}
 
@@ -104,29 +104,22 @@ pub struct AnimatedSprite {
 	priv offset: (i32,i32),
 	priv current_frame: i32,
 	priv num_frames: i32,
-	priv fps: i32,
+	priv fps: units::Fps,
 
-	priv last_update: Millis
+	priv last_update: units::Millis
 }
 
 impl Updatable for AnimatedSprite {
 	//! Reads current time-deltas and mutates state accordingly.
-	fn update(&mut self, elapsed_time: Millis) {
-		let frame_time = Millis((1000 /self.fps) as uint);
-		
-		// unpack milliseconds to do integer math
-		// then store the result
-		// let Millis(world_elapsed) = elapsed_time;
-		// let Millis(mut last_elapsed) = self.elapsed_time;
-		// last_elapsed += world_elapsed;
-
+	fn update(&mut self, elapsed_time: units::Millis) {
+		let frame_time = (1000 / self.fps);	
 		self.last_update = self.last_update + elapsed_time;
 
 		// determine next frame
-		if self.last_update > frame_time {
+		if self.last_update as uint > frame_time {
 			let (ox,_) = self.offset;
 
-			self.last_update = Millis(0); // reset timer
+			self.last_update = 0; // reset timer
 			self.current_frame += 1;
 			if self.current_frame > self.num_frames + ox {
 				self.current_frame = match self.offset {(ox,_) => {ox}};
@@ -161,7 +154,7 @@ impl AnimatedSprite {
 		sheet_path: ~str, 
 		offset: (i32,i32),
 		num_frames: i32, 
-		fps: i32
+		fps: units::Fps
 	) -> Result<AnimatedSprite, ~str> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let (x,y) = offset;
@@ -172,7 +165,7 @@ impl AnimatedSprite {
 			offset: offset,
 			coords: (0,0),
 			current_frame: match offset {(ox, _) => {ox}}, 
-			last_update: Millis(0),
+			last_update: 0,
 			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
 			fps: fps,
 			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
