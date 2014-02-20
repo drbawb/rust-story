@@ -318,7 +318,7 @@ impl Player {
 		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
 	) {
 		self.sprites.find_or_insert_with(movement, |key| -> ~sprite::Updatable {
-			let file_path = ~"assets/MyChar.bmp";
+			let file_path = ~"assets/base/MyChar.bmp";
 			let (motion, facing, _) = *key;
 			let motion_frame = match motion {
 				sprite::Standing | sprite::Walking => STAND_FRAME,

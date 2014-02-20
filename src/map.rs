@@ -57,12 +57,10 @@ pub struct Map {
 
 impl Map {
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		// TODO: These are units::Tile(), but I can't use those in the range() clauses below.
-		// (Ironically this comment takes up the same space as the statements to destructure 
-		//  a tuple-struct.)
 		static rows: uint = 15; // 480
 		static cols: uint = 20; // 640
 
+		let map_path = ~"assets/base/Stage/PrtCave.bmp";
 		let sprite = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
@@ -70,7 +68,7 @@ impl Map {
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(1) , units::Tile(0)),
 					(units::Tile(1), units::Tile(1)),
-					~"assets/PrtCave.bmp"
+					map_path.clone()
 				) as ~sprite::Updatable
 			)
 		);
@@ -82,7 +80,7 @@ impl Map {
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(11), units::Tile(2)),
 					(units::Tile(1), units::Tile(1)),
-					~"assets/PrtCave.bmp"
+					map_path.clone()
 				) as ~sprite::Updatable
 			)
 		);
@@ -94,7 +92,7 @@ impl Map {
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(12), units::Tile(2)),
 					(units::Tile(1), units::Tile(1)),
-					~"assets/PrtCave.bmp"
+					map_path.clone()
 				) as ~sprite::Updatable
 			)
 		);
@@ -106,7 +104,7 @@ impl Map {
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(13), units::Tile(2)),
 					(units::Tile(1), units::Tile(1)),
-					~"assets/PrtCave.bmp"
+					map_path.clone()
 				) as ~sprite::Updatable
 			)
 		);
@@ -119,7 +117,7 @@ impl Map {
 
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
-				~"assets/bkBlue.bmp", graphics
+				~"assets/base/bkBlue.bmp", graphics
 			),
 			sprites: vec::from_elem(rows,
 				vec::from_elem(cols, blank_tile.clone())),
