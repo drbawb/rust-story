@@ -20,8 +20,8 @@ pub mod units;
 static TARGET_FRAMERATE: units::Fps = 60;
 static MAX_FRAME_TIME:	units::Millis = 5 * (1000 / TARGET_FRAMERATE) as int;
 
-pub static SCREEN_WIDTH: 	units::Tile 	 	= 20;
-pub static SCREEN_HEIGHT: 	units::Tile 	 	= 15;
+pub static SCREEN_WIDTH: 	units::Tile 	= units::Tile(20);
+pub static SCREEN_HEIGHT:	units::Tile  	= units::Tile(15);
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
@@ -64,8 +64,8 @@ impl Game {
 			map: 	map::Map::create_test_map(&mut display),
 			quote: 	player::Player::new(
 					&mut display, 
-					units::tile_to_game(SCREEN_WIDTH / 2), 
-					units::tile_to_game(SCREEN_HEIGHT / 2)
+					units::Tile(SCREEN_WIDTH / 2).to_game(), 
+					units::Tile(SCREEN_HEIGHT / 2).to_game()
 				),
 
 			display: display,

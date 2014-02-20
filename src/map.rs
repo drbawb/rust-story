@@ -59,16 +59,17 @@ pub struct Map {
 
 impl Map {
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		static num_rows: units::Tile = 15; // 480
-		static num_cols: units::Tile = 20; // 640
+		static num_rows: units::Tile = units::Tile(15); // 480
+		static num_cols: units::Tile = units::Tile(20); // 640
+		let (units::Tile(rows), units::Tile(cols)) = 
+		(num_rows, num_cols);
 
 		let sprite = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(1 as units::Tile, 0 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(1) , units::Tile(0)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -78,9 +79,8 @@ impl Map {
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(11 as units::Tile, 2 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(11), units::Tile(2)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -90,9 +90,8 @@ impl Map {
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(12 as units::Tile, 2 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(12), units::Tile(2)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -102,9 +101,8 @@ impl Map {
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(13 as units::Tile, 2 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(13), units::Tile(2)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -115,39 +113,39 @@ impl Map {
 		let ct_tile = Rc::new(Tile::from_sprite(chain_top, Air));
 		let cm_tile = Rc::new(Tile::from_sprite(chain_middle, Air));
 		let cb_tile = Rc::new(Tile::from_sprite(chain_bottom, Air));
-		
+
 		let mut map = Map {
 			background:	backdrop::FixedBackdrop::new(
 				~"assets/bkBlue.bmp", graphics
 			),
-			sprites: vec::from_elem(num_rows,
-				vec::from_elem(num_cols, blank_tile.clone())),
-			tiles: vec::from_elem(num_rows,
-				vec::from_elem(num_cols, blank_tile.clone()))
+			sprites: vec::from_elem(rows,
+				vec::from_elem(cols, blank_tile.clone())),
+			tiles: vec::from_elem(rows,
+				vec::from_elem(cols, blank_tile.clone()))
 		};
 	
 		// init `floor`
-		for i in range(0, num_cols) {
-			map.tiles[num_rows - 1][i] = wall_tile.clone(); // store a reference
+		for i in range(0, cols) {
+			map.tiles[rows - 1][i] = wall_tile.clone(); // store a reference
 		}
 
 		// "safety wall"
-		for i in range (0, num_rows) {
+		for i in range (0, rows) {
 			map.tiles[i][0] = wall_tile.clone();
-			map.tiles[i][num_cols - 1] = wall_tile.clone();
+			map.tiles[i][cols - 1] = wall_tile.clone();
 		}
 
 
-		map.tiles[num_rows - 2][3] 	= wall_tile.clone();
-		map.tiles[num_rows - 2][5] 	= wall_tile.clone();
+		map.tiles[rows - 2][3] 	= wall_tile.clone();
+		map.tiles[rows - 2][5] 	= wall_tile.clone();
 		
-		map.tiles[num_rows - 3][4] 	= wall_tile.clone();
-		map.tiles[num_rows - 4][3] 	= wall_tile.clone();
-		map.tiles[num_rows - 5][2] 	= wall_tile.clone();
+		map.tiles[rows - 3][4] 	= wall_tile.clone();
+		map.tiles[rows - 4][3] 	= wall_tile.clone();
+		map.tiles[rows - 5][2] 	= wall_tile.clone();
 
-		map.sprites[num_rows - 4][2] = ct_tile.clone();
-		map.sprites[num_rows - 3][2] = cm_tile.clone();
-		map.sprites[num_rows - 2][2] = cb_tile.clone();
+		map.sprites[rows - 4][2] = ct_tile.clone();
+		map.sprites[rows - 3][2] = cm_tile.clone();
+		map.sprites[rows - 2][2] = cb_tile.clone();
 	
 		map
 	}
@@ -162,9 +160,12 @@ impl Map {
 				match self.sprites[a][b].borrow().sprite {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
+						let x = &units::Tile(b) as &units::AsGame;
+						let y = &units::Tile(a) as &units::AsGame;
+
 						sprite.get().set_position(
-							(units::tile_to_game(b),
-							 units::tile_to_game(a)));
+							(x.to_game(),
+							 y.to_game()));
 
 						sprite.get().draw(graphics);
 					}
@@ -181,9 +182,10 @@ impl Map {
 				match self.tiles[a][b].borrow().sprite {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
+
 						sprite.get().set_position(
-							(units::tile_to_game(b),	
-							 units::tile_to_game(a)));
+							((&units::Tile(b) as &units::AsGame).to_game(),	
+							 (&units::Tile(a) as &units::AsGame).to_game()));
 
 						sprite.get().draw(graphics);
 					}
@@ -208,13 +210,13 @@ impl Map {
 	}
 
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let first_row 	= units::game_to_tile(rectangle.top());
-		let last_row 	= units::game_to_tile(rectangle.bottom());
-		let first_col 	= units::game_to_tile(rectangle.left());
-		let last_col 	= units::game_to_tile(rectangle.right());
+		let first_row 	= rectangle.top().to_tile();
+		let last_row 	= rectangle.bottom().to_tile();
+		let first_col 	= rectangle.left().to_tile();
+		let last_col 	= rectangle.right().to_tile();
 
 		let mut collision_tiles: ~[CollisionTile] = ~[];
-		for row in range(first_row, last_row + 1) {
+		for row in range(units::Tile(first_row), units::Tile(last_row + units::Tile(1))) {
 			for col in range(first_col, last_col + 1) {
 				collision_tiles.push( 
 					CollisionTile::new(row, col, self.tiles[row][col].borrow().tile_type)

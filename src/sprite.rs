@@ -88,8 +88,8 @@ impl Drawable for Sprite {
 		let (x,y) = self.coords;
 		
 		let dest_rect = rect::Rect::new(
-			units::game_to_pixel(x), units::game_to_pixel(y),
-			units::tile_to_pixel(w), units::tile_to_pixel(h)
+			units::Game(x).to_pixel(), units::Game(y).to_pixel(),
+			units::Tile(w).to_pixel(), units::Tile(h).to_pixel()
 		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
@@ -139,8 +139,8 @@ impl AnimatedSprite {
 		let (w,h) = size;
 		let (x,y) = offset;
 		let origin = rect::Rect::new(
-			units::tile_to_pixel(x), units::tile_to_pixel(y) ,
-			units::tile_to_pixel(w), units::tile_to_pixel(h)
+			units::Tile(x).to_pixel(), units::Tile(y).to_pixel(),
+			units::Tile(w).to_pixel(), units::Tile(h).to_pixel()
 		);
 		
 		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.

@@ -173,7 +173,7 @@ impl Player {
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				(units::tile_to_game(info.col) - X_BOX.right())
+				(units::Tile(info.col).to_game() - X_BOX.right())
 			} else {
 				(self.x + delta)
 			};
@@ -181,7 +181,7 @@ impl Player {
 			// collisions left-side
 			info = self.get_collision_info(&self.left_collision(0.0), map);
 			self.x = if info.collided {
-				(units::tile_to_game(info.col) + X_BOX.right())
+				(units::Tile(info.col).to_game + X_BOX.right())
 			} else {
 				self.x
 			};
@@ -191,7 +191,7 @@ impl Player {
 			let mut info = self.get_collision_info(&self.left_collision(delta), map);
 			self.x = if info.collided {
 				self.velocity_x = 0.0;
-				(units::tile_to_game(info.col) + X_BOX.right())
+				(units::Tile(info.col).to_game() + X_BOX.right())
 			} else {
 				(self.x + delta) 
 			};
@@ -199,7 +199,7 @@ impl Player {
 			// collisions right-side
 			info = self.get_collision_info(&self.right_collision(0.0), map);
 			self.x = if info.collided {
-				(units::tile_to_game(info.col) - X_BOX.right()) 
+				(units::Tile(info.col).to_game() - X_BOX.right()) 
 			} else {
 				self.x
 			};
@@ -230,7 +230,7 @@ impl Player {
 				self.velocity_y = 0.0;
 				self.on_ground = true;
 
-				(units::tile_to_game(info.row) - Y_BOX.bottom())
+				(units::Tile(info.row).to_game() - Y_BOX.bottom())
 			} else {
 				self.on_ground = false;
 				(self.y + delta)
@@ -238,7 +238,7 @@ impl Player {
 
 			info = self.get_collision_info(&self.top_collision(0.0), map);
 			self.y = if info.collided {
-				(units::tile_to_game(info.row) + Y_BOX.height())
+				(units::Tile(info.row).to_game() + Y_BOX.height())
 			} else {
 				self.y
 			};
@@ -249,7 +249,7 @@ impl Player {
 			self.y = if info.collided {
 				self.velocity_y = 0.0;
 
-				(units::tile_to_game(info.row) + Y_BOX.height())
+				(units::Tile(info.row).to_game() + Y_BOX.height())
 			} else {
 				self.on_ground = false;
 				(self.y + delta)
@@ -258,7 +258,7 @@ impl Player {
 			info = self.get_collision_info(&self.bottom_collision(0.0), map);
 			self.y = if info.collided {
 				self.on_ground = true;
-				(units::tile_to_game(info.row) - Y_BOX.bottom())
+				(units::Tile(info.row).to_game() - Y_BOX.bottom())
 			} else {
 				self.y
 			};
