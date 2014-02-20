@@ -1,6 +1,7 @@
 use std::f64;
 
-static TILE_SIZE: i32 = 32;
+static TILE_SIZE: i32 	= 32;
+static SCALE: f64		= 1.0;
 
 pub type Game 	= f64;	// Resolution independent units of position.
 pub type Pixel 	= i32;	// An absolute position on the screen.
@@ -15,8 +16,7 @@ pub type Acceleration 	= f64;	// Game / Millis() / Millis()
 
 #[inline(always)]
 pub fn game_to_pixel(gunit: Game) -> Pixel {
-	// TODO: assuming 32px
-	return f64::round(gunit) as Pixel
+	return f64::round(gunit / SCALE) as Pixel
 }
 
 #[inline(always)]

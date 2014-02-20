@@ -55,7 +55,7 @@ impl Drawable for Sprite {
 		let (x,y) = self.coords;
 		let dest_rect = rect::Rect::new(
 			units::game_to_pixel(x), units::game_to_pixel(y),
-			32, 32
+			units::tile_to_pixel(1), units::tile_to_pixel(1)
 		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
@@ -82,7 +82,10 @@ impl Sprite {
 		file_name: ~str
 	) -> Sprite {
 		let (a,b) = offset;
-		let origin = rect::Rect::new(units::tile_to_pixel(a), units::tile_to_pixel(b), 32, 32);
+		let origin = rect::Rect::new(
+				units::tile_to_pixel(a), units::tile_to_pixel(b), 
+				units::tile_to_pixel(1), units::tile_to_pixel(1)
+			);
 
 		let sheet = graphics.load_image(file_name, true); // request graphics subsystem cache this sprite.
 
@@ -132,7 +135,7 @@ impl Updatable for AnimatedSprite {
 		self.source_rect = rect::Rect::new(
 			units::tile_to_pixel(self.current_frame),
 			units::tile_to_pixel(oy),
-			32, 32
+			units::tile_to_pixel(1), units::tile_to_pixel(1)
 		)
 	}
 
@@ -147,7 +150,7 @@ impl Drawable for AnimatedSprite {
 		let (x,y) = self.coords;
 		let dest_rect = rect::Rect::new(
 			units::game_to_pixel(x), units::game_to_pixel(y),
-			 32, 32
+			 units::tile_to_pixel(1), units::tile_to_pixel(1)
 		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
@@ -169,7 +172,7 @@ impl AnimatedSprite {
 		let (x,y) = offset;
 		let origin = rect::Rect::new(
 			units::tile_to_pixel(x), units::tile_to_pixel(y) ,
-			32, 32
+			units::tile_to_pixel(1), units::tile_to_pixel(1)
 		);
 		
 		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.

@@ -23,9 +23,9 @@ static 	JUMP_SPEED: units::Velocity				= 0.25;
 
 
 // player sprite animation
-static CHAR_OFFSET: units::Tile		= 12;
+static CHAR_OFFSET: units::Tile			= 2;
 static SPRITE_NUM_FRAMES: units::Frame	= 3; 
-static SPRITE_FPS: units::Fps		= 20;
+static SPRITE_FPS: units::Fps			= 20;
 
 // motion
 static STAND_FRAME: units::Tile 	= 0;
@@ -37,7 +37,7 @@ static FACING_WEST: units::Tile			= 0 + CHAR_OFFSET;
 static FACING_EAST: units::Tile 		= 1 + CHAR_OFFSET;
 
 // vertical facing (Looking)
-static WALK_UP_OFFSET: units::Tile		= 3;
+static WALK_UP_OFFSET: units::Tile			= 3;
 static JUMP_DOWN_FRAME:  units::Tile		= 6;
 static STAND_DOWN_FRAME: units::Tile 		= 7;
 
