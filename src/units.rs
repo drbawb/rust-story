@@ -1,7 +1,7 @@
 use std::f64;
 
 static TILE_SIZE: i32 	= 32;
-static SCALE: f64		= 1.0;
+static SCALE: f64	= 1.0; // This is a divider of TILE_SIZE, 1.0 for 32, 2.0 for 16, etc.
 
 pub trait AsGame 	{fn to_game(&self) -> Game;}
 pub trait AsTile 	{fn to_tile(&self) -> Tile;}
@@ -29,7 +29,7 @@ impl AsTile for Game {
 /// as a signed integer.
 impl AsPixel for Game {
 	#[inline(always)]
-	fn to_pixel(&self) -> Pixel { let Game(a) = *self; Pixel(f64::round(a) as i32) }
+	fn to_pixel(&self) -> Pixel { let Game(a) = *self; Pixel(f64::round(a / SCALE) as i32) }
 }
 
 // Allow `+` operator for anything which can be converted `#to_game()` 
