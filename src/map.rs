@@ -72,6 +72,7 @@ impl Map {
 					graphics, 
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(1) , units::Tile(0)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -83,6 +84,7 @@ impl Map {
 					graphics, 
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(11), units::Tile(2)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -94,6 +96,7 @@ impl Map {
 					graphics, 
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(12), units::Tile(2)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -105,6 +108,7 @@ impl Map {
 					graphics, 
 					(units::Game(0.0), units::Game(0.0)), 
 					(units::Tile(13), units::Tile(2)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
