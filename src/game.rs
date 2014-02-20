@@ -1,5 +1,6 @@
 extern crate sdl2;
 
+use std::cmp;
 use std::io::Timer;
 
 use sdl2::sdl;
@@ -17,6 +18,7 @@ pub mod sprite;
 pub mod units;
 
 static TARGET_FRAMERATE: units::Fps = 60;
+static MAX_FRAME_TIME:	units::Millis = 5 * (1000 / TARGET_FRAMERATE) as int;
 
 pub static SCREEN_WIDTH: 	units::Tile 	 	= 20;
 pub static SCREEN_HEIGHT: 	units::Tile 	 	= 15;
@@ -81,8 +83,6 @@ impl Game {
 	/// Then renders a snapshot of the world-state and then waits
 	/// until its next frame deadline.
 	fn event_loop(&mut self) {
-		
-		
 		// event loop control
 		let frame_delay = (1000 / TARGET_FRAMERATE) as units::Millis;
 		let mut last_update_time = sdl::get_ticks() as units::Millis;
@@ -145,15 +145,14 @@ impl Game {
 
 			// update
 			let current_time_ms = sdl::get_ticks() as units::Millis;
-			self.update(current_time_ms as int - last_update_time);
+			let elapsed_time = current_time_ms as int - last_update_time;
+			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
 			last_update_time = current_time_ms;
-
 
 			// draw
 			self.display.clear_buffer(); // clear back-buffer
 			self.draw();
 			self.display.switch_buffers();
-
 
 			// throttle event-loop
 			let iter_time = (sdl::get_ticks() as units::Millis) - start_time_ms;
