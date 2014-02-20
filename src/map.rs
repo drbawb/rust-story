@@ -163,12 +163,9 @@ impl Map {
 				match self.sprites[a][b].borrow().sprite {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
-						let x = &units::Tile(b) as &units::AsGame;
-						let y = &units::Tile(a) as &units::AsGame;
-
 						sprite.get().set_position(
-							(x.to_game(),
-							 y.to_game()));
+							(units::Tile(b).to_game(),
+							 units::Tile(a).to_game()));
 
 						sprite.get().draw(graphics);
 					}
@@ -187,8 +184,8 @@ impl Map {
 						let mut sprite = elem.borrow().borrow_mut();
 
 						sprite.get().set_position(
-							((&units::Tile(b) as &units::AsGame).to_game(),	
-							 (&units::Tile(a) as &units::AsGame).to_game()));
+							(units::Tile(b).to_game(), units::Tile(a).to_game())
+						);
 
 						sprite.get().draw(graphics);
 					}
