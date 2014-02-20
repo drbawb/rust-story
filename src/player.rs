@@ -370,6 +370,7 @@ impl Player {
 					~sprite::AnimatedSprite::new(
 						graphics, file_path, 
 						(motion_frame + looking_frame, facing_frame), 
+						(1, 1),
 						SPRITE_NUM_FRAMES, SPRITE_FPS
 					).unwrap() as ~sprite::Updatable
 				}

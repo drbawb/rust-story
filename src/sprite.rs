@@ -114,11 +114,50 @@ pub struct AnimatedSprite {
 
 	priv coords: (units::Game, units::Game),
 	priv offset: (units::Tile, units::Tile),
+	priv size: 	 (units::Tile, units::Tile),
 	priv current_frame: units::Frame,
 	priv num_frames: units::Frame,
 	priv fps: units::Fps,
 
 	priv last_update: units::Millis
+}
+
+impl AnimatedSprite {
+	/// Loads character sprites from `assets/MyChar.bmp`
+	/// `source_rect` acts as a viewport of this sprite-sheet.
+	///
+	/// Returns an error message if sprite-sheet could not be loaded.
+	pub fn new(
+		graphics: &mut graphics::Graphics, 
+		sheet_path: ~str, 
+		offset: (units::Tile, units::Tile),
+		size: 	(units::Tile, units::Tile),
+		num_frames: units::Frame,
+		fps: units::Fps
+	) -> Result<AnimatedSprite, ~str> {
+		// attempt to load sprite-sheet from `assets/MyChar.bmp`
+		let (w,h) = size;
+		let (x,y) = offset;
+		let origin = rect::Rect::new(
+			units::tile_to_pixel(x), units::tile_to_pixel(y) ,
+			units::tile_to_pixel(w), units::tile_to_pixel(h)
+		);
+		
+		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
+		let sprite = AnimatedSprite{
+			offset: offset,
+			coords: (0.0, 0.0),
+			size: size,
+			current_frame: match offset {(ox, _) => {ox}}, 
+			last_update: 0,
+			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
+			fps: fps,
+			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
+			source_rect: origin
+		};
+
+		return Ok(sprite);
+	}
 }
 
 impl Updatable for AnimatedSprite {
@@ -138,11 +177,12 @@ impl Updatable for AnimatedSprite {
 			}
 		}
 
+		let (ow, oh) = self.size;
 		let (_, oy) = self.offset;
 		self.source_rect = rect::Rect::new(
 			units::tile_to_pixel(self.current_frame),
 			units::tile_to_pixel(oy),
-			units::tile_to_pixel(1), units::tile_to_pixel(1)
+			units::tile_to_pixel(ow), units::tile_to_pixel(oh)
 		)
 	}
 
@@ -160,40 +200,5 @@ impl Drawable for AnimatedSprite {
 			 units::tile_to_pixel(1), units::tile_to_pixel(1)
 		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
-	}
-}
-
-impl AnimatedSprite {
-	/// Loads character sprites from `assets/MyChar.bmp`
-	/// `source_rect` acts as a viewport of this sprite-sheet.
-	///
-	/// Returns an error message if sprite-sheet could not be loaded.
-	pub fn new(
-		graphics: &mut graphics::Graphics, 
-		sheet_path: ~str, 
-		offset: (units::Tile, units::Tile),
-		num_frames: units::Frame,
-		fps: units::Fps
-	) -> Result<AnimatedSprite, ~str> {
-		// attempt to load sprite-sheet from `assets/MyChar.bmp`
-		let (x,y) = offset;
-		let origin = rect::Rect::new(
-			units::tile_to_pixel(x), units::tile_to_pixel(y) ,
-			units::tile_to_pixel(1), units::tile_to_pixel(1)
-		);
-		
-		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
-		let sprite = AnimatedSprite{
-			offset: offset,
-			coords: (0.0, 0.0),
-			current_frame: match offset {(ox, _) => {ox}}, 
-			last_update: 0,
-			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
-			fps: fps,
-			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
-			source_rect: origin
-		};
-
-		return Ok(sprite);
 	}
 }
