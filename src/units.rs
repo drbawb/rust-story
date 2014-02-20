@@ -121,7 +121,25 @@ impl<T: AsTile> Add<T, Tile> for Tile {
 	}
 }
 
-// Allow `/` operator for anything which can be converted `#to_tiel()`
+// Allow `-` operator for anything which can be converted to `#to_tile()`
+impl<T: AsTile> Sub<T, Tile> for Tile {
+	#[inline(always)]	
+	fn sub(&self, rhs: &T) -> Tile {
+		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
+		Tile(a - b)
+	}
+}
+
+// Allow `*` operator for anything which can be converted `#to_tile()`
+impl<T: AsTile> Mul<T, Tile> for Tile {
+	#[inline(always)]	
+	fn mul(&self, rhs: &T) -> Tile {
+		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
+		Tile(a * b)
+	}
+}
+
+// Allow `/` operator for anything which can be converted `#to_tile()`
 impl<T: AsTile> Div<T, Tile> for Tile {
 	#[inline(always)]
 	fn div(&self, rhs: &T) -> Tile {
