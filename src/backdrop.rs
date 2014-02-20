@@ -18,12 +18,10 @@ pub struct FixedBackdrop {
 }
 
 impl FixedBackdrop {
-	pub fn new(	path: ~str, 
-				graphics: &mut graphics::Graphics) 
-				-> FixedBackdrop {
+	pub fn new(path: ~str, graphics: &mut graphics::Graphics) 
+		-> FixedBackdrop {
 
 		let asset = graphics.load_image(path, false);
-
 		FixedBackdrop { surface: asset }
 	}
 
@@ -36,15 +34,8 @@ impl FixedBackdrop {
 
 		while units::Pixel(x) < game::SCREEN_WIDTH.to_pixel() {
 			while units::Pixel(y) < game::SCREEN_HEIGHT.to_pixel() {
-				let src = Rect::new(
-					0, 0, 
-					tile_size, tile_size 
-				);
-
-				let dest = Rect::new(
-					x, y,
-					tile_size, tile_size	
-				);
+				let src = Rect::new(0, 0, tile_size, tile_size);
+				let dest = Rect::new(x, y, tile_size, tile_size);
 
 				graphics.blit_surface(*(self.surface.get()), &src, &dest);
 				y+= tile_size;

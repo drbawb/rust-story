@@ -26,13 +26,11 @@ struct CollisionTile {
 
 impl CollisionTile {
 	pub fn new(row: units::Tile, col: units::Tile, tile_type: TileType) -> CollisionTile {
-		CollisionTile {
-			tile_type: tile_type,
-			row: row, col: col
-		}
+		CollisionTile { tile_type: tile_type, row: row, col: col }
 	}
 }
 
+// TODO: Conflicts w/ units::Tile, should probably have a different name.
 struct Tile {
 	tile_type: TileType,
 	sprite: Option<Rc<RefCell<~sprite::Updatable>>>
@@ -44,11 +42,9 @@ impl Tile {
 		Tile { tile_type: Air, sprite: None }
 	}
 
-	/// Creates a tile of `tile_type` with `sprite.`
-	fn from_sprite(
-		sprite: Rc<RefCell<~sprite::Updatable>>, tile_type: TileType
-	) -> Tile {
-		// Return tile with Some(sprite)
+	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
+	fn from_sprite(	sprite: Rc<RefCell<~sprite::Updatable>>, 
+			tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
 }
@@ -61,10 +57,11 @@ pub struct Map {
 
 impl Map {
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		static num_rows: units::Tile = units::Tile(15); // 480
-		static num_cols: units::Tile = units::Tile(20); // 640
-		let (units::Tile(rows), units::Tile(cols)) = 
-		(num_rows, num_cols);
+		// TODO: These are units::Tile(), but I can't use those in the range() clauses below.
+		// (Ironically this comment takes up the same space as the statements to destructure 
+		//  a tuple-struct.)
+		static rows: uint = 15; // 480
+		static cols: uint = 20; // 640
 
 		let sprite = Rc::new(
 			RefCell::new(
@@ -121,7 +118,7 @@ impl Map {
 		let cb_tile = Rc::new(Tile::from_sprite(chain_bottom, Air));
 
 		let mut map = Map {
-			background:	backdrop::FixedBackdrop::new(
+			background: backdrop::FixedBackdrop::new(
 				~"assets/bkBlue.bmp", graphics
 			),
 			sprites: vec::from_elem(rows,
@@ -216,20 +213,15 @@ impl Map {
 	}
 
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let first_row 	= rectangle.top().to_tile();
-		let last_row 	= rectangle.bottom().to_tile();
-		let first_col 	= rectangle.left().to_tile();
-		let last_col 	= rectangle.right().to_tile();
-
 		let mut collision_tiles: ~[CollisionTile] = ~[];
-		let units::Tile(start_row) = first_row;
-		let units::Tile(end_row) = last_row;
+		
+		let units::Tile(first_row) 	= rectangle.top().to_tile();
+		let units::Tile(last_row) 	= rectangle.bottom().to_tile();
+		let units::Tile(first_col) 	= rectangle.left().to_tile();
+		let units::Tile(last_col) 	= rectangle.right().to_tile();
 
-		let units::Tile(start_col) = first_col;
-		let units::Tile(end_col) = last_col;
-
-		for row in range(start_row, end_row + 1) {
-			for col in range(start_col, end_col + 1) {
+		for row in range(first_row, last_row + 1) {
+			for col in range(first_col, last_col + 1) {
 				collision_tiles.push( 
 					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].borrow().tile_type)
 				);
