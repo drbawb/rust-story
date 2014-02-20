@@ -10,7 +10,7 @@ use std::hashmap::HashMap;
 
 use game;
 use game::units;
-
+use game::units::{AsPixel};
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
 	priv screen: ~render::Renderer,
@@ -20,11 +20,13 @@ pub struct Graphics {
 impl Graphics {
 	/// Prepare the display for rendering
 	pub fn new() -> Graphics {
+		let (units::Pixel(w), units::Pixel(h)) = 
+			(game::SCREEN_WIDTH.to_pixel(), game::SCREEN_HEIGHT.to_pixel());
+		
 		let current_mode = ~video::Window::new(
 			"rust-story v0.0",							// title
 			video::PosCentered, video::PosCentered,		// position (x,y)
-			units::tile_to_pixel(game::SCREEN_WIDTH) as int, 
-			units::tile_to_pixel(game::SCREEN_HEIGHT) as int,	// width, height
+			w as int, h as int,	
 			[video::InputGrabbed]
 		);
 

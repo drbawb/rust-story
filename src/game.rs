@@ -3,8 +3,9 @@ extern crate sdl2;
 use std::cmp;
 use std::io::Timer;
 
-use sdl2::sdl;
+use game::units::{AsGame};
 
+use sdl2::sdl;
 use sdl2::event;
 use sdl2::keycode;
 
@@ -20,8 +21,8 @@ pub mod units;
 static TARGET_FRAMERATE: units::Fps = 60;
 static MAX_FRAME_TIME:	units::Millis = 5 * (1000 / TARGET_FRAMERATE) as int;
 
-pub static SCREEN_WIDTH: 	units::Tile 	 	= 20;
-pub static SCREEN_HEIGHT: 	units::Tile 	 	= 15;
+pub static SCREEN_WIDTH: 	units::Tile 	= units::Tile(20);
+pub static SCREEN_HEIGHT:	units::Tile  	= units::Tile(15);
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
@@ -64,8 +65,8 @@ impl Game {
 			map: 	map::Map::create_test_map(&mut display),
 			quote: 	player::Player::new(
 					&mut display, 
-					units::tile_to_game(SCREEN_WIDTH / 2), 
-					units::tile_to_game(SCREEN_HEIGHT / 2)
+					(SCREEN_WIDTH / units::Tile(2)).to_game(),
+					(SCREEN_HEIGHT / units::Tile(2)).to_game()
 				),
 
 			display: display,

@@ -16,7 +16,7 @@ pub struct Rectangle {
 impl Rectangle {
 	pub fn new(width: units::Game, height: units::Game) -> Rectangle {
 		Rectangle {
-			x: 0.0, y: 0.0,
+			x: units::Game(0.0), y: units::Game(0.0),
 			width: width, height: height
 		}
 	}

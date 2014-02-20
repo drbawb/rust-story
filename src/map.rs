@@ -4,7 +4,9 @@ use std::cell::RefCell;
 
 use game::graphics;
 use game::sprite;
+
 use game::units;
+use game::units::{AsGame,AsTile};
 
 use game::backdrop;
 use game::collisions::Rectangle;
@@ -24,13 +26,11 @@ struct CollisionTile {
 
 impl CollisionTile {
 	pub fn new(row: units::Tile, col: units::Tile, tile_type: TileType) -> CollisionTile {
-		CollisionTile {
-			tile_type: tile_type,
-			row: row, col: col
-		}
+		CollisionTile { tile_type: tile_type, row: row, col: col }
 	}
 }
 
+// TODO: Conflicts w/ units::Tile, should probably have a different name.
 struct Tile {
 	tile_type: TileType,
 	sprite: Option<Rc<RefCell<~sprite::Updatable>>>
@@ -42,11 +42,9 @@ impl Tile {
 		Tile { tile_type: Air, sprite: None }
 	}
 
-	/// Creates a tile of `tile_type` with `sprite.`
-	fn from_sprite(
-		sprite: Rc<RefCell<~sprite::Updatable>>, tile_type: TileType
-	) -> Tile {
-		// Return tile with Some(sprite)
+	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
+	fn from_sprite(	sprite: Rc<RefCell<~sprite::Updatable>>, 
+			tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
 }
@@ -59,16 +57,19 @@ pub struct Map {
 
 impl Map {
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		static num_rows: units::Tile = 15; // 480
-		static num_cols: units::Tile = 20; // 640
+		// TODO: These are units::Tile(), but I can't use those in the range() clauses below.
+		// (Ironically this comment takes up the same space as the statements to destructure 
+		//  a tuple-struct.)
+		static rows: uint = 15; // 480
+		static cols: uint = 20; // 640
 
 		let sprite = Rc::new(
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(1 as units::Tile, 0 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(1) , units::Tile(0)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -78,9 +79,9 @@ impl Map {
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(11 as units::Tile, 2 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(11), units::Tile(2)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -90,9 +91,9 @@ impl Map {
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(12 as units::Tile, 2 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(12), units::Tile(2)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -102,9 +103,9 @@ impl Map {
 			RefCell::new(
 				~sprite::Sprite::new(
 					graphics, 
-					(0.0 as units::Game, 0.0 as units::Game), 
-					(13 as units::Tile, 2 as units::Tile),
-					(1 as units::Tile, 1 as units::Tile),
+					(units::Game(0.0), units::Game(0.0)), 
+					(units::Tile(13), units::Tile(2)),
+					(units::Tile(1), units::Tile(1)),
 					~"assets/PrtCave.bmp"
 				) as ~sprite::Updatable
 			)
@@ -115,39 +116,39 @@ impl Map {
 		let ct_tile = Rc::new(Tile::from_sprite(chain_top, Air));
 		let cm_tile = Rc::new(Tile::from_sprite(chain_middle, Air));
 		let cb_tile = Rc::new(Tile::from_sprite(chain_bottom, Air));
-		
+
 		let mut map = Map {
-			background:	backdrop::FixedBackdrop::new(
+			background: backdrop::FixedBackdrop::new(
 				~"assets/bkBlue.bmp", graphics
 			),
-			sprites: vec::from_elem(num_rows,
-				vec::from_elem(num_cols, blank_tile.clone())),
-			tiles: vec::from_elem(num_rows,
-				vec::from_elem(num_cols, blank_tile.clone()))
+			sprites: vec::from_elem(rows,
+				vec::from_elem(cols, blank_tile.clone())),
+			tiles: vec::from_elem(rows,
+				vec::from_elem(cols, blank_tile.clone()))
 		};
 	
 		// init `floor`
-		for i in range(0, num_cols) {
-			map.tiles[num_rows - 1][i] = wall_tile.clone(); // store a reference
+		for i in range(0, cols) {
+			map.tiles[rows - 1][i] = wall_tile.clone(); // store a reference
 		}
 
 		// "safety wall"
-		for i in range (0, num_rows) {
+		for i in range (0, rows) {
 			map.tiles[i][0] = wall_tile.clone();
-			map.tiles[i][num_cols - 1] = wall_tile.clone();
+			map.tiles[i][cols - 1] = wall_tile.clone();
 		}
 
 
-		map.tiles[num_rows - 2][3] 	= wall_tile.clone();
-		map.tiles[num_rows - 2][5] 	= wall_tile.clone();
+		map.tiles[rows - 2][3] 	= wall_tile.clone();
+		map.tiles[rows - 2][5] 	= wall_tile.clone();
 		
-		map.tiles[num_rows - 3][4] 	= wall_tile.clone();
-		map.tiles[num_rows - 4][3] 	= wall_tile.clone();
-		map.tiles[num_rows - 5][2] 	= wall_tile.clone();
+		map.tiles[rows - 3][4] 	= wall_tile.clone();
+		map.tiles[rows - 4][3] 	= wall_tile.clone();
+		map.tiles[rows - 5][2] 	= wall_tile.clone();
 
-		map.sprites[num_rows - 4][2] = ct_tile.clone();
-		map.sprites[num_rows - 3][2] = cm_tile.clone();
-		map.sprites[num_rows - 2][2] = cb_tile.clone();
+		map.sprites[rows - 4][2] = ct_tile.clone();
+		map.sprites[rows - 3][2] = cm_tile.clone();
+		map.sprites[rows - 2][2] = cb_tile.clone();
 	
 		map
 	}
@@ -163,8 +164,8 @@ impl Map {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
 						sprite.get().set_position(
-							(units::tile_to_game(b),
-							 units::tile_to_game(a)));
+							(units::Tile(b).to_game(),
+							 units::Tile(a).to_game()));
 
 						sprite.get().draw(graphics);
 					}
@@ -181,9 +182,10 @@ impl Map {
 				match self.tiles[a][b].borrow().sprite {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow().borrow_mut();
+
 						sprite.get().set_position(
-							(units::tile_to_game(b),	
-							 units::tile_to_game(a)));
+							(units::Tile(b).to_game(), units::Tile(a).to_game())
+						);
 
 						sprite.get().draw(graphics);
 					}
@@ -208,16 +210,17 @@ impl Map {
 	}
 
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let first_row 	= units::game_to_tile(rectangle.top());
-		let last_row 	= units::game_to_tile(rectangle.bottom());
-		let first_col 	= units::game_to_tile(rectangle.left());
-		let last_col 	= units::game_to_tile(rectangle.right());
-
 		let mut collision_tiles: ~[CollisionTile] = ~[];
+		
+		let units::Tile(first_row) 	= rectangle.top().to_tile();
+		let units::Tile(last_row) 	= rectangle.bottom().to_tile();
+		let units::Tile(first_col) 	= rectangle.left().to_tile();
+		let units::Tile(last_col) 	= rectangle.right().to_tile();
+
 		for row in range(first_row, last_row + 1) {
 			for col in range(first_col, last_col + 1) {
 				collision_tiles.push( 
-					CollisionTile::new(row, col, self.tiles[row][col].borrow().tile_type)
+					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].borrow().tile_type)
 				);
 			}
 		}

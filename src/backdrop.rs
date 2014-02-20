@@ -8,20 +8,20 @@ use sdl2::render::Texture;
 use game;
 use game::graphics;
 use game::units;
+use game::units::{AsPixel};
 
-static BACKGROUND_SIZE: units::Tile = 4;
+
+static BACKGROUND_SIZE: units::Tile = units::Tile(4);
 
 pub struct FixedBackdrop {
 	surface: Arc<~Texture>
 }
 
 impl FixedBackdrop {
-	pub fn new(	path: ~str, 
-				graphics: &mut graphics::Graphics) 
-				-> FixedBackdrop {
+	pub fn new(path: ~str, graphics: &mut graphics::Graphics) 
+		-> FixedBackdrop {
 
 		let asset = graphics.load_image(path, false);
-
 		FixedBackdrop { surface: asset }
 	}
 
@@ -30,24 +30,18 @@ impl FixedBackdrop {
 	/// in either direction as it progresses.
 	pub fn draw(&self, graphics: &graphics::Graphics) {
 		let (mut x, mut y) = (0i32,0i32);
-		while x < units::tile_to_pixel(game::SCREEN_WIDTH) {
-			while y < units::tile_to_pixel(game::SCREEN_HEIGHT) {
-				let src = Rect::new(
-					0, 0, 
-					units::tile_to_pixel(BACKGROUND_SIZE), 
-					units::tile_to_pixel(BACKGROUND_SIZE));
+		let units::Pixel(tile_size) = BACKGROUND_SIZE.to_pixel();	
 
-				let dest = Rect::new(
-					x, y,
-					units::tile_to_pixel(BACKGROUND_SIZE),
-					units::tile_to_pixel(BACKGROUND_SIZE)
-				);
+		while units::Pixel(x) < game::SCREEN_WIDTH.to_pixel() {
+			while units::Pixel(y) < game::SCREEN_HEIGHT.to_pixel() {
+				let src = Rect::new(0, 0, tile_size, tile_size);
+				let dest = Rect::new(x, y, tile_size, tile_size);
 
 				graphics.blit_surface(*(self.surface.get()), &src, &dest);
-				y+= units::tile_to_pixel(BACKGROUND_SIZE);
+				y+= tile_size;
 			}
 
-			x += units::tile_to_pixel(BACKGROUND_SIZE);
+			x += tile_size;
 			y = 0;
 		}
 	}
