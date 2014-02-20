@@ -41,12 +41,30 @@ impl<T: AsGame>  Add<T, Game> for Game {
 	}
 }
 
+// Allow `-` operator for anything which can be converted `#to_game()`
+impl <T: AsGame> Sub<T, Game> for Game {
+	#[inline(always)]
+	fn sub(&self, rhs: &T) -> Game {
+		let (Game(a), Game(b)) = (*self, rhs.to_game());
+		Game(a - b)
+	}
+}
+
 // Allow `*` operator for anything which can be converted `#to_game()`
 impl <T: AsGame> Mul<T, Game> for Game {
 	#[inline(always)]
 	fn mul(&self, rhs: &T) -> Game {
 		let (Game(a), Game(b)) = (*self, rhs.to_game());
-		Game (a * b)
+		Game(a * b)
+	}
+}
+
+// Allow `/` operator for anything which can be converted `#to_game()`
+impl <T: AsGame> Div<T, Game> for Game {
+	#[inline(always)]
+	fn div(&self, rhs: &T) -> Game {
+		let (Game(a), Game(b)) = (*self, rhs.to_game());
+		Game(a / b)
 	}
 }
 
@@ -75,7 +93,7 @@ pub struct Tile(uint);
 /// The conversion is a simple multiplication.
 impl AsGame for Tile {
 	#[inline(always)]	
-	pub fn to_game(&self) -> Game {
+	fn to_game(&self) -> Game {
 		let Tile(a) = *self;	
 		Game((a * (TILE_SIZE as uint)) as f64)
 	}
@@ -103,9 +121,18 @@ impl<T: AsTile> Add<T, Tile> for Tile {
 	}
 }
 
-type Frame = uint;
-type Fps = uint;
+// Allow `/` operator for anything which can be converted `#to_tiel()`
+impl<T: AsTile> Div<T, Tile> for Tile {
+	#[inline(always)]
+	fn div(&self, rhs: &T) -> Tile {
+		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
+		Tile(a / b)
+	}
+}
 
-type Millis = int;
-type Velocity = f64;
-type Acceleration = f64;
+pub type Frame = uint;
+pub type Fps = uint;
+
+pub type Millis = int;
+pub type Velocity = f64;
+pub type Acceleration = f64;

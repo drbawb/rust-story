@@ -3,8 +3,9 @@ extern crate sdl2;
 use std::cmp;
 use std::io::Timer;
 
-use sdl2::sdl;
+use game::units::{AsGame};
 
+use sdl2::sdl;
 use sdl2::event;
 use sdl2::keycode;
 
@@ -64,8 +65,8 @@ impl Game {
 			map: 	map::Map::create_test_map(&mut display),
 			quote: 	player::Player::new(
 					&mut display, 
-					units::Tile(SCREEN_WIDTH / 2).to_game(), 
-					units::Tile(SCREEN_HEIGHT / 2).to_game()
+					(SCREEN_WIDTH / units::Tile(2)).to_game(),
+					(SCREEN_HEIGHT / units::Tile(2)).to_game()
 				),
 
 			display: display,

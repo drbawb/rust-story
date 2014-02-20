@@ -8,7 +8,7 @@ use sdl2::render::Texture;
 use game;
 use game::graphics;
 use game::units;
-use game::units::{AsGame,AsTile,AsPixel};
+use game::units::{AsPixel};
 
 
 static BACKGROUND_SIZE: units::Tile = units::Tile(4);

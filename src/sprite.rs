@@ -3,7 +3,9 @@ use sdl2::render;
 
 use sync::Arc;
 use game::graphics;
+
 use game::units;
+use game::units::{AsPixel};
 
 #[deriving(IterBytes,Eq)]
 pub enum Motion {
@@ -87,10 +89,14 @@ impl Drawable for Sprite {
 		let (w,h) = self.size;
 		let (x,y) = self.coords;
 		
+		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
+		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
+	
 		let dest_rect = rect::Rect::new(
-			units::Game(x).to_pixel(), units::Game(y).to_pixel(),
-			units::Tile(w).to_pixel(), units::Tile(h).to_pixel()
+			xi, yi,
+			wi, hi
 		);
+
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }
@@ -138,15 +144,18 @@ impl AnimatedSprite {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let (w,h) = size;
 		let (x,y) = offset;
+		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());	
+		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
+		
 		let origin = rect::Rect::new(
-			units::Tile(x).to_pixel(), units::Tile(y).to_pixel(),
-			units::Tile(w).to_pixel(), units::Tile(h).to_pixel()
+			xi, yi,
+			wi, hi
 		);
 		
 		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
 			offset: offset,
-			coords: (0.0, 0.0),
+			coords: (units::Game(0.0), units::Game(0.0)),
 			size: size,
 			
 			fps: fps,

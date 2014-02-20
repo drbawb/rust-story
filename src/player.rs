@@ -7,7 +7,7 @@ use game::sprite;
 
 use game::collisions::{Info,Rectangle};
 use game::units;
-use game::units::{AsGame,AsTile,AsPixel};
+use game::units::{AsGame};
 use game::map;
 
 
@@ -25,7 +25,7 @@ static 	JUMP_SPEED: units::Velocity		= (0.25);
 
 
 // player sprite animation
-static CHAR_OFFSET: units::Tile		= units::Tile(12);
+static CHAR_OFFSET: uint		= 12;
 static SPRITE_NUM_FRAMES: units::Frame	= (3); 
 static SPRITE_FPS: units::Fps		= (20);
 
@@ -35,8 +35,8 @@ static JUMP_FRAME: units::Tile 		= units::Tile(1);
 static FALL_FRAME: units::Tile 		= units::Tile(2);
 
 // horizontal facing (Facing)
-static FACING_WEST: units::Tile			= units::Tile(0) + CHAR_OFFSET;
-static FACING_EAST: units::Tile 		= units::Tile(1) + CHAR_OFFSET;
+static FACING_WEST: units::Tile			= units::Tile(0 + CHAR_OFFSET);
+static FACING_EAST: units::Tile 		= units::Tile(1 + CHAR_OFFSET);
 
 // vertical facing (Looking)
 static WALK_UP_OFFSET: units::Tile		= units::Tile(3);

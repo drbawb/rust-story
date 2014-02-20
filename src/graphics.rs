@@ -10,7 +10,7 @@ use std::hashmap::HashMap;
 
 use game;
 use game::units;
-use game::units::{AsGame,AsTile,AsPixel};
+use game::units::{AsPixel};
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
 	priv screen: ~render::Renderer,

@@ -6,7 +6,7 @@ use game::graphics;
 use game::sprite;
 
 use game::units;
-use game::units::{AsGame,AsTile,AsPixel};
+use game::units::{AsGame,AsTile};
 
 use game::backdrop;
 use game::collisions::Rectangle;
