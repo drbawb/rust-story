@@ -20,11 +20,12 @@ pub struct Graphics {
 impl Graphics {
 	/// Prepare the display for rendering
 	pub fn new() -> Graphics {
+		let units::Pixel(width) = game::SCREEN_WIDTH.to_pixel();
+		let units::Pixel(height) = game::SCREEN_HEIGHT.to_pixel();
 		let current_mode = ~video::Window::new(
 			"rust-story v0.0",							// title
 			video::PosCentered, video::PosCentered,		// position (x,y)
-			game::SCREEN_WIDTH.to_pixel() as int, 
-			game::SCREEN_HEIGHT.to_pixel() as int,	// width, height
+			width as int, height as int,
 			[video::InputGrabbed]
 		);
 

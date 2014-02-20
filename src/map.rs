@@ -4,7 +4,9 @@ use std::cell::RefCell;
 
 use game::graphics;
 use game::sprite;
+
 use game::units;
+use game::units::{AsGame,AsTile,AsPixel};
 
 use game::backdrop;
 use game::collisions::Rectangle;
@@ -216,10 +218,16 @@ impl Map {
 		let last_col 	= rectangle.right().to_tile();
 
 		let mut collision_tiles: ~[CollisionTile] = ~[];
-		for row in range(units::Tile(first_row), units::Tile(last_row + units::Tile(1))) {
-			for col in range(first_col, last_col + 1) {
+		let units::Tile(start_row) = first_row;
+		let units::Tile(end_row) = last_row;
+
+		let units::Tile(start_col) = first_col;
+		let units::Tile(end_col) = last_col;
+
+		for row in range(start_row, end_row + 1) {
+			for col in range(start_col, end_col + 1) {
 				collision_tiles.push( 
-					CollisionTile::new(row, col, self.tiles[row][col].borrow().tile_type)
+					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].borrow().tile_type)
 				);
 			}
 		}
