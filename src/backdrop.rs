@@ -8,6 +8,8 @@ use sdl2::render::Texture;
 use game;
 use game::graphics;
 use game::units;
+use game::units::{AsGame,AsTile,AsPixel};
+
 
 static BACKGROUND_SIZE: units::Tile = units::Tile(4);
 
@@ -30,24 +32,25 @@ impl FixedBackdrop {
 	/// in either direction as it progresses.
 	pub fn draw(&self, graphics: &graphics::Graphics) {
 		let (mut x, mut y) = (0i32,0i32);
-		while x < game::SCREEN_WIDTH.to_pixel() {
-			while y < game::SCREEN_HEIGHT.to_pixel() {
+		let units::Pixel(tile_size) = BACKGROUND_SIZE.to_pixel();	
+
+		while units::Pixel(x) < game::SCREEN_WIDTH.to_pixel() {
+			while units::Pixel(y) < game::SCREEN_HEIGHT.to_pixel() {
 				let src = Rect::new(
 					0, 0, 
-					BACKGROUND_SIZE.to_pixel(), 
-					BACKGROUND_SIZE.to_pixel());
+					tile_size, tile_size 
+				);
 
 				let dest = Rect::new(
 					x, y,
-					BACKGROUND_SIZE.to_pixel(),
-					BACKGROUND_SIZE.to_pixel()
+					tile_size, tile_size	
 				);
 
 				graphics.blit_surface(*(self.surface.get()), &src, &dest);
-				y+= BACKGROUND_SIZE.to_pixel();
+				y+= tile_size;
 			}
 
-			x += BACKGROUND_SIZE.to_pixel();
+			x += tile_size;
 			y = 0;
 		}
 	}
