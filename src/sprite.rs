@@ -148,10 +148,12 @@ impl AnimatedSprite {
 			offset: offset,
 			coords: (0.0, 0.0),
 			size: size,
-			current_frame: match offset {(ox, _) => {ox}}, 
-			last_update: 0,
-			num_frames: (num_frames -1), 	// our frames are drawin w/ a 0-idx'd window.
+			
 			fps: fps,
+			current_frame: 0, 
+			num_frames: num_frames, 	// our frames are drawin w/ a 0-idx'd window.
+			last_update: 0,
+			
 			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
 			source_rect: origin
 		};
@@ -161,29 +163,23 @@ impl AnimatedSprite {
 }
 
 impl Updatable for AnimatedSprite {
-	//! Reads current time-deltas and mutates state accordingly.
+	/// Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self, elapsed_time: units::Millis) {
-		let frame_time = (1000 / self.fps);	
+		let frame_time = (1000 / self.fps) as units::Millis;	
 		self.last_update = self.last_update + elapsed_time;
 
-		// determine next frame
-		if self.last_update as uint > frame_time {
-			let (ox,_) = self.offset; 
+		// if we have missed drawing a frame
+		if self.last_update > frame_time {		
+			self.last_update = 0; 		// reset timer
+			self.current_frame += 1;	// increment frame counter
 
-			self.last_update = 0; // reset timer
-			self.current_frame += 1;
-			if self.current_frame > self.num_frames + ox {
-				self.current_frame = match self.offset {(ox,_) => {ox}};
+			if self.current_frame < self.num_frames {
+				self.source_rect.x += self.source_rect.w;
+			} else {
+				self.current_frame = 0;
+				self.source_rect.x -= self.source_rect.w * (self.num_frames - 1) as i32;
 			}
 		}
-
-		let (ow, oh) = self.size;
-		let (_, oy) = self.offset;
-		self.source_rect = rect::Rect::new(
-			units::tile_to_pixel(self.current_frame),
-			units::tile_to_pixel(oy),
-			units::tile_to_pixel(ow), units::tile_to_pixel(oh)
-		)
 	}
 
 	fn set_position(&mut self, coords: (units::Game,units::Game)) {
@@ -194,10 +190,12 @@ impl Updatable for AnimatedSprite {
 impl Drawable for AnimatedSprite {
 	/// Draws selfs @ coordinates provided by 
 	fn draw(&self, display: &graphics::Graphics) {
+		let (w,h) = self.size;
 		let (x,y) = self.coords;
+
 		let dest_rect = rect::Rect::new(
 			units::game_to_pixel(x), units::game_to_pixel(y),
-			 units::tile_to_pixel(1), units::tile_to_pixel(1)
+			units::tile_to_pixel(w), units::tile_to_pixel(h)
 		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
