@@ -64,12 +64,10 @@ impl Sprite {
 	) -> Sprite {
 		let (w,h) = size;
 		let (x,y) = offset;
-		
-		let origin = rect::Rect::new(
-				units::tile_to_pixel(x), units::tile_to_pixel(y), 
-				units::tile_to_pixel(w), units::tile_to_pixel(h)
-			);
-
+		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
+		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
+	
+		let origin = rect::Rect::new(xi,yi,wi,hi);
 		let sheet = graphics.load_image(file_name, true); // request graphics subsystem cache this sprite.
 
 		let sprite = Sprite{
@@ -92,10 +90,7 @@ impl Drawable for Sprite {
 		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
 		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
 	
-		let dest_rect = rect::Rect::new(
-			xi, yi,
-			wi, hi
-		);
+		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
@@ -144,13 +139,11 @@ impl AnimatedSprite {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let (w,h) = size;
 		let (x,y) = offset;
+	
 		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());	
 		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
 		
-		let origin = rect::Rect::new(
-			xi, yi,
-			wi, hi
-		);
+		let origin = rect::Rect::new(xi, yi, wi, hi);
 		
 		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
@@ -201,11 +194,10 @@ impl Drawable for AnimatedSprite {
 	fn draw(&self, display: &graphics::Graphics) {
 		let (w,h) = self.size;
 		let (x,y) = self.coords;
+		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
+		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
 
-		let dest_rect = rect::Rect::new(
-			units::game_to_pixel(x), units::game_to_pixel(y),
-			units::tile_to_pixel(w), units::tile_to_pixel(h)
-		);
+		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
 }

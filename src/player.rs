@@ -345,7 +345,7 @@ impl Player {
 						graphics, 
 						(units::Game(0.0), units::Game(0.0)), 
 						(motion_frame + (looking_frame), facing_frame), 
-						(1 as units::Tile, 1 as units::Tile),
+						(units::Tile(1), units::Tile(1)),	
 						file_path
 					) as ~sprite::Updatable 
 				}
@@ -363,6 +363,7 @@ impl Player {
 						graphics, 
 						(units::Game(0.0), units::Game(0.0)), 
 						(looking_frame, facing_frame), 
+						(units::Tile(1), units::Tile(1)),	
 						file_path
 					) as ~sprite::Updatable 
 				}
@@ -377,7 +378,7 @@ impl Player {
 					~sprite::AnimatedSprite::new(
 						graphics, file_path, 
 						(motion_frame + looking_frame, facing_frame), 
-						(1, 1),
+						(units::Tile(1), units::Tile(1)),
 						SPRITE_NUM_FRAMES, SPRITE_FPS
 					).unwrap() as ~sprite::Updatable
 				}
