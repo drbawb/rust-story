@@ -338,6 +338,7 @@ impl Player {
 						graphics, 
 						(0.0, 0.0), 
 						(motion_frame + (looking_frame), facing_frame), 
+						(1 as units::Tile, 1 as units::Tile),
 						file_path
 					) as ~sprite::Updatable 
 				}
@@ -351,7 +352,12 @@ impl Player {
 						_ => motion_frame
 					};
 					
-					~sprite::Sprite::new(graphics, (0.0 ,0.0), (looking_frame, facing_frame), file_path) as ~sprite::Updatable 
+					~sprite::Sprite::new(
+						graphics, 
+						(0.0 ,0.0),  (looking_frame, facing_frame), 
+						(1 as units::Tile, 1 as units::Tile),
+						file_path
+					) as ~sprite::Updatable 
 				}
 
 				// dynamic: 

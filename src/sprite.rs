@@ -46,16 +46,50 @@ pub trait Updatable : Drawable {
 pub struct Sprite {
 	sprite_sheet: Arc<~render::Texture>, 
 	source_rect: rect::Rect,
-	coords: (units::Game,units::Game)
+	size: (units::Tile, units::Tile),
+	coords: (units::Game,units::Game),
+}
+
+impl Sprite {
+	/// A new sprite which will draw itself at `coords`
+	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
+	pub fn new(
+		graphics: &mut graphics::Graphics, 
+		coords: (units::Game,units::Game), // position on screen
+		offset: (units::Tile,units::Tile), // source_x, source_y
+		size: 	(units::Tile,units::Tile), // width, height
+		file_name: ~str
+	) -> Sprite {
+		let (w,h) = size;
+		let (x,y) = offset;
+		
+		let origin = rect::Rect::new(
+				units::tile_to_pixel(x), units::tile_to_pixel(y), 
+				units::tile_to_pixel(w), units::tile_to_pixel(h)
+			);
+
+		let sheet = graphics.load_image(file_name, true); // request graphics subsystem cache this sprite.
+
+		let sprite = Sprite{
+			sprite_sheet: sheet,
+			source_rect: origin,
+			size:	size,
+			coords: coords,
+		};
+
+		sprite
+	}
 }
 
 impl Drawable for Sprite {
 	/// Draws selfs @ coordinates provided by 
 	fn draw(&self, display: &graphics::Graphics) {
+		let (w,h) = self.size;
 		let (x,y) = self.coords;
+		
 		let dest_rect = rect::Rect::new(
 			units::game_to_pixel(x), units::game_to_pixel(y),
-			units::tile_to_pixel(1), units::tile_to_pixel(1)
+			units::tile_to_pixel(w), units::tile_to_pixel(h)
 		);
 		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
 	}
@@ -69,33 +103,6 @@ impl Updatable for Sprite {
 
 	fn set_position(&mut self, coords: (units::Game,units::Game)) {
 		self.coords = coords;
-	}
-}
-
-impl Sprite {
-	/// A new sprite which will draw itself at `coords`
-	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
-	pub fn new(
-		graphics: &mut graphics::Graphics, 
-		coords: (units::Game,units::Game), // position on screen
-		offset: (units::Tile,units::Tile), // source_x, source_y
-		file_name: ~str
-	) -> Sprite {
-		let (a,b) = offset;
-		let origin = rect::Rect::new(
-				units::tile_to_pixel(a), units::tile_to_pixel(b), 
-				units::tile_to_pixel(1), units::tile_to_pixel(1)
-			);
-
-		let sheet = graphics.load_image(file_name, true); // request graphics subsystem cache this sprite.
-
-		let sprite = Sprite{
-			sprite_sheet: sheet,
-			source_rect: origin,
-			coords: coords
-		};
-
-		sprite
 	}
 }
 
