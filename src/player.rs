@@ -144,23 +144,12 @@ impl Player {
 	fn update_x(&mut self, map: &map::Map) {
 		// compute next velocity
 		let accel_x: units::Acceleration = if self.accel_x < 0  {
-			if self.on_ground() {
-				-WALKING_ACCEL
-			} else {
-				-AIR_ACCELERATION
-			}
+			if self.on_ground() { -WALKING_ACCEL } else { -AIR_ACCELERATION }
 		} else if self.accel_x > 0 {
-			if self.on_ground() {
-				WALKING_ACCEL
-			} else {
-				AIR_ACCELERATION
-			}
-		} else {
-			0.0
-		};
+			if self.on_ground() {  WALKING_ACCEL } else {  AIR_ACCELERATION }
+		} else { 0.0 };
 
-		self.velocity_x += 
-			self.elapsed_time as f64 * accel_x;
+		self.velocity_x += self.elapsed_time as f64 * accel_x;
 
 		if self.accel_x < 0 {
 			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
