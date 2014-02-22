@@ -154,7 +154,7 @@ impl AnimatedSprite {
 			fps: fps,
 			current_frame: 0, 
 			num_frames: num_frames, 	// our frames are drawin w/ a 0-idx'd window.
-			last_update: 0,
+			last_update: units::Millis(0),
 			
 			sprite_sheet: sheet, 	// "i made this" -- we own this side of the Arc()
 			source_rect: origin
@@ -167,13 +167,13 @@ impl AnimatedSprite {
 impl Updatable for AnimatedSprite {
 	/// Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self, elapsed_time: units::Millis) {
-		let frame_time = (1000 / self.fps) as units::Millis;	
+		let frame_time = units::Millis(1000 / self.fps as int);	
 		self.last_update = self.last_update + elapsed_time;
 
 		// if we have missed drawing a frame
 		if self.last_update > frame_time {		
-			self.last_update = 0; 		// reset timer
-			self.current_frame += 1;	// increment frame counter
+			self.last_update = units::Millis(0);	// reset timer
+			self.current_frame += 1;				// increment frame counter
 
 			if self.current_frame < self.num_frames {
 				self.source_rect.x += self.source_rect.w;
