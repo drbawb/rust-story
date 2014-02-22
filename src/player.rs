@@ -147,24 +147,24 @@ impl Player {
 			if self.on_ground() { -WALKING_ACCEL } else { -AIR_ACCELERATION }
 		} else if self.accel_x > 0 {
 			if self.on_ground() {  WALKING_ACCEL } else {  AIR_ACCELERATION }
-		} else { 0.0 };
+		} else { units::Acceleration(0.0) };
 
-		self.velocity_x += self.elapsed_time as f64 * accel_x;
+		self.velocity_x = self.velocity_x + (accel_x * self.elapsed_time);
 
 		if self.accel_x < 0 {
 			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
 		} else if self.accel_x > 0 {
 			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
 		} else if self.on_ground() {
-			self.velocity_x = if self.velocity_x > 0.0 {
-				cmp::max(0.0, self.velocity_x - (self.elapsed_time as f64 * FRICTION))
+			self.velocity_x = if self.velocity_x > units::Velocity(0.0) {
+				cmp::max(units::Velocity(0.0), self.velocity_x - (FRICTION * self.elapsed_time))
 			} else {
-				cmp::min(0.0, self.velocity_x + (self.elapsed_time as f64 * FRICTION))
+				cmp::min(units::Velocity(0.0), self.velocity_x + (FRICTION * self.elapsed_time))
 			};
 		}
 
 		// x-axis collision checking 
-		let delta = units::Game(self.velocity_x * self.elapsed_time as f64);
+		let delta = self.velocity_x * self.elapsed_time;
 		if delta > units::Game(0.0) { // moving right
 			// collisions right-side
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);

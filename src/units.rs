@@ -148,10 +148,65 @@ impl<T: AsTile> Div<T, Tile> for Tile {
 	}
 }
 
+#[deriving(Eq,Ord)]
 pub struct Millis(int);
+
+#[deriving(Eq,Ord)]
 pub struct Velocity(f64);
 
+impl Neg<Velocity> for Velocity {
+	#[inline(always)]
+	fn neg(&self) -> Velocity {
+		let Velocity(v0) = *self;
+		Acceleration(-v0)
+	}
+}
+
+impl Add<Velocity, Velocity> for Velocity {
+	#[inline(always)]
+	fn add(&self, rhs: &Velocity) -> Velocity {
+		let (Velocity(v0), Velocity(v1)) = (*self, *rhs);
+		Velocity(v0 + v1)
+	}
+}
+
+impl Sub<Velocity, Velocity> for Velocity {
+	#[inline(always)]
+	fn sub(&self, rhs: &Velocity) -> Velocity {
+		let (Velocity(v0), Velocity(v1)) = (*self, *rhs);
+		Velocity(v0 - v1)
+	}
+}
+
+impl Mul<Millis,Game> for Velocity {
+	#[inline(always)]
+	fn mul(&self, rhs: &Millis) -> Game {
+		let (Velocity(v0), Millis(t)) = (*self, *rhs);
+		Game(v0 * t as f64)
+	}
+}
+
+
+
+
+#[deriving(Eq,Ord)]
 pub struct Acceleration(f64);
+
+impl Mul<Millis, Velocity> for Acceleration {
+	#[inline(always)]
+	fn mul(&self, rhs: &Millis) -> Velocity {
+		let (Acceleration(a), Millis(t)) = (*self, *rhs);
+		Velocity(a * t as f64)
+	}
+}
+
+impl Neg<Acceleration> for Acceleration {
+	#[inline(always)]
+	fn neg(&self) -> Acceleration {
+		let Acceleration(a) = *self;
+		Acceleration(-a)
+	}
+}
 
 pub type Frame = uint;
 pub type Fps = uint;
