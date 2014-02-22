@@ -169,7 +169,7 @@ impl Player {
 			// collisions right-side
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);
 			self.x = if info.collided {
-				self.velocity_x = 0.0;
+				self.velocity_x = units::Velocity(0.0);
 				(info.col.to_game() - X_BOX.right())
 			} else {
 				(self.x + delta)
@@ -187,7 +187,7 @@ impl Player {
 			// collisions left-side
 			let mut info = self.get_collision_info(&self.left_collision(delta), map);
 			self.x = if info.collided {
-				self.velocity_x = 0.0;
+				self.velocity_x = units::Velocity(0.0);
 				(info.col.to_game() + X_BOX.right())
 			} else {
 				(self.x + delta) 
@@ -205,26 +205,28 @@ impl Player {
 
 	fn update_y (&mut self, map: &map::Map) {
 		// update velocity
-		let gravity: units::Acceleration = if self.is_jump_active && self.velocity_y < 0.0 {
-			JUMP_GRAVITY
-		} else {
-			GRAVITY
-		};
+		let gravity: units::Acceleration = 
+			if self.is_jump_active 
+			&& self.velocity_y < units::Velocity(0.0) {
+				JUMP_GRAVITY
+			} else {
+				GRAVITY
+			};
 
 		self.velocity_y = cmp::min(
-			self.velocity_y + gravity * (self.elapsed_time as f64), 
+			self.velocity_y + (gravity * self.elapsed_time), 
 			MAX_VELOCITY_Y
 		);
 
 		// calculate delta
-		let delta = units::Game(self.velocity_y * (self.elapsed_time as f64));
+		let delta = self.velocity_y * self.elapsed_time;
 
 		// check collision in direction of delta
 		if delta > units::Game(0.0) {
 			// react to collision
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
 			self.y = if info.collided {
-				self.velocity_y = 0.0;
+				self.velocity_y = units::Velocity(0.0);
 				self.on_ground = true;
 
 				(info.row.to_game() - Y_BOX.bottom())
@@ -244,7 +246,7 @@ impl Player {
 			// react to collision
 			let mut info = self.get_collision_info(&self.top_collision(delta), map);
 			self.y = if info.collided {
-				self.velocity_y = 0.0;
+				self.velocity_y = units::Velocity(0.0);
 				(info.row.to_game() + Y_BOX.height())
 			} else {
 				self.on_ground = false;
@@ -459,7 +461,7 @@ impl Player {
 				(sprite::Walking, last_facing, last_looking)
 			}	
 		} else {
-			if self.velocity_y < 0.0 {
+			if self.velocity_y < units::Velocity(0.0) {
 				(sprite::Jumping, last_facing, last_looking)
 			} else {
 				(sprite::Falling, last_facing, last_looking)

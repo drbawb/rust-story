@@ -151,6 +151,22 @@ impl<T: AsTile> Div<T, Tile> for Tile {
 #[deriving(Eq,Ord)]
 pub struct Millis(int);
 
+impl Add<Millis,Millis> for Millis {
+	#[inline(always)]
+	fn add(&self, rhs: &Millis) -> Millis {
+		let (Millis(t0), Millis(t1)) = (*self, *rhs);
+		Millis(t0 + t1)
+	}
+}
+
+impl Sub<Millis,Millis> for Millis {
+	#[inline(always)]
+	fn sub(&self, rhs: &Millis) -> Millis {
+		let (Millis(t0), Millis(t1)) = (*self, *rhs);
+		Millis(t0 - t1)
+	}
+}
+
 #[deriving(Eq,Ord)]
 pub struct Velocity(f64);
 
@@ -158,7 +174,7 @@ impl Neg<Velocity> for Velocity {
 	#[inline(always)]
 	fn neg(&self) -> Velocity {
 		let Velocity(v0) = *self;
-		Acceleration(-v0)
+		Velocity(-v0)
 	}
 }
 
@@ -185,9 +201,6 @@ impl Mul<Millis,Game> for Velocity {
 		Game(v0 * t as f64)
 	}
 }
-
-
-
 
 #[deriving(Eq,Ord)]
 pub struct Acceleration(f64);

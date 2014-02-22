@@ -18,8 +18,8 @@ pub mod player;
 pub mod sprite;
 pub mod units;
 
-static TARGET_FRAMERATE: units::Fps = 60;
-static MAX_FRAME_TIME:	units::Millis = 5 * (1000 / TARGET_FRAMERATE) as int;
+static TARGET_FRAMERATE: units::Fps 	= 60;
+static MAX_FRAME_TIME: units::Millis 	= units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
 
 pub static SCREEN_WIDTH: 	units::Tile 	= units::Tile(20);
 pub static SCREEN_HEIGHT:	units::Tile  	= units::Tile(15);
@@ -85,13 +85,13 @@ impl Game {
 	/// until its next frame deadline.
 	fn event_loop(&mut self) {
 		// event loop control
-		let frame_delay = (1000 / TARGET_FRAMERATE) as units::Millis;
-		let mut last_update_time = sdl::get_ticks() as units::Millis;
+		let frame_delay = units::Millis(1000 / TARGET_FRAMERATE as int);
+		let mut last_update_time = units::Millis(sdl::get_ticks() as int);
 		let mut running = true;
 		let mut timer = Timer::new().unwrap();
 		
 		while running {
-			let start_time_ms = sdl::get_ticks() as units::Millis;
+			let start_time_ms = units::Millis(sdl::get_ticks() as int);
 			self.controller.begin_new_frame();
 
 			// drain event queue once per frame
@@ -145,8 +145,8 @@ impl Game {
 			}
 
 			// update
-			let current_time_ms = sdl::get_ticks() as units::Millis;
-			let elapsed_time = current_time_ms as int - last_update_time;
+			let current_time_ms = units::Millis(sdl::get_ticks() as int);
+			let elapsed_time = last_update_time - current_time_ms;
 			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
 			last_update_time = current_time_ms;
 
@@ -156,9 +156,10 @@ impl Game {
 			self.display.switch_buffers();
 
 			// throttle event-loop
-			let iter_time = (sdl::get_ticks() as units::Millis) - start_time_ms;
+			let iter_time = units::Millis(sdl::get_ticks() as int) - start_time_ms;
 			let next_frame_time: u64 = if frame_delay > iter_time {	// if we did not miss our deadline: adjust delay accordingly
-				(frame_delay - iter_time) as u64
+				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
+				(fd - it) as u64
 			} else { 0 as u64 };									// otherwise missed frame-deadline, skip waiting period
 			timer.sleep(next_frame_time);
 
