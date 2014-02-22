@@ -347,6 +347,7 @@ impl Player {
 				| (sprite::Falling, _, looking) => {
 					let looking_frame = match looking { // ignored while jumping / falling for now
 						sprite::Down => JUMP_DOWN_FRAME,
+						sprite::Up => WALK_UP_OFFSET,
 						_ => motion_frame
 					};
 					
