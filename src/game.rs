@@ -72,7 +72,7 @@ impl Game {
 				),
 			yatty:	enemies::CaveBat::new(
 					&mut display,
-					(SCREEN_WIDTH / units::Tile(3)).to_game(),
+					(SCREEN_WIDTH / units::Tile(2)).to_game(),
 					(SCREEN_HEIGHT / units::Tile(2)).to_game()	
 				),
 			display: display,
@@ -195,5 +195,6 @@ impl Game {
 	fn update(&mut self, elapsed_time: units::Millis) {
 		self.map.update(elapsed_time);
 		self.quote.update(elapsed_time, &self.map);
+		self.yatty.update(elapsed_time);
 	}
 }
