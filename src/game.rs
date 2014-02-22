@@ -146,7 +146,7 @@ impl Game {
 
 			// update
 			let current_time_ms = units::Millis(sdl::get_ticks() as int);
-			let elapsed_time = last_update_time - current_time_ms;
+			let elapsed_time = current_time_ms - last_update_time;
 			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
 			last_update_time = current_time_ms;
 
@@ -163,13 +163,15 @@ impl Game {
 			} else { 0 as u64 };									// otherwise missed frame-deadline, skip waiting period
 			timer.sleep(next_frame_time);
 
-			/*
-			// Print current FPS to stdout
-			let seconds_per_frame =  (sdl::sdl::get_ticks() - start_time_ms) as f64 / 1000.0;
+			
+			/* Print current FPS to stdout
+			let units::Millis(start_time) = start_time_ms;
+			let seconds_per_frame =  (sdl::get_ticks() as int - start_time) as f64 / 1000.0;
 			let fps = 1.0 / (seconds_per_frame);
 
 			println!("fps: {}", fps);
 			*/
+			
 		}
 
 	}
