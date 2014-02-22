@@ -15,6 +15,7 @@ pub mod graphics;
 pub mod input;
 pub mod map;
 pub mod player;
+pub mod enemies;
 pub mod sprite;
 pub mod units;
 
@@ -27,6 +28,7 @@ pub static SCREEN_HEIGHT:	units::Tile  	= units::Tile(15);
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
 	priv quote: player::Player,
+	priv yatty: enemies::CaveBat,
 	priv map: 	map::Map,
 
 	priv display: 		graphics::Graphics,
@@ -68,7 +70,11 @@ impl Game {
 					(SCREEN_WIDTH / units::Tile(2)).to_game(),
 					(SCREEN_HEIGHT / units::Tile(2)).to_game()
 				),
-
+			yatty:	enemies::CaveBat::new(
+					&mut display,
+					(SCREEN_WIDTH / units::Tile(3)).to_game(),
+					(SCREEN_HEIGHT / units::Tile(2)).to_game()	
+				),
 			display: display,
 			controller: controller
 		}
@@ -181,6 +187,7 @@ impl Game {
 		self.map.draw_background(&self.display);
 		self.map.draw_sprites(&self.display);
 		self.quote.draw(&self.display);
+		self.yatty.draw(&self.display);
 		self.map.draw(&self.display);
 	}
 
