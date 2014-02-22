@@ -86,7 +86,7 @@ impl<T: AsPixel> Add<T, Pixel> for Pixel {
 	}
 }
 
-#[deriving(Clone,Eq,Ord)]
+#[deriving(Eq,Ord)]
 pub struct Tile(uint);
 
 /// A single `Tile` represents `TILE_SIZE` game units.
@@ -148,9 +148,10 @@ impl<T: AsTile> Div<T, Tile> for Tile {
 	}
 }
 
+pub struct Millis(int);
+pub struct Velocity(f64);
+
+pub struct Acceleration(f64);
+
 pub type Frame = uint;
 pub type Fps = uint;
-
-pub type Millis = int;
-pub type Velocity = f64;
-pub type Acceleration = f64;

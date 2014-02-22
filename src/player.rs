@@ -12,22 +12,22 @@ use game::map;
 
 
 // physics
-static FRICTION: units::Acceleration 	= (0.00049804687);
-static GRAVITY: units::Acceleration	= (0.00078125);
+static FRICTION: units::Acceleration 	= units::Acceleration(0.00049804687);
+static GRAVITY: units::Acceleration	= units::Acceleration(0.00078125);
 
-static WALKING_ACCEL: units::Acceleration 	= (0.00083007812);
-static MAX_VELOCITY_X: units::Velocity 		= (0.15859375);
-static MAX_VELOCITY_Y: units::Velocity		= (0.2998046875);
+static WALKING_ACCEL: units::Acceleration 	= units::Acceleration(0.00083007812);
+static MAX_VELOCITY_X: units::Velocity 		= units::Velocity(0.15859375);
+static MAX_VELOCITY_Y: units::Velocity		= units::Velocity(0.2998046875);
 
-static	AIR_ACCELERATION: units::Acceleration 	= (0.0003125);
-static 	JUMP_GRAVITY: units::Acceleration	= (0.0003125);
-static 	JUMP_SPEED: units::Velocity		= (0.25);
+static	AIR_ACCELERATION: units::Acceleration 	=	units::Acceleration(0.0003125);
+static 	JUMP_GRAVITY: units::Acceleration		= units::Acceleration(0.0003125);
+static 	JUMP_SPEED: units::Velocity				= units::Velocity(0.25);
 
 
 // player sprite animation
-static CHAR_OFFSET: uint		= 12;
+static CHAR_OFFSET: uint				= 12;
 static SPRITE_NUM_FRAMES: units::Frame	= (3); 
-static SPRITE_FPS: units::Fps		= (20);
+static SPRITE_FPS: units::Fps			= (20);
 
 // motion
 static STAND_FRAME: units::Tile 	= units::Tile(0);
@@ -39,7 +39,7 @@ static FACING_WEST: units::Tile			= units::Tile(0 + CHAR_OFFSET);
 static FACING_EAST: units::Tile 		= units::Tile(1 + CHAR_OFFSET);
 
 // vertical facing (Looking)
-static WALK_UP_OFFSET: units::Tile		= units::Tile(3);
+static WALK_UP_OFFSET: units::Tile			= units::Tile(3);
 static JUMP_DOWN_FRAME:  units::Tile		= units::Tile(6);
 static STAND_DOWN_FRAME: units::Tile 		= units::Tile(7);
 
@@ -91,7 +91,7 @@ impl Player {
 
 		// construct new player
 		let mut new_player = Player{
-			elapsed_time: 0,
+			elapsed_time: units::Millis(0),
 			sprites: sprite_map,
 
 			x: x, 
@@ -99,8 +99,8 @@ impl Player {
 			movement: (sprite::Standing, sprite::East, sprite::Horizontal),
 			on_ground: false,
 			
-			velocity_x: 0.0,
-			velocity_y: 0.0,
+			velocity_x: units::Velocity(0.0),
+			velocity_y: units::Velocity(0.0),
 			accel_x: 1,
 
 			is_interacting: false,
