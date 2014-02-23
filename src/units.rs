@@ -231,13 +231,6 @@ impl Degrees {
 	}
 }
 
-impl AsGame for Degrees {
-	#[inline(always)]
-	fn to_game(&self) -> Game { 
-		Game(f64::sin(self.to_radians())) 
-	}
-}
-
 impl Add<Degrees,Degrees> for Degrees {
 	#[inline(always)]
 	fn add(&self, rhs: &Degrees) -> Degrees {
