@@ -43,7 +43,7 @@ impl CaveBat {
 	}
 
 	pub fn update(&mut self, elapsed_time: units::Millis) {
-		let av: units::Degrees = (ANGULAR_VELOCITY * elapsed_time);
+		let av: units::Degrees = ANGULAR_VELOCITY * elapsed_time;
 		let amp: units::Game = // peak height of the wave in game units
 			units::Tile(5).to_game() / units::Game(2.0);
 		
