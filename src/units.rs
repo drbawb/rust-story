@@ -221,5 +221,59 @@ impl Neg<Acceleration> for Acceleration {
 	}
 }
 
+#[deriving(Eq,Ord)]
+pub struct Degrees(f64);
+
+impl Degrees {
+	pub fn to_radians(&self) -> f64 {
+		let Degrees(d) = *self;
+		d * (f64::consts::PI / 180.0)
+	}
+}
+
+impl AsGame for Degrees {
+	#[inline(always)]
+	fn to_game(&self) -> Game { 
+		Game(f64::sin(self.to_radians())) 
+	}
+}
+
+impl Add<Degrees,Degrees> for Degrees {
+	#[inline(always)]
+	fn add(&self, rhs: &Degrees) -> Degrees {
+		let (Degrees(d0), Degrees(d1)) = (*self, *rhs);
+		Degrees(d0 + d1)
+	}
+}
+
+impl<T:AsGame> Mul<T, Degrees> for Degrees {
+	#[inline(always)]
+	fn mul(&self, rhs: &T) -> Degrees {
+		let (Degrees(d), Game(g)) = (*self, rhs.to_game());
+		Degrees(d * g)
+	}
+}
+
+impl Div<Millis,AngularVelocity> for Degrees {
+	#[inline(always)]
+	fn div(&self, rhs: &Millis) -> AngularVelocity {
+		let (Degrees(d), Millis(t)) = (*self, *rhs);
+		AngularVelocity(d / t as f64)
+	}
+}
+
+#[deriving(Eq,Ord)]
+pub struct AngularVelocity(f64);
+
+impl Mul<Millis, Degrees> for AngularVelocity {
+	#[inline(always)]
+	fn mul(&self, rhs: &Millis) -> Degrees {
+		let (AngularVelocity(av), Millis(t)) = (*self, *rhs);
+		Degrees(av * t as f64)
+	}
+}
+
+
+
 pub type Frame = uint;
 pub type Fps = uint;
