@@ -44,7 +44,7 @@ impl CaveBat {
 
 	pub fn update(&mut self, elapsed_time: units::Millis) {
 		let av: units::Degrees = (ANGULAR_VELOCITY * elapsed_time);
-		let amp: units::Game = 
+		let amp: units::Game = // peak height of the wave in game units
 			units::Tile(5).to_game() / units::Game(2.0);
 		
 		let wave: units::Game = 
@@ -53,9 +53,6 @@ impl CaveBat {
 			);
 		
 		self.flight_angle = self.flight_angle + av;
-		println!("new flight-angle: {:?}", self.flight_angle);
-		
-
 		let y1 = self.y + (amp * wave);
 
 		self.sprite.update(elapsed_time);

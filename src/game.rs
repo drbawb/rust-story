@@ -72,8 +72,8 @@ impl Game {
 				),
 			yatty:	enemies::CaveBat::new(
 					&mut display,
-					(SCREEN_WIDTH / units::Tile(2)).to_game(),
-					(SCREEN_HEIGHT / units::Tile(2)).to_game()	
+					(SCREEN_WIDTH / units::Tile(3)).to_game(),
+					(units::Tile(10)).to_game()	
 				),
 			display: display,
 			controller: controller
