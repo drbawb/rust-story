@@ -1,6 +1,7 @@
-use std::vec;
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::vec;
+
+use sync::{RWArc};
 
 use game::graphics;
 use game::sprite;
@@ -33,7 +34,7 @@ impl CollisionTile {
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 struct Tile {
 	tile_type: TileType,
-	sprite: Option<Rc<RefCell<~sprite::Updatable>>>
+	sprite: Option<RWArc<~sprite::Updatable:Freeze+Send>>
 }
 
 impl Tile {
@@ -43,7 +44,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(	sprite: Rc<RefCell<~sprite::Updatable>>, 
+	fn from_sprite(	sprite: RWArc<~sprite::Updatable:Freeze+Send>, 
 			tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
@@ -61,52 +62,44 @@ impl Map {
 		static cols: uint = 20; // 640
 
 		let map_path = ~"assets/base/Stage/PrtCave.bmp";
-		let sprite = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(1) , units::Tile(0)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let sprite = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(1) , units::Tile(0)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let chain_top = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(11), units::Tile(2)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let chain_top = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(11), units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let chain_middle = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(12), units::Tile(2)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let chain_middle = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(12), units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let chain_bottom = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(13), units::Tile(2)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let chain_bottom = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(13), units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
 		let blank_tile = Rc::new(Tile::new());
@@ -160,12 +153,13 @@ impl Map {
 			for b in range(0, self.sprites[a].len()) {
 				match self.sprites[a][b].borrow().sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
-						sprite.get().set_position(
-							(units::Tile(b).to_game(),
-							 units::Tile(a).to_game()));
+						elem.write(|sprite| {
+							sprite.set_position(
+								(units::Tile(b).to_game(),
+								 units::Tile(a).to_game()));
 
-						sprite.get().draw(graphics);
+							sprite.draw(graphics);
+						});
 					}
 					_ => {}
 				};
@@ -179,13 +173,13 @@ impl Map {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].borrow().sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
+						elem.write(|sprite| {
+							sprite.set_position(
+								(units::Tile(b).to_game(), units::Tile(a).to_game())
+							);
 
-						sprite.get().set_position(
-							(units::Tile(b).to_game(), units::Tile(a).to_game())
-						);
-
-						sprite.get().draw(graphics);
+							sprite.draw(graphics);
+						});
 					}
 					_ => {}
 				};
@@ -198,8 +192,9 @@ impl Map {
 			for col in row.iter() {
 				match col.borrow().sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
-						sprite.get().update(elapsed_time);
+						elem.write(|sprite| {
+							sprite.update(elapsed_time);
+						});
 					}
 					_ => {}
 				};
