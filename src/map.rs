@@ -56,6 +56,12 @@ pub struct Map {
 }
 
 impl Map {
+	/// Will initialize a map (20 * 15) tiles:
+	///	
+	/// * Most of these tiles will be `Air` tiles.
+	/// * There are 15-tile high walls in the first and last columns. 
+	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
+	/// * A 3-tile high chain is placed on the left-side of this obstacle course.
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
 		static rows: uint = 15; // 480
 		static cols: uint = 20; // 640
@@ -201,6 +207,14 @@ impl Map {
 		}
 	}
 
+	/// Checks if `Rectangle` is colliding with any tiles in the foreground.
+	/// 
+	/// NOTE: Checking a Rectangle which would be placed outside the tile-map
+	/// results in a runtime failure!
+	/// 
+	/// NOTE: This is a simple check of the _outside bounds_ of the
+	/// rectangle & tile. -- This method may claim that the player is 
+	/// colliding w/ the edge of a tile that _appears to be_ empty space.
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
 		let mut collision_tiles: ~[CollisionTile] = ~[];
 		
