@@ -1,19 +1,17 @@
-use std::rc::Rc;
 use std::vec;
-
-use sync::{RWArc};
+use sync::RWArc;
 
 use game::graphics;
 use game::sprite;
 
+use game::backdrop;
+use game::collisions::Rectangle;
 use game::units;
 use game::units::{AsGame,AsTile};
 
-use game::backdrop;
-use game::collisions::Rectangle;
 
 
-#[deriving(Eq)]
+#[deriving(Eq,Clone)]
 pub enum TileType {
 	Air,
 	Wall
@@ -32,6 +30,7 @@ impl CollisionTile {
 }
 
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
+#[deriving(Clone)]
 struct Tile {
 	tile_type: TileType,
 	sprite: Option<RWArc<~sprite::Updatable:Freeze+Send>>
@@ -52,8 +51,8 @@ impl Tile {
 
 pub struct Map {
 	priv background: 	backdrop::FixedBackdrop,
-	priv sprites:		~[~[Rc<Tile>]],
-	priv tiles: 		~[~[Rc<Tile>]]
+	priv sprites:		~[~[Tile]],
+	priv tiles: 		~[~[Tile]]
 }
 
 impl Map {
@@ -102,11 +101,11 @@ impl Map {
 			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let blank_tile = Rc::new(Tile::new());
-		let wall_tile = Rc::new(Tile::from_sprite(sprite, Wall));
-		let ct_tile = Rc::new(Tile::from_sprite(chain_top, Air));
-		let cm_tile = Rc::new(Tile::from_sprite(chain_middle, Air));
-		let cb_tile = Rc::new(Tile::from_sprite(chain_bottom, Air));
+		let blank_tile = Tile::new();
+		let wall_tile = Tile::from_sprite(sprite, Wall);
+		let ct_tile = Tile::from_sprite(chain_top, Air);
+		let cm_tile = Tile::from_sprite(chain_middle, Air);
+		let cb_tile = Tile::from_sprite(chain_bottom, Air);
 
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
@@ -151,7 +150,7 @@ impl Map {
 	pub fn draw_sprites(&self, graphics: &graphics::Graphics) {
 		for a in range(0, self.sprites.len()) {
 			for b in range(0, self.sprites[a].len()) {
-				match self.sprites[a][b].borrow().sprite {
+				match self.sprites[a][b].sprite {
 					Some(ref elem) => {
 						elem.write(|sprite| {
 							sprite.set_position(
@@ -171,7 +170,7 @@ impl Map {
 	pub fn draw(&self, graphics: &graphics::Graphics) {
 		for a in range(0, self.tiles.len()) {
 			for b in range(0, self.tiles[a].len()) {
-				match self.tiles[a][b].borrow().sprite {
+				match self.tiles[a][b].sprite {
 					Some(ref elem) => {
 						elem.write(|sprite| {
 							sprite.set_position(
@@ -190,7 +189,7 @@ impl Map {
 	pub fn update(&mut self, elapsed_time: units::Millis) {
 		for row in self.tiles.iter() {
 			for col in row.iter() {
-				match col.borrow().sprite {
+				match col.sprite {
 					Some(ref elem) => {
 						elem.write(|sprite| {
 							sprite.update(elapsed_time);
@@ -213,7 +212,7 @@ impl Map {
 		for row in range(first_row, last_row + 1) {
 			for col in range(first_col, last_col + 1) {
 				collision_tiles.push( 
-					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].borrow().tile_type)
+					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].tile_type)
 				);
 			}
 		}
