@@ -10,6 +10,7 @@ use game::units;
 use game::units::{AsGame};
 use game::map;
 
+type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 
 // physics
 static FRICTION: units::Acceleration 	= units::Acceleration(0.00049804687);
@@ -58,12 +59,12 @@ static Y_BOX: Rectangle = Rectangle {
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites: HashMap<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable>,
+	priv sprites: HashMap<MotionTup, ~sprite::Updatable>,
 	
 	// positioning
 	priv x: units::Game,
 	priv y: units::Game,
-	priv movement: (sprite::Motion, sprite::Facing, sprite::Looking),
+	priv movement: MotionTup,
 	priv on_ground: bool,
 
 	// physics
@@ -72,6 +73,7 @@ pub struct Player {
 	priv velocity_y: units::Velocity,
 	priv accel_x: int,
 
+	// state
 	priv is_interacting: bool,
 	priv is_jump_active: bool
 }
@@ -87,7 +89,7 @@ impl Player {
 	pub fn new(graphics: &mut graphics::Graphics, x: units::Game, y: units::Game) -> Player {
 		// insert sprites into map
 		let sprite_map = 
-			HashMap::<(sprite::Motion,sprite::Facing,sprite::Looking), ~sprite::Updatable>::new();
+			HashMap::<MotionTup, ~sprite::Updatable>::new();
 
 		// construct new player
 		let mut new_player = Player{
