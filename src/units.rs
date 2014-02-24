@@ -7,6 +7,9 @@ pub trait AsGame 	{fn to_game(&self) -> Game;}
 pub trait AsTile 	{fn to_tile(&self) -> Tile;}
 pub trait AsPixel 	{fn to_pixel(&self) -> Pixel;}
 
+/// A `Game` unit represents a density-independent distance in pixels.
+/// Converting a `Game` to pixels will round it to the nearest coordinate,
+/// scaled based on the desired tile size & resolution.
 #[deriving(Eq,Ord)]
 pub struct Game(f64);
 
@@ -15,8 +18,6 @@ impl AsGame for Game {
 	fn to_game(&self) -> Game { *self }
 }
 
-/// A `Game` divided by the current `TILE_SIZE` (32 | 16) expressed
-/// as an unsigned integer.
 impl AsTile for Game {
 	#[inline(always)]	
 	fn to_tile(&self) -> Tile {
@@ -25,8 +26,6 @@ impl AsTile for Game {
 	}
 }
 
-/// A `Game` is simply a more precise `Pixel`, it must simply be rounded and returned
-/// as a signed integer.
 impl AsPixel for Game {
 	#[inline(always)]
 	fn to_pixel(&self) -> Pixel { let Game(a) = *self; Pixel(f64::round(a / SCALE) as i32) }
@@ -86,11 +85,11 @@ impl<T: AsPixel> Add<T, Pixel> for Pixel {
 	}
 }
 
+/// A `Tile` represents a single square drawn in the game's
+/// _base tile-size_ (32 pixels).
 #[deriving(Eq,Ord)]
 pub struct Tile(uint);
 
-/// A single `Tile` represents `TILE_SIZE` game units.
-/// The conversion is a simple multiplication.
 impl AsGame for Tile {
 	#[inline(always)]	
 	fn to_game(&self) -> Game {
@@ -99,14 +98,11 @@ impl AsGame for Tile {
 	}
 }
 
-/// A `Tile` merely dereferences itself, as it is already a `Tile`.
 impl AsTile for Tile {
 	#[inline(always)]
 	fn to_tile(&self) -> Tile { *self }
 }
 
-/// A `Tile` must first be converted to `Game` units, which can then be expressed
-/// in terms of `Pixel`'s on the screen.
 impl AsPixel for Tile {
 	#[inline(always)]	
 	fn to_pixel(&self) -> Pixel { self.to_game().to_pixel() }
@@ -148,6 +144,8 @@ impl<T: AsTile> Div<T, Tile> for Tile {
 	}
 }
 
+/// Millis represents a length of time in milliseconds as a signed integer.
+/// (NOTE: As `Millis` supports basic arithmetic: "negative time" is possible.)
 #[deriving(Eq,Ord)]
 pub struct Millis(int);
 
@@ -167,6 +165,12 @@ impl Sub<Millis,Millis> for Millis {
 	}
 }
 
+/// Velocity represents the current speed of an object.
+/// This speed is measured in Games/Millis, and is stored as a float.
+///
+/// (Note: this is actually `Pixels/ms`, but `Games` are used as
+/// they are higher precision types, they will also automatically
+/// scale the render distance when converted to pixels.)
 #[deriving(Eq,Ord)]
 pub struct Velocity(f64);
 
@@ -194,6 +198,8 @@ impl Sub<Velocity, Velocity> for Velocity {
 	}
 }
 
+/// Any velocity multiplied by some length in time `t`
+/// results in a distance measured in `Games`
 impl Mul<Millis,Game> for Velocity {
 	#[inline(always)]
 	fn mul(&self, rhs: &Millis) -> Game {
@@ -202,9 +208,12 @@ impl Mul<Millis,Game> for Velocity {
 	}
 }
 
+/// Acceleration is defined as `(Games/ms)/ms`
 #[deriving(Eq,Ord)]
 pub struct Acceleration(f64);
 
+/// Acceleration `a` multipled by some time `t` results
+/// in `Velocity(a * t)`
 impl Mul<Millis, Velocity> for Acceleration {
 	#[inline(always)]
 	fn mul(&self, rhs: &Millis) -> Velocity {
@@ -225,6 +234,7 @@ impl Neg<Acceleration> for Acceleration {
 pub struct Degrees(f64);
 
 impl Degrees {
+	/// Degrees are converted to radians as follows: `Degrees * (PI / 180.0)`
 	pub fn to_radians(&self) -> f64 {
 		let Degrees(d) = *self;
 		d * (f64::consts::PI / 180.0)
@@ -239,6 +249,7 @@ impl Add<Degrees,Degrees> for Degrees {
 	}
 }
 
+/// Degrees `d` multiplied by Games `g` yields `Degrees(d * g)`
 impl<T:AsGame> Mul<T, Degrees> for Degrees {
 	#[inline(always)]
 	fn mul(&self, rhs: &T) -> Degrees {
@@ -247,6 +258,8 @@ impl<T:AsGame> Mul<T, Degrees> for Degrees {
 	}
 }
 
+/// Some number of Degrees `d` divided by some time `t` yields
+/// an AngularVelocity `av`
 impl Div<Millis,AngularVelocity> for Degrees {
 	#[inline(always)]
 	fn div(&self, rhs: &Millis) -> AngularVelocity {
@@ -255,9 +268,12 @@ impl Div<Millis,AngularVelocity> for Degrees {
 	}
 }
 
+/// AngularVelocity is defined as `Degrees/Millis` and is stored in a float.
 #[deriving(Eq,Ord)]
 pub struct AngularVelocity(f64);
 
+/// Some AngularVelocity `av` multiplied by some time `t` yields
+/// a number of degrees `d`.
 impl Mul<Millis, Degrees> for AngularVelocity {
 	#[inline(always)]
 	fn mul(&self, rhs: &Millis) -> Degrees {

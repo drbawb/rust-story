@@ -7,7 +7,7 @@ use game::units;
 use game::units::{AsGame};
 
 static ANGULAR_VELOCITY: units::AngularVelocity 
-	= units::AngularVelocity(120.0 / 1000.0);
+	= units::AngularVelocity(120.0 / 1000.0); // 120 deg/sec, or .12 deg/ms
 
 static X_OFFSET: units::Tile 	= units::Tile(2);
 static Y_OFFSET: units::Tile 	= units::Tile(2);
