@@ -2,7 +2,7 @@ extern crate sdl2;
 
 use sdl2::keycode;
 
-use std::hashmap::HashMap;
+use collections::hashmap::HashMap;
 
 /// Responds to inquiries regarding three sets of keyboard input.
 ///

@@ -1,5 +1,5 @@
 use std::cmp;
-use std::hashmap::HashMap;
+use collections::hashmap::HashMap;
 
 use game::graphics;
 use game::sprite;

@@ -6,7 +6,7 @@ use sdl2::mouse;
 use sdl2::video;
 
 use sync::Arc;
-use std::hashmap::HashMap;
+use collections::hashmap::HashMap;
 
 use game;
 use game::units;
