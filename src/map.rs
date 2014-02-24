@@ -1,18 +1,17 @@
 use std::vec;
-use std::rc::Rc;
-use std::cell::RefCell;
+use sync::RWArc;
 
 use game::graphics;
 use game::sprite;
 
+use game::backdrop;
+use game::collisions::Rectangle;
 use game::units;
 use game::units::{AsGame,AsTile};
 
-use game::backdrop;
-use game::collisions::Rectangle;
 
 
-#[deriving(Eq)]
+#[deriving(Eq,Clone)]
 pub enum TileType {
 	Air,
 	Wall
@@ -31,9 +30,10 @@ impl CollisionTile {
 }
 
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
+#[deriving(Clone)]
 struct Tile {
 	tile_type: TileType,
-	sprite: Option<Rc<RefCell<~sprite::Updatable>>>
+	sprite: Option<RWArc<~sprite::Updatable:Freeze+Send>>
 }
 
 impl Tile {
@@ -43,7 +43,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(	sprite: Rc<RefCell<~sprite::Updatable>>, 
+	fn from_sprite(	sprite: RWArc<~sprite::Updatable:Freeze+Send>, 
 			tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
@@ -51,69 +51,67 @@ impl Tile {
 
 pub struct Map {
 	priv background: 	backdrop::FixedBackdrop,
-	priv sprites:		~[~[Rc<Tile>]],
-	priv tiles: 		~[~[Rc<Tile>]]
+	priv sprites:		~[~[Tile]],
+	priv tiles: 		~[~[Tile]]
 }
 
 impl Map {
+	/// Will initialize a map (20 * 15) tiles:
+	///	
+	/// * Most of these tiles will be `Air` tiles.
+	/// * There are 15-tile high walls in the first and last columns. 
+	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
+	/// * A 3-tile high chain is placed on the left-side of this obstacle course.
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
 		static rows: uint = 15; // 480
 		static cols: uint = 20; // 640
 
 		let map_path = ~"assets/base/Stage/PrtCave.bmp";
-		let sprite = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(1) , units::Tile(0)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let sprite = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(1) , units::Tile(0)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let chain_top = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(11), units::Tile(2)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let chain_top = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(11), units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let chain_middle = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(12), units::Tile(2)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let chain_middle = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(12), units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let chain_bottom = Rc::new(
-			RefCell::new(
-				~sprite::Sprite::new(
-					graphics, 
-					(units::Game(0.0), units::Game(0.0)), 
-					(units::Tile(13), units::Tile(2)),
-					(units::Tile(1), units::Tile(1)),
-					map_path.clone()
-				) as ~sprite::Updatable
-			)
+		let chain_bottom = RWArc::new(
+			~sprite::Sprite::new(
+				graphics, 
+				(units::Game(0.0), units::Game(0.0)), 
+				(units::Tile(13), units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				map_path.clone()
+			) as ~sprite::Updatable:Freeze+Send
 		);
 
-		let blank_tile = Rc::new(Tile::new());
-		let wall_tile = Rc::new(Tile::from_sprite(sprite, Wall));
-		let ct_tile = Rc::new(Tile::from_sprite(chain_top, Air));
-		let cm_tile = Rc::new(Tile::from_sprite(chain_middle, Air));
-		let cb_tile = Rc::new(Tile::from_sprite(chain_bottom, Air));
+		let blank_tile = Tile::new();
+		let wall_tile = Tile::from_sprite(sprite, Wall);
+		let ct_tile = Tile::from_sprite(chain_top, Air);
+		let cm_tile = Tile::from_sprite(chain_middle, Air);
+		let cb_tile = Tile::from_sprite(chain_bottom, Air);
 
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
@@ -158,14 +156,15 @@ impl Map {
 	pub fn draw_sprites(&self, graphics: &graphics::Graphics) {
 		for a in range(0, self.sprites.len()) {
 			for b in range(0, self.sprites[a].len()) {
-				match self.sprites[a][b].borrow().sprite {
+				match self.sprites[a][b].sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
-						sprite.get().set_position(
-							(units::Tile(b).to_game(),
-							 units::Tile(a).to_game()));
+						elem.write(|sprite| {
+							sprite.set_position(
+								(units::Tile(b).to_game(),
+								 units::Tile(a).to_game()));
 
-						sprite.get().draw(graphics);
+							sprite.draw(graphics);
+						});
 					}
 					_ => {}
 				};
@@ -177,15 +176,15 @@ impl Map {
 	pub fn draw(&self, graphics: &graphics::Graphics) {
 		for a in range(0, self.tiles.len()) {
 			for b in range(0, self.tiles[a].len()) {
-				match self.tiles[a][b].borrow().sprite {
+				match self.tiles[a][b].sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
+						elem.write(|sprite| {
+							sprite.set_position(
+								(units::Tile(b).to_game(), units::Tile(a).to_game())
+							);
 
-						sprite.get().set_position(
-							(units::Tile(b).to_game(), units::Tile(a).to_game())
-						);
-
-						sprite.get().draw(graphics);
+							sprite.draw(graphics);
+						});
 					}
 					_ => {}
 				};
@@ -196,10 +195,11 @@ impl Map {
 	pub fn update(&mut self, elapsed_time: units::Millis) {
 		for row in self.tiles.iter() {
 			for col in row.iter() {
-				match col.borrow().sprite {
+				match col.sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.borrow().borrow_mut();
-						sprite.get().update(elapsed_time);
+						elem.write(|sprite| {
+							sprite.update(elapsed_time);
+						});
 					}
 					_ => {}
 				};
@@ -207,6 +207,14 @@ impl Map {
 		}
 	}
 
+	/// Checks if `Rectangle` is colliding with any tiles in the foreground.
+	/// 
+	/// NOTE: Checking a Rectangle which would be placed outside the tile-map
+	/// results in a runtime failure!
+	/// 
+	/// NOTE: This is a simple check of the _outside bounds_ of the
+	/// rectangle & tile. -- This method may claim that the player is 
+	/// colliding w/ the edge of a tile that _appears to be_ empty space.
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
 		let mut collision_tiles: ~[CollisionTile] = ~[];
 		
@@ -218,7 +226,7 @@ impl Map {
 		for row in range(first_row, last_row + 1) {
 			for col in range(first_col, last_col + 1) {
 				collision_tiles.push( 
-					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].borrow().tile_type)
+					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].tile_type)
 				);
 			}
 		}

@@ -35,16 +35,8 @@ pub struct Game {
 	priv controller: 	input::Input 
 }
 
-
-#[unsafe_destructor]
-// Both `quote` & `map` own Rc<...>'s which point
-// into `display`.
-//
-// Since all `Rc<T>`'s pointing too one another
-// are owned by `Game`, `Game` will not leak 
-// references upon destruction.
+/// When the `Game` leaves scope SDL is instructed to `quit`.
 impl Drop for Game {
-	/// Cleanly shuts down the SDL rendering context.
 	fn drop(&mut self) {
 		println!("quitting sdl ...");
 		sdl::quit();
