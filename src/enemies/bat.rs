@@ -25,6 +25,7 @@ static SPRITE_FPS: units::Fps 		= 15;
 pub struct CaveBat {
 	x: units::Game, 
 	y: units::Game,
+	origin: (units::Game, units::Game),
 
 	flight_angle: units::Degrees,
 	facing: sprite::Facing,
@@ -40,6 +41,8 @@ impl CaveBat {
 
 		let mut new_bat = CaveBat { 
 			x: x, y: y, 
+			origin: (x,y),
+
 			facing: sprite::West,
 			flight_angle: units::Degrees(0.0), 
 
@@ -85,13 +88,15 @@ impl CaveBat {
 		let amp: units::Game = // peak height of the wave in game units
 			units::Tile(5).to_game() / units::Game(2.0);
 		
+		self.flight_angle = self.flight_angle + av;
 		let wave: units::Game = 
 			units::Game(
 				f64::sin(self.flight_angle.to_radians())
 			);
 
-		let y1 = self.y + (amp * wave);
-		self.flight_angle = self.flight_angle + av;
+		let (_,y0) = self.origin;
+		self.y = y0 + (amp * wave);
+
 		self.facing = if self.center_x() > player_x {
 			sprite::West
 		} else {
@@ -101,7 +106,7 @@ impl CaveBat {
 
 		let sprite_ref = self.sprites.get_mut(&self.facing);
 		sprite_ref.update(elapsed_time);
-		sprite_ref.set_position((self.x, y1));
+		sprite_ref.set_position((self.x, self.y));
 	}
 
 	pub fn draw(&self, display: &graphics::Graphics) {
