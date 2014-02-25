@@ -408,8 +408,9 @@ impl Player {
 	}
 
 	pub fn look_down(&mut self) {
-		let(_,_,looking) = self.movement;
+		let(motion,_,looking) = self.movement;
 		if looking == sprite::Down {return;}
+		if motion == sprite::Walking {return;}
 		
 		self.is_interacting = self.on_ground();
 		self.set_looking(sprite::Down);
@@ -470,6 +471,10 @@ impl Player {
 				(sprite::Falling, last_facing, last_looking)
 			}
 		};
+	}
+
+	pub fn center_x(&self) -> units::Game {
+		self.x + (units::Tile(1).to_game() / units::Game(2.0))
 	}
 
 	// x-axis collision detection
