@@ -27,6 +27,7 @@ pub struct CaveBat {
 	y: units::Game,
 
 	flight_angle: units::Degrees,
+	facing: sprite::Facing,
 	sprites: HashMap<sprite::Facing, ~sprite::Updatable>,
 }
 
@@ -39,7 +40,9 @@ impl CaveBat {
 
 		let mut new_bat = CaveBat { 
 			x: x, y: y, 
+			facing: sprite::West,
 			flight_angle: units::Degrees(0.0), 
+
 			sprites: sprite_map
 		};
 
@@ -58,7 +61,7 @@ impl CaveBat {
 			|key| -> ~sprite::Updatable {
 				let asset_path = ~"assets/base/Npc/NpcCemet.bmp";
 				let sprite_x = X_OFFSET;
-				let sprite_y = match facing {
+				let sprite_y = match *key {
 					sprite::West => Y_OFFSET + WEST_OFFSET,
 					sprite::East => Y_OFFSET + EAST_OFFSET,
 				};
@@ -86,11 +89,12 @@ impl CaveBat {
 		self.flight_angle = self.flight_angle + av;
 		let y1 = self.y + (amp * wave);
 
-		self.sprite.update(elapsed_time);
-		self.sprite.set_position((self.x, y1));
+		let sprite_ref = self.sprites.get_mut(&self.facing);
+		sprite_ref.update(elapsed_time);
+		sprite_ref.set_position((self.x, y1));
 	}
 
 	pub fn draw(&self, display: &graphics::Graphics) {
-		self.sprite.draw(display);
+		self.sprites.get(&self.facing).draw(display);
 	}
 }
