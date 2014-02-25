@@ -1,5 +1,3 @@
-extern crate sdl2;
-
 use std::cmp;
 use std::io::Timer;
 

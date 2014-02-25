@@ -1,5 +1,3 @@
-extern crate sdl2;
-
 use sdl2::keycode;
 
 use collections::hashmap::HashMap;

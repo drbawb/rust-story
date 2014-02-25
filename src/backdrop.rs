@@ -1,5 +1,3 @@
-extern crate sdl2;
-
 use sync::Arc;
 
 use sdl2::rect::Rect;
