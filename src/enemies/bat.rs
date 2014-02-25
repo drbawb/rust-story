@@ -76,7 +76,11 @@ impl CaveBat {
 		);
 	}
 
-	pub fn update(&mut self, elapsed_time: units::Millis) {
+	fn center_x(&self) -> units::Game {
+		self.x + (units::Tile(1).to_game() / units::Game(2.0))
+	}
+
+	pub fn update(&mut self, elapsed_time: units::Millis, player_x: units::Game) {
 		let av: units::Degrees = ANGULAR_VELOCITY * elapsed_time;
 		let amp: units::Game = // peak height of the wave in game units
 			units::Tile(5).to_game() / units::Game(2.0);
@@ -85,9 +89,15 @@ impl CaveBat {
 			units::Game(
 				f64::sin(self.flight_angle.to_radians())
 			);
-		
-		self.flight_angle = self.flight_angle + av;
+
 		let y1 = self.y + (amp * wave);
+		self.flight_angle = self.flight_angle + av;
+		self.facing = if self.center_x() > player_x {
+			sprite::West
+		} else {
+			sprite::East
+		};
+		
 
 		let sprite_ref = self.sprites.get_mut(&self.facing);
 		sprite_ref.update(elapsed_time);

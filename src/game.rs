@@ -185,6 +185,6 @@ impl Game {
 	fn update(&mut self, elapsed_time: units::Millis) {
 		self.map.update(elapsed_time);
 		self.quote.update(elapsed_time, &self.map);
-		self.yatty.update(elapsed_time);
+		self.yatty.update(elapsed_time, self.quote.center_x());
 	}
 }
