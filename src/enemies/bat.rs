@@ -1,5 +1,7 @@
 use std::f64;
 
+use collections::hashmap::HashMap;
+
 use game::sprite;
 use game::graphics;
 
@@ -9,8 +11,14 @@ use game::units::{AsGame};
 static ANGULAR_VELOCITY: units::AngularVelocity 
 	= units::AngularVelocity(120.0 / 1000.0); // 120 deg/sec, or .12 deg/ms
 
+// location of first fluterring bat on sprite sheet
 static X_OFFSET: units::Tile 	= units::Tile(2);
 static Y_OFFSET: units::Tile 	= units::Tile(2);
+
+// y-offsets for different horizontal facings.
+static WEST_OFFSET: units::Tile = units::Tile(0);
+static EAST_OFFSET: units::Tile = units::Tile(1);
+
 static SPRITE_FRAMES: units::Frame	= 3;
 static SPRITE_FPS: units::Fps 		= 15;
 
@@ -19,7 +27,7 @@ pub struct CaveBat {
 	y: units::Game,
 
 	flight_angle: units::Degrees,
-	sprite: ~sprite::Updatable,
+	sprites: HashMap<sprite::Facing, ~sprite::Updatable>,
 }
 
 impl CaveBat {
@@ -27,19 +35,42 @@ impl CaveBat {
 		display: &mut graphics::Graphics, 
 		x: units::Game, y: units::Game
 	) -> CaveBat {
-		let asset_path = ~"assets/base/Npc/NpcCemet.bmp";
-		let asset = ~sprite::AnimatedSprite::new(
-						display, asset_path, 
-						(X_OFFSET, Y_OFFSET), 
-						(units::Tile(1), units::Tile(1)),
-						SPRITE_FRAMES, SPRITE_FPS
-					).unwrap() as ~sprite::Updatable;
+		let sprite_map = HashMap::<sprite::Facing, ~sprite::Updatable>::new();
 
-		CaveBat { 
+		let mut new_bat = CaveBat { 
 			x: x, y: y, 
 			flight_angle: units::Degrees(0.0), 
-			sprite: asset 
+			sprites: sprite_map
+		};
+
+		for facing in sprite::FACINGS.iter() {
+			new_bat.load_sprite(display, *facing);
 		}
+
+		new_bat
+	}
+
+	fn load_sprite(&mut self, 
+				   display: &mut graphics::Graphics, 
+				   facing: sprite::Facing) {
+		
+		self.sprites.find_or_insert_with(facing, 
+			|key| -> ~sprite::Updatable {
+				let asset_path = ~"assets/base/Npc/NpcCemet.bmp";
+				let sprite_x = X_OFFSET;
+				let sprite_y = match facing {
+					sprite::West => Y_OFFSET + WEST_OFFSET,
+					sprite::East => Y_OFFSET + EAST_OFFSET,
+				};
+
+				~sprite::AnimatedSprite::new(
+						display, asset_path, 
+						(sprite_x, sprite_y), 
+						(units::Tile(1), units::Tile(1)),
+						SPRITE_FRAMES, SPRITE_FPS
+					).unwrap() as ~sprite::Updatable
+			}
+		);
 	}
 
 	pub fn update(&mut self, elapsed_time: units::Millis) {
