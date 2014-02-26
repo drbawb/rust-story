@@ -2,7 +2,7 @@ CC=rustc
 CFLAGS=
 LDFLAGS=-L lib
 
-.PHONY : doc
+.PHONY : all clean doc 
 
 all: clean compile
 
@@ -16,6 +16,13 @@ veyron: all
 
 debug: CFLAGS += -g -Z time-passes
 debug: compile
+
+deps:	
+	git submodule update --init	
+	mkdir -p lib	
+	rm -f lib/libsdl2*	
+	cd rust-sdl2; make
+	cp rust-sdl2/build/lib/libsdl2* lib/
 
 doc:
 	rustdoc $(LDFLAGS) src/main.rs

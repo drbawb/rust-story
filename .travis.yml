@@ -9,4 +9,5 @@ install:
   - ./configure && make && sudo make install
   - cd -
 script:
+  - make deps
   - make debug
