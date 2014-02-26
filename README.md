@@ -3,6 +3,8 @@ the excellent youtube playlist [reconstructing cavestory](http://www.youtube.com
 
 This project uses [rust-sdl2](https://github.com/AngryLawyer/rust-sdl2) which binds to SDL2.
 
+[![Build Status](https://travis-ci.org/drbawb/rust-story.png?branch=master)](https://travis-ci.org/drbawb/rust-story)
+
 To run the project:
  * Install [`rust@master`](https://github.com/mozilla/rust)
  * Compile rust-sdl2 to an `.so` or `.rlib` and place the resulting library in `lib/`
