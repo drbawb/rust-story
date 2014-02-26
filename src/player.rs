@@ -472,6 +472,16 @@ impl Player {
 			}
 		};
 	}
+	
+	/// A player's damage rectangle encompasses the whole player.
+	pub fn damage_rectangle(&self) -> Rectangle {
+		Rectangle {
+			x: self.x + X_BOX.left(),
+			y: self.y + Y_BOX.top(),
+			width: X_BOX.width(),
+			height: Y_BOX.height(),
+		}
+	}
 
 	pub fn center_x(&self) -> units::Game {
 		self.x + (units::Tile(1).to_game() / units::Game(2.0))
