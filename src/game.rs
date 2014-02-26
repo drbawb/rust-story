@@ -186,5 +186,10 @@ impl Game {
 		self.map.update(elapsed_time);
 		self.quote.update(elapsed_time, &self.map);
 		self.yatty.update(elapsed_time, self.quote.center_x());
+
+		let collided = self.yatty.damage_rectangle().collides_with(&self.quote.damage_rectangle());
+		if collided {
+			println!("collision between quote & yatty!");
+		}
 	}
 }

@@ -2,6 +2,7 @@ use std::f64;
 
 use collections::hashmap::HashMap;
 
+use game::collisions::Rectangle;
 use game::sprite;
 use game::graphics;
 
@@ -79,6 +80,15 @@ impl CaveBat {
 		);
 	}
 
+	pub fn damage_rectangle(&self) -> Rectangle {
+		let half_tile = units::Tile(1).to_game() / units::Game(2.0);	
+		
+		Rectangle {
+			x: self.x + half_tile, y: self.y + half_tile,
+			width: units::Game(0.0), height: units::Game(0.0),
+		}
+	}
+	
 	fn center_x(&self) -> units::Game {
 		self.x + (units::Tile(1).to_game() / units::Game(2.0))
 	}
