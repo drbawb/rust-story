@@ -7,6 +7,7 @@ LDFLAGS=-L lib
 all: clean compile
 
 compile:
+	mkdir -p bin
 	$(CC) $(CFLAGS) -o bin/rust-story $(LDFLAGS) src/main.rs
 
 veyron: CFLAGS += -O -Z time-passes
