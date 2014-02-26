@@ -28,4 +28,11 @@ impl Rectangle {
 
 	pub fn width(&self) 	-> units::Game { self.width }
 	pub fn height(&self) 	-> units::Game { self.height }
+
+	pub fn collides_with(&self, other: &Rectangle) -> bool {
+		self.right() >= other.left() &&
+		self.left() <= other.right() &&
+		self.top() <= other.bottom() &&
+		self.bottom() >= other.top()
+	}
 }
