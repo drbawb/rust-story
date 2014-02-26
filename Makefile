@@ -21,8 +21,8 @@ deps:
 	git submodule update --init	
 	mkdir -p lib	
 	rm -f lib/libsdl2*	
-	cd rust-sdl2; make
-	cp rust-sdl2/build/lib/libsdl2* lib/
+	cd lib/rust-sdl2; make
+	cp lib/rust-sdl2/build/lib/libsdl2* lib/
 
 doc:
 	rustdoc $(LDFLAGS) src/main.rs
