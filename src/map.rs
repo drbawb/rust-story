@@ -215,6 +215,7 @@ impl Map {
 	/// NOTE: This is a simple check of the _outside bounds_ of the
 	/// rectangle & tile. -- This method may claim that the player is 
 	/// colliding w/ the edge of a tile that _appears to be_ empty space.
+	#[allow(visible_private_types)]	
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
 		let mut collision_tiles: ~[CollisionTile] = ~[];
 		
