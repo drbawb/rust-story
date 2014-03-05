@@ -80,7 +80,6 @@ impl Graphics {
 
 			// wrap surface in texture and store it
 			if transparent_black {
-				// unsafe { ll::SDL_SetColorKey(sprite_surface.raw, 1, 0); }	
 				match sprite_surface.set_color_key(true, pixels::RGB(0,0,0)) {
 					Ok(_) => {},
 					Err(msg) => fail!("Failed to key sprite: {}", msg),
