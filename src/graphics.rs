@@ -104,9 +104,8 @@ impl Graphics {
 		self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
-	pub fn switch_buffers(&self) -> bool {
+	pub fn switch_buffers(&self) {
 		self.screen.present();
-		true
 	}
 
 	pub fn clear_buffer(&self) {
