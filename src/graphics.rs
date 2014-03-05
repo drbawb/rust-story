@@ -1,9 +1,9 @@
 use sdl2::rect;
+use sdl2::pixels;
 use sdl2::surface;
-use sdl2::surface::ll;
 use sdl2::render;
-use sdl2::mouse;
 use sdl2::video;
+use sdl2::mouse;
 
 use sync::Arc;
 use collections::hashmap::HashMap;
@@ -80,7 +80,11 @@ impl Graphics {
 
 			// wrap surface in texture and store it
 			if transparent_black {
-				unsafe { ll::SDL_SetColorKey(sprite_surface.raw, 1, 0); }	
+				// unsafe { ll::SDL_SetColorKey(sprite_surface.raw, 1, 0); }	
+				match sprite_surface.set_color_key(true, pixels::RGB(0,0,0)) {
+					Ok(_) => {},
+					Err(msg) => fail!("Failed to key sprite: {}", msg),
+				}
 			}
 					
 			match borrowed_display.create_texture_from_surface(sprite_surface) {
