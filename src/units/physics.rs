@@ -1,6 +1,5 @@
 use std::f64;
 use super::drawing::{Game};
-use super::drawing::{AsGame};
 
 /// Millis represents a length of time in milliseconds as a signed integer.
 /// (NOTE: As `Millis` supports basic arithmetic: "negative time" is possible.)
@@ -108,13 +107,13 @@ impl Add<Degrees,Degrees> for Degrees {
 }
 
 /// Degrees `d` multiplied by Games `g` yields `Degrees(d * g)`
-impl<T:AsGame> Mul<T, Degrees> for Degrees {
+/* impl<T:AsGame> Mul<T, Degrees> for Degrees {
 	#[inline(always)]
 	fn mul(&self, rhs: &T) -> Degrees {
 		let (Degrees(d), Game(g)) = (*self, rhs.to_game());
 		Degrees(d * g)
 	}
-}
+} */
 
 /// Some number of Degrees `d` divided by some time `t` yields
 /// an AngularVelocity `av`

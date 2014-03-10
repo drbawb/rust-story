@@ -107,11 +107,8 @@ impl CaveBat {
 		let (_,y0) = self.origin;
 		self.y = y0 + (amp * wave);
 
-		self.facing = if self.center_x() > player_x {
-			sprite::West
-		} else {
-			sprite::East
-		};
+		self.facing = if self.center_x() > player_x 
+			{ sprite::West } else { sprite::East };
 		
 
 		let sprite_ref = self.sprites.get_mut(&self.facing);

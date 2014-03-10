@@ -44,8 +44,9 @@ For the most part this program reads much like it's [`C++`][1] and [`C++11`][2] 
  * Most things are stack allocated; owned pointers are used for heap allocations.
  	* `rustc` makes sure that other classes may only _borrow references_ to this memory. 
  * `Arc<>` is used for reference counting shared references (which would be `"const"` in the C++ version).
- * `Rc<RefCell<>>` is used for reference counting shred references which must be mutable. (for e.g: `src/map.rs` shares sprites between tiles.)
- 
+ * `RWArc<>` is used for shared references that must be mutable. (For the time being: I'm using this in place of Rc<RefCell<>> as a means to 
+   statically confirm the thread-safety of my code. This way I have some reasonable guarantees that I could share certain things in the event I add 
+   multithreading.)
 
 [1]: https://github.com/chebert/cavestory-screencast
 [2]: https://github.com/JIghtuse/cavestory-sdl2
