@@ -106,15 +106,6 @@ impl Add<Degrees,Degrees> for Degrees {
 	}
 }
 
-/// Degrees `d` multiplied by Games `g` yields `Degrees(d * g)`
-/* impl<T:AsGame> Mul<T, Degrees> for Degrees {
-	#[inline(always)]
-	fn mul(&self, rhs: &T) -> Degrees {
-		let (Degrees(d), Game(g)) = (*self, rhs.to_game());
-		Degrees(d * g)
-	}
-} */
-
 /// Some number of Degrees `d` divided by some time `t` yields
 /// an AngularVelocity `av`
 impl Div<Millis,AngularVelocity> for Degrees {
