@@ -1,4 +1,5 @@
 use std::cmp;
+use std::num::Float;
 use collections::hashmap::HashMap;
 
 use game::graphics;
@@ -6,9 +7,10 @@ use game::sprite;
 
 
 use game::collisions::{Info,Rectangle};
-use game::units;
-use game::units::{AsGame};
 use game::map;
+
+use game::units;
+use game::units::{AsGame,AsFloat};
 
 type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 
@@ -154,14 +156,14 @@ impl Player {
 		self.velocity_x = self.velocity_x + (accel_x * self.elapsed_time);
 
 		if self.accel_x < 0 {
-			self.velocity_x = cmp::max(self.velocity_x, -MAX_VELOCITY_X);
+			self.velocity_x =  units::max(self.velocity_x, -MAX_VELOCITY_X);
 		} else if self.accel_x > 0 {
-			self.velocity_x = cmp::min(self.velocity_x, MAX_VELOCITY_X);
+			self.velocity_x = units::min(self.velocity_x, MAX_VELOCITY_X);
 		} else if self.on_ground() {
 			self.velocity_x = if self.velocity_x > units::Velocity(0.0) {
-				cmp::max(units::Velocity(0.0), self.velocity_x - (FRICTION * self.elapsed_time))
+				units::max(units::Velocity(0.0), self.velocity_x - (FRICTION * self.elapsed_time))
 			} else {
-				cmp::min(units::Velocity(0.0), self.velocity_x + (FRICTION * self.elapsed_time))
+				units::min(units::Velocity(0.0), self.velocity_x + (FRICTION * self.elapsed_time))
 			};
 		}
 
@@ -215,7 +217,7 @@ impl Player {
 				GRAVITY
 			};
 
-		self.velocity_y = cmp::min(
+		self.velocity_y = units::min(
 			self.velocity_y + (gravity * self.elapsed_time), 
 			MAX_VELOCITY_Y
 		);
