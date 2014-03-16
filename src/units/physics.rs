@@ -1,7 +1,7 @@
 use std::f64;
 use super::drawing::{Game}; 
 
-pub trait AsFloat {
+trait AsFloat {
 	fn as_f64(&self) -> f64;
 	fn as_nt(val: f64) -> Self;
 }
