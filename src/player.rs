@@ -1,5 +1,3 @@
-use std::cmp;
-use std::num::Float;
 use collections::hashmap::HashMap;
 
 use game::graphics;
@@ -10,7 +8,7 @@ use game::collisions::{Info,Rectangle};
 use game::map;
 
 use game::units;
-use game::units::{AsGame,AsFloat};
+use game::units::{AsGame};
 
 type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 
