@@ -1,5 +1,3 @@
-use std::f64;
-
 use collections::hashmap::HashMap;
 
 use game::collisions::Rectangle;
@@ -99,7 +97,7 @@ impl CaveBat {
 		self.flight_angle = self.flight_angle + av;
 		let wave: units::Game = 
 			units::Game(
-				f64::sin(self.flight_angle.to_radians())
+				(*self.flight_angle).to_radians().sin()
 			);
 
 		let (_,y0) = self.origin;

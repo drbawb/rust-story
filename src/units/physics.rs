@@ -1,4 +1,3 @@
-use std::f64;
 use super::drawing::{Game}; 
 
 /// Millis represents a length of time in milliseconds as a signed integer.
@@ -95,12 +94,8 @@ impl Neg<Acceleration> for Acceleration {
 #[deriving(Eq,Ord)]
 pub struct Degrees(pub f64);
 
-impl Degrees {
-	/// Degrees are converted to radians as follows: `Degrees * (PI / 180.0)`
-	pub fn to_radians(&self) -> f64 {
-		let Degrees(d) = *self;
-		d * (f64::consts::PI / 180.0)
-	}
+impl Deref<f64> for Degrees {
+	fn deref<'a>(&'a self) -> &'a f64 { let Degrees(ref inner_val) = *self; inner_val }
 }
 
 impl Add<Degrees,Degrees> for Degrees {

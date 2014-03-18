@@ -565,7 +565,7 @@ impl Player {
 	pub fn take_damage(&mut self) {
 		if self.is_invincible { return; }
 
-		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);
+		self.velocity_y = units::Velocity((*self.velocity_y).min(-*SHORT_JUMP_SPEED));
 
 		self.is_invincible    = true;
 		self.invincible_time  = units::Millis(0);
