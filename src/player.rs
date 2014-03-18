@@ -121,6 +121,11 @@ impl Player {
 		new_player
 	}
 
+	/// The player takes damage from the world
+	pub fn take_damage(&mut self) {
+		// nop
+	}
+
 	/// Draws player to screen
 	pub fn draw(&self, display: &graphics::Graphics) {
 		self.sprites.get(&self.movement).draw(display);
@@ -533,7 +538,6 @@ impl Player {
 			height: (Y_BOX.height() / units::Game(2.0)) + delta
 		}
 	}
-	
 
 	/// The player will collide w/ the ground at y-coord `320`
 	/// Gravity cannot pull them below this floor.
