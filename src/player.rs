@@ -75,8 +75,9 @@ pub struct Player {
 	priv accel_x: int,
 
 	// state
-	priv is_interacting: bool,
-	priv is_jump_active: bool
+	priv is_interacting: 	bool,
+	priv is_invincible: 	bool,
+	priv is_jump_active: 	bool,
 }
 
 
@@ -107,7 +108,8 @@ impl Player {
 			accel_x: 1,
 
 			is_interacting: false,
-			is_jump_active: false
+			is_jump_active: false,
+			is_invincible: 	false,
 		};
 
 		// load sprites for every possible movement tuple.
@@ -124,7 +126,10 @@ impl Player {
 
 	/// The player takes damage from the world
 	pub fn take_damage(&mut self) {
-		self.velocity_y = -SHORT_JUMP_SPEED;	
+		if self.is_invincible { return; }
+		
+		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);;
+		self.is_invincible = true;
 		println!("bat has collided with me! D:");
 	}
 
