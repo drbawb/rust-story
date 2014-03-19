@@ -56,6 +56,7 @@ static Y_BOX: Rectangle = Rectangle {
 };
 
 static 	DAMAGE_INVINCIBILITY: units::Millis 	= units::Millis(3000);
+static 	INVINCIBILITY_FLASH: units::Millis 	= units::Millis(50);
 
 
 /// Encapsulates the pysical motion of a player as it relates to
@@ -144,7 +145,14 @@ impl Player {
 
 	/// Draws player to screen
 	pub fn draw(&self, display: &graphics::Graphics) {
-		self.sprites.get(&self.movement).draw(display);
+		let (units::Millis(ref invincible_time), units::Millis(ref flash_time)) =
+			(self.invincible_time, INVINCIBILITY_FLASH);
+		if self.is_invincible && 
+			(*invincible_time / *flash_time) % 2 == 0 {
+			return;	
+		} else {
+			self.sprites.get(&self.movement).draw(display);
+		}
 	}
 
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
