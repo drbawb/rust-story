@@ -27,7 +27,7 @@ static  SHORT_JUMP_SPEED: units::Velocity 	= units::Velocity(0.25 / 1.5);
 
 // player sprite animation
 static CHAR_OFFSET: uint 		= 12;
-static SPRITE_NUM_FRAMES: units::Frame 	= (3); 
+static SPRITE_NUM_FRAMES: units::Frame 	= (3);
 static SPRITE_FPS: units::Fps 		= (20);
 
 // motion
@@ -133,12 +133,12 @@ impl Player {
 	/// The player takes damage from the world
 	pub fn take_damage(&mut self) {
 		if self.is_invincible { return; }
-		
-		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);;
-		
+
+		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);
+
 		self.is_invincible 	= true;
 		self.invincible_time 	= units::Millis(0);
-		
+
 		println!("bat has collided with me! D:");
 	}
 
@@ -158,7 +158,7 @@ impl Player {
 		self.current_motion(); // update motion once at beginning of frame for consistency
 		self.set_position((self.x, self.y));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
-		
+
 		if self.is_invincible {
 			self.invincible_time =
 				self.invincible_time + elapsed_time;

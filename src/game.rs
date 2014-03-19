@@ -187,12 +187,12 @@ impl Game {
 		self.quote.update(elapsed_time, &self.map);
 		self.yatty.update(elapsed_time, self.quote.center_x());
 
-		let collided = 
+		let collided =
 			self.yatty.damage_rectangle()
 				.collides_with(&self.quote.damage_rectangle());
-	
+
 		if collided {
-			self.quote.take_damage();	
+			self.quote.take_damage();
 		}
 	}
 }
