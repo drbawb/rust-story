@@ -25,7 +25,6 @@ static 	JUMP_GRAVITY: units::Acceleration 	= units::Acceleration(0.0003125);
 static 	JUMP_SPEED: units::Velocity 		= units::Velocity(0.25);
 static  SHORT_JUMP_SPEED: units::Velocity 	= units::Velocity(0.25 / 1.5);
 
-
 // player sprite animation
 static CHAR_OFFSET: uint 		= 12;
 static SPRITE_NUM_FRAMES: units::Frame 	= (3); 
@@ -56,6 +55,8 @@ static Y_BOX: Rectangle = Rectangle {
 	width: units::Game(12.0), height: units::Game(30.0)
 };
 
+static 	DAMAGE_INVINCIBILITY: units::Millis 	= units::Millis(3000);
+
 
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
@@ -78,6 +79,9 @@ pub struct Player {
 	priv is_interacting: 	bool,
 	priv is_invincible: 	bool,
 	priv is_jump_active: 	bool,
+
+	// timers
+	priv invincible_time: 	units::Millis,
 }
 
 
@@ -110,6 +114,8 @@ impl Player {
 			is_interacting: false,
 			is_jump_active: false,
 			is_invincible: 	false,
+
+			invincible_time: units::Millis(0),
 		};
 
 		// load sprites for every possible movement tuple.
@@ -129,7 +135,10 @@ impl Player {
 		if self.is_invincible { return; }
 		
 		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);;
-		self.is_invincible = true;
+		
+		self.is_invincible 	= true;
+		self.invincible_time 	= units::Millis(0);
+		
 		println!("bat has collided with me! D:");
 	}
 
@@ -149,6 +158,12 @@ impl Player {
 		self.current_motion(); // update motion once at beginning of frame for consistency
 		self.set_position((self.x, self.y));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
+		
+		if self.is_invincible {
+			self.invincible_time =
+				self.invincible_time + elapsed_time;
+			self.is_invincible = self.invincible_time < DAMAGE_INVINCIBILITY;
+		}
 
 		// run physics sim
 		self.update_x(map);
