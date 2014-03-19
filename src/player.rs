@@ -20,15 +20,15 @@ static WALKING_ACCEL: units::Acceleration 	= units::Acceleration(0.00083007812);
 static MAX_VELOCITY_X: units::Velocity 		= units::Velocity(0.15859375);
 static MAX_VELOCITY_Y: units::Velocity		= units::Velocity(0.2998046875);
 
-static	AIR_ACCELERATION: units::Acceleration 	=	units::Acceleration(0.0003125);
-static 	JUMP_GRAVITY: units::Acceleration		= units::Acceleration(0.0003125);
-static 	JUMP_SPEED: units::Velocity				= units::Velocity(0.25);
-
+static	AIR_ACCELERATION: units::Acceleration 	= units::Acceleration(0.0003125);
+static 	JUMP_GRAVITY: units::Acceleration 	= units::Acceleration(0.0003125);
+static 	JUMP_SPEED: units::Velocity 		= units::Velocity(0.25);
+static  SHORT_JUMP_SPEED: units::Velocity 	= units::Velocity(0.25 / 1.5);
 
 // player sprite animation
-static CHAR_OFFSET: uint				= 12;
-static SPRITE_NUM_FRAMES: units::Frame	= (3); 
-static SPRITE_FPS: units::Fps			= (20);
+static CHAR_OFFSET: uint 		= 12;
+static SPRITE_NUM_FRAMES: units::Frame 	= (3);
+static SPRITE_FPS: units::Fps 		= (20);
 
 // motion
 static STAND_FRAME: units::Tile 	= units::Tile(0);
@@ -36,13 +36,13 @@ static JUMP_FRAME: units::Tile 		= units::Tile(1);
 static FALL_FRAME: units::Tile 		= units::Tile(2);
 
 // horizontal facing (Facing)
-static FACING_WEST: units::Tile			= units::Tile(0 + CHAR_OFFSET);
-static FACING_EAST: units::Tile 		= units::Tile(1 + CHAR_OFFSET);
+static FACING_WEST: units::Tile		= units::Tile(0 + CHAR_OFFSET);
+static FACING_EAST: units::Tile 	= units::Tile(1 + CHAR_OFFSET);
 
 // vertical facing (Looking)
-static WALK_UP_OFFSET: units::Tile			= units::Tile(3);
-static JUMP_DOWN_FRAME:  units::Tile		= units::Tile(6);
-static STAND_DOWN_FRAME: units::Tile 		= units::Tile(7);
+static WALK_UP_OFFSET: units::Tile 	= units::Tile(3);
+static JUMP_DOWN_FRAME:  units::Tile 	= units::Tile(6);
+static STAND_DOWN_FRAME: units::Tile 	= units::Tile(7);
 
 // collision detection boxes
 // (expressed as `units::Game`)
@@ -54,6 +54,9 @@ static Y_BOX: Rectangle = Rectangle {
 	x: units::Game(10.0), y: units::Game(2.0), 
 	width: units::Game(12.0), height: units::Game(30.0)
 };
+
+static 	DAMAGE_INVINCIBILITY: units::Millis 	= units::Millis(3000);
+static 	INVINCIBILITY_FLASH: units::Millis 	= units::Millis(50);
 
 
 /// Encapsulates the pysical motion of a player as it relates to
@@ -74,8 +77,12 @@ pub struct Player {
 	priv accel_x: int,
 
 	// state
-	priv is_interacting: bool,
-	priv is_jump_active: bool
+	priv is_interacting: 	bool,
+	priv is_invincible: 	bool,
+	priv is_jump_active: 	bool,
+
+	// timers
+	priv invincible_time: 	units::Millis,
 }
 
 
@@ -106,7 +113,10 @@ impl Player {
 			accel_x: 1,
 
 			is_interacting: false,
-			is_jump_active: false
+			is_jump_active: false,
+			is_invincible: 	false,
+
+			invincible_time: units::Millis(0),
 		};
 
 		// load sprites for every possible movement tuple.
@@ -121,9 +131,28 @@ impl Player {
 		new_player
 	}
 
+	/// The player takes damage from the world
+	pub fn take_damage(&mut self) {
+		if self.is_invincible { return; }
+
+		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);
+
+		self.is_invincible 	= true;
+		self.invincible_time 	= units::Millis(0);
+
+		println!("bat has collided with me! D:");
+	}
+
 	/// Draws player to screen
 	pub fn draw(&self, display: &graphics::Graphics) {
-		self.sprites.get(&self.movement).draw(display);
+		let (units::Millis(ref invincible_time), units::Millis(ref flash_time)) =
+			(self.invincible_time, INVINCIBILITY_FLASH);
+		if self.is_invincible && 
+			(*invincible_time / *flash_time) % 2 == 0 {
+			return;	
+		} else {
+			self.sprites.get(&self.movement).draw(display);
+		}
 	}
 
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
@@ -137,6 +166,12 @@ impl Player {
 		self.current_motion(); // update motion once at beginning of frame for consistency
 		self.set_position((self.x, self.y));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
+
+		if self.is_invincible {
+			self.invincible_time =
+				self.invincible_time + elapsed_time;
+			self.is_invincible = self.invincible_time < DAMAGE_INVINCIBILITY;
+		}
 
 		// run physics sim
 		self.update_x(map);
@@ -533,7 +568,6 @@ impl Player {
 			height: (Y_BOX.height() / units::Game(2.0)) + delta
 		}
 	}
-	
 
 	/// The player will collide w/ the ground at y-coord `320`
 	/// Gravity cannot pull them below this floor.
