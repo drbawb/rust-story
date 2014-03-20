@@ -131,24 +131,9 @@ impl Player {
 		new_player
 	}
 
-	/// The player takes damage from the world
-	pub fn take_damage(&mut self) {
-		if self.is_invincible { return; }
-
-		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);
-
-		self.is_invincible 	= true;
-		self.invincible_time 	= units::Millis(0);
-
-		println!("bat has collided with me! D:");
-	}
-
 	/// Draws player to screen
 	pub fn draw(&self, display: &graphics::Graphics) {
-		let (units::Millis(ref invincible_time), units::Millis(ref flash_time)) =
-			(self.invincible_time, INVINCIBILITY_FLASH);
-		if self.is_invincible && 
-			(*invincible_time / *flash_time) % 2 == 0 {
+		if self.is_invincible && self.is_strobed() {
 			return;	
 		} else {
 			self.sprites.get(&self.movement).draw(display);
@@ -516,6 +501,30 @@ impl Player {
 			width: X_BOX.width(),
 			height: Y_BOX.height(),
 		}
+	}
+
+	/// The player takes damage from the world
+	pub fn take_damage(&mut self) {
+		if self.is_invincible { return; }
+
+		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);
+
+		self.is_invincible 	= true;
+		self.invincible_time 	= units::Millis(0);
+
+		println!("bat has collided with me! D:");
+	}
+
+	/// Returns true if the player is currently invisible due to an
+	/// invincibility strobing effect.
+	#[inline]
+	fn is_strobed(&self) -> bool {
+		let (units::Millis(ref invincible_time), units::Millis(ref flash_time)) =
+			(self.invincible_time, INVINCIBILITY_FLASH);
+
+		// how long player has been invincible over some strobe interval
+		// if remainder is even: player should not be displayed
+		(*invincible_time / *flash_time) % 2 == 0
 	}
 
 	pub fn center_x(&self) -> units::Game {
