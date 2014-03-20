@@ -1,4 +1,4 @@
-use std::vec;
+use std::slice;
 use sync::RWArc;
 
 use game::graphics;
@@ -117,10 +117,10 @@ impl Map {
 			background: backdrop::FixedBackdrop::new(
 				~"assets/base/bkBlue.bmp", graphics
 			),
-			sprites: vec::from_elem(rows,
-				vec::from_elem(cols, blank_tile.clone())),
-			tiles: vec::from_elem(rows,
-				vec::from_elem(cols, blank_tile.clone()))
+			sprites: slice::from_elem(rows,
+				slice::from_elem(cols, blank_tile.clone())),
+			tiles: slice::from_elem(rows,
+				slice::from_elem(cols, blank_tile.clone()))
 		};
 	
 		// init `floor`
