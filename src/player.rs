@@ -13,36 +13,36 @@ use game::units::{AsGame};
 type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 
 // physics
-static FRICTION: units::Acceleration 	= units::Acceleration(0.00049804687);
-static GRAVITY: units::Acceleration	= units::Acceleration(0.00078125);
+static FRICTION: units::Acceleration   = units::Acceleration(0.00049804687);
+static GRAVITY:  units::Acceleration   = units::Acceleration(0.00078125);
 
-static WALKING_ACCEL: units::Acceleration 	= units::Acceleration(0.00083007812);
-static MAX_VELOCITY_X: units::Velocity 		= units::Velocity(0.15859375);
-static MAX_VELOCITY_Y: units::Velocity		= units::Velocity(0.2998046875);
+static WALKING_ACCEL:  units::Acceleration  = units::Acceleration(0.00083007812);
+static MAX_VELOCITY_X: units::Velocity      = units::Velocity(0.15859375);
+static MAX_VELOCITY_Y: units::Velocity      = units::Velocity(0.2998046875);
 
-static	AIR_ACCELERATION: units::Acceleration 	= units::Acceleration(0.0003125);
-static 	JUMP_GRAVITY: units::Acceleration 	= units::Acceleration(0.0003125);
-static 	JUMP_SPEED: units::Velocity 		= units::Velocity(0.25);
-static  SHORT_JUMP_SPEED: units::Velocity 	= units::Velocity(0.25 / 1.5);
+static AIR_ACCELERATION: units::Acceleration  = units::Acceleration(0.0003125);
+static JUMP_GRAVITY:     units::Acceleration  = units::Acceleration(0.0003125);
+static JUMP_SPEED:       units::Velocity      = units::Velocity(0.25);
+static SHORT_JUMP_SPEED: units::Velocity      = units::Velocity(0.25 / 1.5);
 
 // player sprite animation
-static CHAR_OFFSET: uint 		= 12;
-static SPRITE_NUM_FRAMES: units::Frame 	= (3);
-static SPRITE_FPS: units::Fps 		= (20);
+static CHAR_OFFSET:        uint          = 12;
+static SPRITE_NUM_FRAMES:  units::Frame  = 3;
+static SPRITE_FPS:         units::Fps    = 20;
 
 // motion
-static STAND_FRAME: units::Tile 	= units::Tile(0);
-static JUMP_FRAME: units::Tile 		= units::Tile(1);
-static FALL_FRAME: units::Tile 		= units::Tile(2);
+static STAND_FRAME: units::Tile   = units::Tile(0);
+static JUMP_FRAME:  units::Tile   = units::Tile(1);
+static FALL_FRAME:  units::Tile   = units::Tile(2);
 
 // horizontal facing (Facing)
-static FACING_WEST: units::Tile		= units::Tile(0 + CHAR_OFFSET);
-static FACING_EAST: units::Tile 	= units::Tile(1 + CHAR_OFFSET);
+static FACING_WEST: units::Tile  = units::Tile(0 + CHAR_OFFSET);
+static FACING_EAST: units::Tile  = units::Tile(1 + CHAR_OFFSET);
 
 // vertical facing (Looking)
-static WALK_UP_OFFSET: units::Tile 	= units::Tile(3);
-static JUMP_DOWN_FRAME:  units::Tile 	= units::Tile(6);
-static STAND_DOWN_FRAME: units::Tile 	= units::Tile(7);
+static WALK_UP_OFFSET:   units::Tile  = units::Tile(3);
+static JUMP_DOWN_FRAME:  units::Tile  = units::Tile(6);
+static STAND_DOWN_FRAME: units::Tile  = units::Tile(7);
 
 // collision detection boxes
 // (expressed as `units::Game`)
@@ -55,8 +55,8 @@ static Y_BOX: Rectangle = Rectangle {
 	width: units::Game(12.0), height: units::Game(30.0)
 };
 
-static 	DAMAGE_INVINCIBILITY: units::Millis 	= units::Millis(3000);
-static 	INVINCIBILITY_FLASH: units::Millis 	= units::Millis(50);
+static DAMAGE_INVINCIBILITY: units::Millis  = units::Millis(3000);
+static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 
 
 /// Encapsulates the pysical motion of a player as it relates to
