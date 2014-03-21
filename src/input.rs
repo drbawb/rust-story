@@ -8,18 +8,18 @@ use collections::hashmap::HashMap;
 ///- Released keys
 ///- Held keys
 pub struct Input {
-	priv pressed_keys: 	HashMap<u32, bool>,
-	priv released_keys: HashMap<u32, bool>,
-	priv held_keys: 	HashMap<u32, bool>
+	priv pressed_keys:   HashMap<u32, bool>,
+	priv released_keys:  HashMap<u32, bool>,
+	priv held_keys:      HashMap<u32, bool>,
 
 }
 
 impl Input {
 	pub fn new() -> Input {
 		Input{
-			pressed_keys: 	HashMap::<u32, bool>::new(),
-			released_keys: 	HashMap::<u32, bool>::new(),
-			held_keys: 		HashMap::<u32, bool>::new()
+			pressed_keys:   HashMap::<u32, bool>::new(),
+			released_keys:  HashMap::<u32, bool>::new(),
+			held_keys:      HashMap::<u32, bool>::new(),
 		}
 	}
 
@@ -46,8 +46,8 @@ impl Input {
 	pub fn was_key_pressed(&self, key: keycode::KeyCode) -> bool {
 		let key_cap = &(key as u32);
 		match self.pressed_keys.find_copy(key_cap) {
-			Some(is_pressed) => {is_pressed}
-			None => false
+			Some(is_pressed) => {is_pressed},
+			None             => false,
 		}
 	}
 	
@@ -56,8 +56,8 @@ impl Input {
 	pub fn was_key_released(&self, key: keycode::KeyCode) -> bool {
 		let key_cap = &(key as u32);
 		match self.released_keys.find_copy(key_cap) {
-			Some(is_pressed) => {is_pressed}
-			None => false
+			Some(is_pressed) => {is_pressed},
+			None             => false,
 		}
 	}
 	
@@ -68,8 +68,8 @@ impl Input {
 	pub fn is_key_held(&self, key: keycode::KeyCode) -> bool {
 		let key_cap = &(key as u32);
 		match self.held_keys.find_copy(key_cap) {
-			Some(is_pressed) => {is_pressed}
-			None => false
+			Some(is_pressed) => {is_pressed},
+			None             => false,
 		}
 	}
 }
