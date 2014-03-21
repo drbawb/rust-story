@@ -14,8 +14,8 @@ use game::units::{AsPixel};
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
-	priv screen: ~render::Renderer,
-	sprite_cache: HashMap<~str, Arc<~render::Texture>>,
+	priv screen:   ~render::Renderer,
+	sprite_cache:  HashMap<~str, Arc<~render::Texture>>,
 }
 
 impl Graphics {
@@ -25,33 +25,31 @@ impl Graphics {
 			(game::SCREEN_WIDTH.to_pixel(), game::SCREEN_HEIGHT.to_pixel());
 		
 		let current_mode = video::Window::new(
-			"rust-story v0.0",			// title
-			video::PosCentered, video::PosCentered,	// position (x,y)
-			w as int, h as int,	
+			"rust-story v0.0",                       // title
+			video::PosCentered, video::PosCentered,  // position (x,y)
+			w as int, h as int,
 			[video::InputGrabbed]
 		);
 
 		let window_context = match current_mode {
-			Ok(ctx) => ctx,	
+			Ok(ctx)  => ctx,
 			Err(msg) => fail!(msg),
 		};
 
 		let render_context = render::Renderer::from_window(
-			window_context,	
+			window_context,
 			render::DriverAuto,
-			[render::Software]
+			[render::Software],
 		);
 
 		let graphics: Graphics = match render_context {
 			Ok(renderer) => {
 				Graphics{
-					screen: renderer, 
-					sprite_cache: HashMap::<~str, Arc<~render::Texture>>::new()
+					screen:        renderer,
+					sprite_cache:  HashMap::<~str, Arc<~render::Texture>>::new(),
 				}
 			},
-			Err(msg) => {
-				fail!(msg)
-			},
+			Err(msg) => {fail!(msg)},
 		};
 		
 		mouse::show_cursor(false);
@@ -62,11 +60,11 @@ impl Graphics {
 	/// This handle can safely be used in any of the graphics subsystem's rendering
 	/// contexts.
 	pub fn load_image(&mut self, 
-			  file_path: ~str, 
-			  transparent_black: bool) -> Arc<~render::Texture> {
+	                  file_path: ~str, 
+	                  transparent_black: bool) -> Arc<~render::Texture> {
 		
 		// Retrieve a handle or generate a new one if it exists already.
-		let borrowed_display = &self.screen;	
+		let borrowed_display = &self.screen;
 		let handle = self.sprite_cache.find_or_insert_with(file_path, |key| {
 			// Load sprite
 			let sprite_path = Path::new((*key).clone());
@@ -85,7 +83,7 @@ impl Graphics {
 					Err(msg) => fail!("Failed to key sprite: {}", msg),
 				}
 			}
-					
+
 			match borrowed_display.create_texture_from_surface(sprite_surface) {
 				Ok(texture) => Arc::new(texture),
 				Err(msg) => fail!("sprite could not be rendered: {}", msg)
@@ -100,9 +98,9 @@ impl Graphics {
 	}
 	
 	pub fn blit_surface(&self,
-			    src: &render::Texture,
-			    src_rect: &rect::Rect,
-			    dest_rect: &rect::Rect) {
+	                    src: &render::Texture,
+	                    src_rect:  &rect::Rect,
+	                    dest_rect: &rect::Rect) {
 		
 		self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
 	}
