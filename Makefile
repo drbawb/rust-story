@@ -1,5 +1,5 @@
-CC=rustc
-CFLAGS=
+RUSTC=rustc
+RUST_FLAGS=
 LDFLAGS=-L lib
 
 .PHONY : all clean doc 
@@ -8,13 +8,13 @@ all: clean compile
 
 compile:
 	mkdir -p bin
-	$(CC) $(CFLAGS) -o bin/rust-story $(LDFLAGS) src/main.rs
+	$(RUSTC) $(RUST_FLAGS) -o bin/rust-story $(LDFLAGS) src/main.rs
 
-veyron: CFLAGS += -O -Z time-passes
+veyron: RUST_FLAGS += -O -Z time-passes
 veyron: all
 
 
-debug: CFLAGS += -g -Z time-passes
+debug: RUST_FLAGS += -g -Z time-passes
 debug: compile
 
 deps:	
