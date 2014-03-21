@@ -2,7 +2,7 @@ use std::f64;
 use super::drawing::{Game}; 
 
 trait AsFloat {
-	fn as_f64(&self) -> f64;
+	fn as_f64(&self)   ->  f64;
 	fn as_nt(val: f64) -> Self;
 }
 
@@ -37,7 +37,7 @@ impl Sub<Millis,Millis> for Millis {
 pub struct Velocity(f64);
 
 impl AsFloat for Velocity {
-	#[inline(always)]	
+	#[inline(always)]
 	fn as_f64(&self) -> f64 {
 		let Velocity(v0) = *self;
 		return v0;

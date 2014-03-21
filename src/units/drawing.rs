@@ -1,11 +1,11 @@
 use std::f64;
 
-static TILE_SIZE: i32 	= 32;
-static SCALE: f64	= 1.0; // This is a divider of TILE_SIZE, 1.0 for 32, 2.0 for 16, etc.
+static TILE_SIZE: i32  =  32;
+static SCALE: f64      = 1.0; // This is a divider of TILE_SIZE, 1.0 for 32, 2.0 for 16, etc.
 
-pub trait AsGame 	{fn to_game(&self) -> Game;}
-pub trait AsTile 	{fn to_tile(&self) -> Tile;}
-pub trait AsPixel 	{fn to_pixel(&self) -> Pixel;}
+pub trait AsGame  { fn to_game(&self)  -> Game;  }
+pub trait AsTile  { fn to_tile(&self)  -> Tile;  }
+pub trait AsPixel { fn to_pixel(&self) -> Pixel; }
 
 /// A `Game` unit represents a density-independent distance in pixels.
 /// Converting a `Game` to pixels will round it to the nearest coordinate,
@@ -19,9 +19,9 @@ impl AsGame for Game {
 }
 
 impl AsTile for Game {
-	#[inline(always)]	
+	#[inline(always)]
 	fn to_tile(&self) -> Tile {
-		let Game(a) = *self;	
+		let Game(a) = *self;
 		Tile((a / TILE_SIZE as f64) as uint)
 	}
 }
@@ -33,7 +33,7 @@ impl AsPixel for Game {
 
 // Allow `+` operator for anything which can be converted `#to_game()` 
 impl<T: AsGame>  Add<T, Game> for Game {
-	#[inline(always)]	
+	#[inline(always)]
 	fn add(&self, rhs: &T) -> Game {
 		let (Game(a), Game(b)) = (*self, rhs.to_game());
 		Game(a + b)
@@ -93,9 +93,9 @@ impl<T: AsPixel> Add<T, Pixel> for Pixel {
 pub struct Tile(uint);
 
 impl AsGame for Tile {
-	#[inline(always)]	
+	#[inline(always)]
 	fn to_game(&self) -> Game {
-		let Tile(a) = *self;	
+		let Tile(a) = *self;
 		Game((a * (TILE_SIZE as uint)) as f64)
 	}
 }
@@ -106,13 +106,13 @@ impl AsTile for Tile {
 }
 
 impl AsPixel for Tile {
-	#[inline(always)]	
+	#[inline(always)]
 	fn to_pixel(&self) -> Pixel { self.to_game().to_pixel() }
 }
 
 // Allow `+` operator for anything which can be converted `#to_tile()`
 impl<T: AsTile> Add<T, Tile> for Tile {
-	#[inline(always)]	
+	#[inline(always)]
 	fn add(&self, rhs: &T) -> Tile {
 		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
 		Tile(a + b)
@@ -121,7 +121,7 @@ impl<T: AsTile> Add<T, Tile> for Tile {
 
 // Allow `-` operator for anything which can be converted to `#to_tile()`
 impl<T: AsTile> Sub<T, Tile> for Tile {
-	#[inline(always)]	
+	#[inline(always)]
 	fn sub(&self, rhs: &T) -> Tile {
 		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
 		Tile(a - b)
@@ -130,7 +130,7 @@ impl<T: AsTile> Sub<T, Tile> for Tile {
 
 // Allow `*` operator for anything which can be converted `#to_tile()`
 impl<T: AsTile> Mul<T, Tile> for Tile {
-	#[inline(always)]	
+	#[inline(always)]
 	fn mul(&self, rhs: &T) -> Tile {
 		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
 		Tile(a * b)

@@ -9,6 +9,6 @@ pub use game::units::physics::{Degrees,AngularVelocity};
 pub use game::units::physics::{Frame,Fps};
 
 // Load sub-libraries
-mod drawing; 
+mod drawing;
 mod physics;
 
