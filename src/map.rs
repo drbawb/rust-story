@@ -1,12 +1,12 @@
 use std::slice;
 use sync::RWArc;
 
+use game::backdrop;
 use game::graphics;
 use game::sprite;
-
-use game::backdrop;
-use game::collisions::Rectangle;
 use game::units;
+
+use game::collisions::Rectangle;
 use game::units::{AsGame,AsTile};
 
 
@@ -18,13 +18,14 @@ pub enum TileType {
 }
 
 struct CollisionTile {
-	pub tile_type: TileType,
-	pub row: units::Tile,
-	pub col: units::Tile
+	pub tile_type:  TileType,
+	pub row:        units::Tile,
+	pub col:        units::Tile
 }
 
 impl CollisionTile {
-	pub fn new(row: units::Tile, col: units::Tile, tile_type: TileType) -> CollisionTile {
+	pub fn new(row: units::Tile, col: units::Tile, 
+	           tile_type: TileType) -> CollisionTile {
 		CollisionTile { tile_type: tile_type, row: row, col: col }
 	}
 }
@@ -32,8 +33,8 @@ impl CollisionTile {
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[deriving(Clone)]
 struct Tile {
-	tile_type: TileType,
-	sprite: Option<RWArc<~sprite::Updatable:Freeze+Send>>
+	tile_type:  TileType,
+	sprite:     Option<RWArc<~sprite::Updatable:Freeze+Send>>
 }
 
 impl Tile {
@@ -43,21 +44,21 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(	sprite: RWArc<~sprite::Updatable:Freeze+Send>, 
-			tile_type: TileType) -> Tile {
+	fn from_sprite(sprite: RWArc<~sprite::Updatable:Freeze+Send>,
+	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
 }
 
 pub struct Map {
-	priv background: 	backdrop::FixedBackdrop,
-	priv sprites:		~[~[Tile]],
-	priv tiles: 		~[~[Tile]]
+	priv background:  backdrop::FixedBackdrop,
+	priv sprites:     ~[~[Tile]],
+	priv tiles:       ~[~[Tile]],
 }
 
 impl Map {
 	/// Will initialize a map (20 * 15) tiles:
-	///	
+	///
 	/// * Most of these tiles will be `Air` tiles.
 	/// * There are 15-tile high walls in the first and last columns. 
 	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
@@ -66,11 +67,11 @@ impl Map {
 		static rows: uint = 15; // 480
 		static cols: uint = 20; // 640
 
-		let map_path = ~"assets/base/Stage/PrtCave.bmp";
-		let sprite = RWArc::new(
+		let map_path =  ~"assets/base/Stage/PrtCave.bmp";
+		let sprite   =  RWArc::new(
 			~sprite::Sprite::new(
-				graphics, 
-				(units::Game(0.0), units::Game(0.0)), 
+				graphics,
+				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
@@ -79,8 +80,8 @@ impl Map {
 
 		let chain_top = RWArc::new(
 			~sprite::Sprite::new(
-				graphics, 
-				(units::Game(0.0), units::Game(0.0)), 
+				graphics,
+				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
@@ -89,8 +90,8 @@ impl Map {
 
 		let chain_middle = RWArc::new(
 			~sprite::Sprite::new(
-				graphics, 
-				(units::Game(0.0), units::Game(0.0)), 
+				graphics,
+				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
@@ -100,7 +101,7 @@ impl Map {
 		let chain_bottom = RWArc::new(
 			~sprite::Sprite::new(
 				graphics, 
-				(units::Game(0.0), units::Game(0.0)), 
+				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
@@ -135,12 +136,12 @@ impl Map {
 		}
 
 
-		map.tiles[rows - 2][3] 	= wall_tile.clone();
-		map.tiles[rows - 2][5] 	= wall_tile.clone();
+		map.tiles[rows - 2][3] = wall_tile.clone();
+		map.tiles[rows - 2][5] = wall_tile.clone();
 		
-		map.tiles[rows - 3][4] 	= wall_tile.clone();
-		map.tiles[rows - 4][3] 	= wall_tile.clone();
-		map.tiles[rows - 5][2] 	= wall_tile.clone();
+		map.tiles[rows - 3][4] = wall_tile.clone();
+		map.tiles[rows - 4][3] = wall_tile.clone();
+		map.tiles[rows - 5][2] = wall_tile.clone();
 
 		map.sprites[rows - 4][2] = ct_tile.clone();
 		map.sprites[rows - 3][2] = cm_tile.clone();
@@ -160,8 +161,8 @@ impl Map {
 					Some(ref elem) => {
 						elem.write(|sprite| {
 							sprite.set_position(
-								(units::Tile(b).to_game(),
-								 units::Tile(a).to_game()));
+							    (units::Tile(b).to_game(),
+							     units::Tile(a).to_game()));
 
 							sprite.draw(graphics);
 						});
@@ -215,14 +216,14 @@ impl Map {
 	/// NOTE: This is a simple check of the _outside bounds_ of the
 	/// rectangle & tile. -- This method may claim that the player is 
 	/// colliding w/ the edge of a tile that _appears to be_ empty space.
-	#[allow(visible_private_types)]	
+	#[allow(visible_private_types)]
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
 		let mut collision_tiles: ~[CollisionTile] = ~[];
 		
-		let units::Tile(first_row) 	= rectangle.top().to_tile();
-		let units::Tile(last_row) 	= rectangle.bottom().to_tile();
-		let units::Tile(first_col) 	= rectangle.left().to_tile();
-		let units::Tile(last_col) 	= rectangle.right().to_tile();
+		let units::Tile(first_row) =  rectangle.top().to_tile();
+		let units::Tile(last_row)  =  rectangle.bottom().to_tile();
+		let units::Tile(first_col) =  rectangle.left().to_tile();
+		let units::Tile(last_col)  =  rectangle.right().to_tile();
 
 		for row in range(first_row, last_row + 1) {
 			for col in range(first_col, last_col + 1) {
