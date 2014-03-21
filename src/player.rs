@@ -67,22 +67,22 @@ pub struct Player {
 	// positioning
 	priv x: units::Game,
 	priv y: units::Game,
-	priv movement: MotionTup,
+	priv movement:  MotionTup,
 	priv on_ground: bool,
 
 	// physics
-	priv elapsed_time: units::Millis,
-	priv velocity_x: units::Velocity,
-	priv velocity_y: units::Velocity,
-	priv accel_x: int,
+	priv elapsed_time:  units::Millis,
+	priv velocity_x:    units::Velocity,
+	priv velocity_y:    units::Velocity,
+	priv accel_x:       int,
 
 	// state
-	priv is_interacting: 	bool,
-	priv is_invincible: 	bool,
-	priv is_jump_active: 	bool,
+	priv is_interacting:  bool,
+	priv is_invincible:   bool,
+	priv is_jump_active:  bool,
 
 	// timers
-	priv invincible_time: 	units::Millis,
+	priv invincible_time: units::Millis,
 }
 
 
@@ -114,7 +114,7 @@ impl Player {
 
 			is_interacting: false,
 			is_jump_active: false,
-			is_invincible: 	false,
+			is_invincible:  false,
 
 			invincible_time: units::Millis(0),
 		};
@@ -134,7 +134,7 @@ impl Player {
 	/// Draws player to screen
 	pub fn draw(&self, display: &graphics::Graphics) {
 		if self.is_invincible && self.is_strobed() {
-			return;	
+			return;
 		} else {
 			self.sprites.get(&self.movement).draw(display);
 		}
@@ -374,12 +374,12 @@ impl Player {
 					};
 					
 					~sprite::Sprite::new(
-						graphics, 
-						(units::Game(0.0), units::Game(0.0)), 
-						(looking_frame, facing_frame), 
-						(units::Tile(1), units::Tile(1)),	
+						graphics,
+						(units::Game(0.0), units::Game(0.0)),
+						(looking_frame, facing_frame),
+						(units::Tile(1), units::Tile(1)),
 						file_path
-					) as ~sprite::Updatable 
+					) as ~sprite::Updatable
 				}
 
 				// dynamic: 
@@ -390,8 +390,8 @@ impl Player {
 					};
 	
 					~sprite::AnimatedSprite::new(
-						graphics, file_path, 
-						(motion_frame + looking_frame, facing_frame), 
+						graphics, file_path,
+						(motion_frame + looking_frame, facing_frame),
 						(units::Tile(1), units::Tile(1)),
 						SPRITE_NUM_FRAMES, SPRITE_FPS
 					).unwrap() as ~sprite::Updatable
@@ -509,8 +509,8 @@ impl Player {
 
 		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);
 
-		self.is_invincible 	= true;
-		self.invincible_time 	= units::Millis(0);
+		self.is_invincible    = true;
+		self.invincible_time  = units::Millis(0);
 
 		println!("bat has collided with me! D:");
 	}
@@ -573,14 +573,14 @@ impl Player {
 		Rectangle {
 			x: self.x + Y_BOX.left(),
 			y: self.y + Y_BOX.top() + (Y_BOX.height() / units::Game(2.0)),
-			width: 	Y_BOX.width(),
+			width:  Y_BOX.width(),
 			height: (Y_BOX.height() / units::Game(2.0)) + delta
 		}
 	}
 
 	/// The player will collide w/ the ground at y-coord `320`
 	/// Gravity cannot pull them below this floor.
-	fn on_ground(&self) -> bool {			
+	fn on_ground(&self) -> bool {
 		self.on_ground
 	}
 }

@@ -13,41 +13,41 @@ static ANGULAR_VELOCITY: units::AngularVelocity
 	= units::AngularVelocity(120.0 / 1000.0); // 120 deg/sec, or .12 deg/ms
 
 // location of first fluterring bat on sprite sheet
-static X_OFFSET: units::Tile 	= units::Tile(2);
-static Y_OFFSET: units::Tile 	= units::Tile(2);
+static X_OFFSET: units::Tile = units::Tile(2);
+static Y_OFFSET: units::Tile = units::Tile(2);
 
 // y-offsets for different horizontal facings.
 static WEST_OFFSET: units::Tile = units::Tile(0);
 static EAST_OFFSET: units::Tile = units::Tile(1);
 
-static SPRITE_FRAMES: units::Frame	= 3;
-static SPRITE_FPS: units::Fps 		= 15;
+static SPRITE_FRAMES: units::Frame =  3;
+static SPRITE_FPS: units::Fps      = 15;
 
 pub struct CaveBat {
-	x: units::Game, 
+	x: units::Game,
 	y: units::Game,
 	origin: (units::Game, units::Game),
 
 	flight_angle: units::Degrees,
-	facing: sprite::Facing,
-	sprites: HashMap<sprite::Facing, ~sprite::Updatable>,
+
+	facing:   sprite::Facing,
+	sprites:  HashMap<sprite::Facing, ~sprite::Updatable>,
 }
 
 impl CaveBat {
-	pub fn new(
-		display: &mut graphics::Graphics, 
-		x: units::Game, y: units::Game
-	) -> CaveBat {
+	pub fn new(display: &mut graphics::Graphics,
+	           x: units::Game, y: units::Game) -> CaveBat {
+		
 		let sprite_map = HashMap::<sprite::Facing, ~sprite::Updatable>::new();
 
 		let mut new_bat = CaveBat { 
-			x: x, y: y, 
+			x: x, y: y,
 			origin: (x,y),
 
-			facing: sprite::West,
-			flight_angle: units::Degrees(0.0), 
+			facing:        sprite::West,
+			flight_angle:  units::Degrees(0.0), 
 
-			sprites: sprite_map
+			sprites: sprite_map,
 		};
 
 		for facing in sprite::FACINGS.iter() {
@@ -58,10 +58,10 @@ impl CaveBat {
 	}
 
 	fn load_sprite(&mut self, 
-				   display: &mut graphics::Graphics, 
-				   facing: sprite::Facing) {
-		
-		self.sprites.find_or_insert_with(facing, 
+	               display: &mut graphics::Graphics,
+	               facing: sprite::Facing) {
+
+		self.sprites.find_or_insert_with(facing,
 			|key| -> ~sprite::Updatable {
 				let asset_path = ~"assets/base/Npc/NpcCemet.bmp";
 				let sprite_x = X_OFFSET;
@@ -81,7 +81,7 @@ impl CaveBat {
 	}
 
 	pub fn damage_rectangle(&self) -> Rectangle {
-		let half_tile = units::Tile(1).to_game() / units::Game(2.0);	
+		let half_tile = units::Tile(1).to_game() / units::Game(2.0);
 		
 		Rectangle {
 			x: self.x + half_tile, y: self.y + half_tile,

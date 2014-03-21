@@ -17,20 +17,20 @@ pub mod enemies;
 pub mod sprite;
 pub mod units;
 
-static TARGET_FRAMERATE: units::Fps 	= 60;
-static MAX_FRAME_TIME: units::Millis 	= units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
+static TARGET_FRAMERATE: units::Fps  =  60;
+static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
 
-pub static SCREEN_WIDTH: 	units::Tile 	= units::Tile(20);
-pub static SCREEN_HEIGHT:	units::Tile  	= units::Tile(15);
+pub static SCREEN_WIDTH:  units::Tile = units::Tile(20);
+pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
-	priv quote: player::Player,
-	priv yatty: enemies::CaveBat,
-	priv map: 	map::Map,
+	priv quote:  player::Player,
+	priv yatty:  enemies::CaveBat,
+	priv map:    map::Map,
 
-	priv display: 		graphics::Graphics,
-	priv controller: 	input::Input 
+	priv display:     graphics::Graphics,
+	priv controller:  input::Input,
 }
 
 /// When the `Game` leaves scope SDL is instructed to `quit`.
@@ -51,22 +51,24 @@ impl Game {
 		// hide the mouse cursor in our drawing context
 		sdl::init([sdl::InitEverything]);
 		let mut display = graphics::Graphics::new();
-		let controller =  input::Input::new();		
+		let controller  = input::Input::new();
 
 		Game {
-			map: 	map::Map::create_test_map(&mut display),
-			quote: 	player::Player::new(
-					&mut display, 
-					(SCREEN_WIDTH / units::Tile(2)).to_game(),
-					(SCREEN_HEIGHT / units::Tile(2)).to_game()
-				),
-			yatty:	enemies::CaveBat::new(
-					&mut display,
-					(SCREEN_WIDTH / units::Tile(3)).to_game(),
-					(units::Tile(10)).to_game()	
-				),
-			display: display,
-			controller: controller
+			map: map::Map::create_test_map(&mut display),
+			quote: player::Player::new(
+				&mut display,
+				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
+				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
+			),
+
+			yatty: enemies::CaveBat::new(
+				&mut display,
+				(SCREEN_WIDTH / units::Tile(3)).to_game(),
+				(units::Tile(10)).to_game(),
+			),
+
+			display:     display,
+			controller:  controller
 		}
 	}
 
@@ -74,17 +76,17 @@ impl Game {
 		self.event_loop();
 	}
 
-
 	/// Polls current input events & dispatches them to the engine.
 	///
 	/// Then renders a snapshot of the world-state and then waits
 	/// until its next frame deadline.
 	fn event_loop(&mut self) {
 		// event loop control
-		let frame_delay = units::Millis(1000 / TARGET_FRAMERATE as int);
+		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as int);
 		let mut last_update_time = units::Millis(sdl::get_ticks() as int);
+		
 		let mut running = true;
-		let mut timer = Timer::new().unwrap();
+		let mut timer   = Timer::new().unwrap();
 		
 		while running {
 			let start_time_ms = units::Millis(sdl::get_ticks() as int);
@@ -95,11 +97,11 @@ impl Game {
 			match event::poll_event() {
 				event::KeyDownEvent(_,_,key_cap,_,_) => {
 					self.controller.key_down_event(key_cap);
-				}
+				},
 				event::KeyUpEvent(_,_,key_cap,_,_) => {
 					self.controller.key_up_event(key_cap);
-				}
-				_ => {}
+				},
+				_ => {},
 			}
 
 			// Handle exit game
@@ -140,9 +142,10 @@ impl Game {
 				self.quote.stop_jump();
 			}
 
-			// update
+			// inform actors of how much time has passed since last frame
 			let current_time_ms = units::Millis(sdl::get_ticks() as int);
-			let elapsed_time = current_time_ms - last_update_time;
+			let elapsed_time    = current_time_ms - last_update_time;
+			
 			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
 			last_update_time = current_time_ms;
 
@@ -151,12 +154,12 @@ impl Game {
 			self.draw();
 			self.display.switch_buffers();
 
-			// throttle event-loop
+			// throttle event-loop based on iteration time vs frame deadline
 			let iter_time = units::Millis(sdl::get_ticks() as int) - start_time_ms;
-			let next_frame_time: u64 = if frame_delay > iter_time {	// if we did not miss our deadline: adjust delay accordingly
+			let next_frame_time: u64 = if frame_delay > iter_time { 
 				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
 				(fd - it) as u64
-			} else { 0 as u64 };									// otherwise missed frame-deadline, skip waiting period
+			} else { 0 as u64 };
 			timer.sleep(next_frame_time);
 
 			
@@ -172,7 +175,7 @@ impl Game {
 
 	}
 
-	/// Instructs our actors to draw their current state to the screen. 
+	/// Instructs our actors to draw their current state to the screen.
 	fn draw(&self) {
 		self.map.draw_background(&self.display);
 		self.map.draw_sprites(&self.display);
@@ -189,7 +192,7 @@ impl Game {
 
 		let collided =
 			self.yatty.damage_rectangle()
-				.collides_with(&self.quote.damage_rectangle());
+			    .collides_with(&self.quote.damage_rectangle());
 
 		if collided {
 			self.quote.take_damage();
