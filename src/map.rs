@@ -9,8 +9,6 @@ use game::units;
 use game::collisions::Rectangle;
 use game::units::{AsGame,AsTile};
 
-
-
 #[deriving(Eq,Clone)]
 pub enum TileType {
 	Air,
@@ -34,7 +32,7 @@ impl CollisionTile {
 #[deriving(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<RWArc<~sprite::Updatable:Freeze+Send>>
+	sprite:     Option<RWArc<~sprite::Updatable:Send+Share>>
 }
 
 impl Tile {
@@ -44,7 +42,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: RWArc<~sprite::Updatable:Freeze+Send>,
+	fn from_sprite(sprite: RWArc<~sprite::Updatable:Send+Share>,
 	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
@@ -75,7 +73,7 @@ impl Map {
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Freeze+Send
+			) as ~sprite::Updatable:Send+Share
 		);
 
 		let chain_top = RWArc::new(
@@ -85,7 +83,7 @@ impl Map {
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Freeze+Send
+			) as ~sprite::Updatable:Send+Share
 		);
 
 		let chain_middle = RWArc::new(
@@ -95,7 +93,7 @@ impl Map {
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Freeze+Send
+			) as ~sprite::Updatable:Send+Share
 		);
 
 		let chain_bottom = RWArc::new(
@@ -105,7 +103,7 @@ impl Map {
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Freeze+Send
+			) as ~sprite::Updatable:Send+Share
 		);
 
 		let blank_tile = Tile::new();
