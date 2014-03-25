@@ -41,7 +41,7 @@ For the most part this program reads much like it's [`C++`][1] and [`C++11`][2] 
 		* (Obviously the compiler cannot guarantee that we load the _correct sprite._)
 
  * `Arc<>` is used for shared references (which would be `"const"` in the C++ version).
- * `RWArc<>` is used for shared references that must be mutable. (For the time 
+ * `Arc<RWLock<>>` is used for shared references that must be mutable. (For the time 
     being: I'm using this in place of Rc<RefCell<>> as a means to statically 
     confirm the thread-safety of my code. This way I have some reasonable guarantees 
     that I could share certain things in the event I add multithreading.)
