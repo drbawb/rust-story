@@ -92,7 +92,7 @@ impl Drawable for Sprite {
 	
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 
-		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
+		display.blit_surface(*self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }
 
@@ -201,6 +201,6 @@ impl Drawable for AnimatedSprite {
 		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
 
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
-		display.blit_surface(*(self.sprite_sheet.get()), &self.source_rect, &dest_rect);
+		display.blit_surface(*self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }

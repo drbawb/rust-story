@@ -33,7 +33,7 @@ impl FixedBackdrop {
 				let src  = Rect::new(0, 0, tile_size, tile_size);
 				let dest = Rect::new(x, y, tile_size, tile_size);
 
-				graphics.blit_surface(*(self.surface.get()), &src, &dest);
+				graphics.blit_surface(*self.surface, &src, &dest);
 				y+= tile_size;
 			}
 
