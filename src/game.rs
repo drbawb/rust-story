@@ -9,11 +9,11 @@ use sdl2::keycode;
 
 pub mod backdrop;
 pub mod collisions;
+pub mod enemies;
 pub mod graphics;
 pub mod input;
 pub mod map;
 pub mod player;
-pub mod enemies;
 pub mod sprite;
 pub mod units;
 
