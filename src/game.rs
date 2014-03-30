@@ -33,14 +33,6 @@ pub struct Game {
 	priv controller:  input::Input,
 }
 
-/// When the `Game` leaves scope SDL is instructed to `quit`.
-impl Drop for Game {
-	fn drop(&mut self) {
-		println!("quitting sdl ...");
-		sdl::quit();
-	}
-}
-
 impl Game {
 	/// Starts running this games event loop, note that this will block indefinitely.
 	/// This function will return to the caller when the escape key is pressed.
@@ -61,8 +53,7 @@ impl Game {
 				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
 			),
 
-			yatty: enemies::CaveBat::new(
-				&mut display,
+			yatty: enemies::CaveBat::new( &mut display,
 				(SCREEN_WIDTH / units::Tile(3)).to_game(),
 				(units::Tile(10)).to_game(),
 			),
@@ -74,6 +65,7 @@ impl Game {
 
 	pub fn start(&mut self) {
 		self.event_loop();
+		sdl::quit();
 	}
 
 	/// Polls current input events & dispatches them to the engine.
