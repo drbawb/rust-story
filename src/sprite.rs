@@ -6,7 +6,7 @@ use std::rc::Rc;
 use game::graphics;
 
 use game::units;
-use game::units::{AsPixel};
+use game::units::{AsGame,AsPixel};
 
 #[deriving(Hash,Eq,TotalEq)]
 pub enum Motion {
@@ -49,36 +49,40 @@ pub trait Updatable : Drawable {
 pub struct Sprite {
 	sprite_sheet:  Rc<~render::Texture>,
 	source_rect:   rect::Rect,
-	size:    (units::Tile, units::Tile),
-	coords:  (units::Game,units::Game),
+	size:    (units::Game, units::Game),
+	coords:  (units::Game, units::Game),
 }
 
-impl Sprite {
+impl<O:AsGame, S:AsGame> Sprite {
 	/// A new sprite which will draw itself at `coords`
 	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
 	pub fn new(
 		graphics: &mut graphics::Graphics, 
 		coords:  (units::Game,units::Game),  // position on screen
-		offset:  (units::Tile,units::Tile),  // source_x, source_y
-		size:    (units::Tile,units::Tile),  // width, height
+		offset:  (O,O),  // source_x, source_ys
+		size:    (S,S),  // width, height
 		file_name: ~str
 	) -> Sprite {
 		let (w,h) = size;
 		let (x,y) = offset;
-		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
-		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
-	
+
+		let (norm_w,norm_h) = (w.to_game(), h.to_game());
+		let (norm_x,norm_y) = (x.to_game(), y.to_game());
+
+		let (units::Pixel(wi), units::Pixel(hi)) = 
+			(norm_w.to_pixel(), norm_h.to_pixel());
+		let (units::Pixel(xi), units::Pixel(yi)) = 
+			(norm_x.to_pixel(), norm_y.to_pixel());
+
 		let origin  = rect::Rect::new(xi,yi,wi,hi);
 		let sheet   = graphics.load_image(file_name, true);  // request graphics subsystem cache this sprite.
 
-		let sprite = Sprite{
+		return Sprite {
 			sprite_sheet:  sheet,
 			source_rect:   origin,
-			size:          size,
+			size:          (norm_w,norm_h),
 			coords:        coords,
 		};
-
-		sprite
 	}
 }
 
