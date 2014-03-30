@@ -179,7 +179,7 @@ impl Game {
 		self.map.draw(&self.display);
 
 		// ui
-		self.quote.drawHUD(&self.display);
+		self.quote.draw_hud(&self.display);
 	}
 
 	/// Passes the current time in milliseconds to our underlying actors.

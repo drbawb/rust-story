@@ -62,9 +62,10 @@ static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites:  HashMap<MotionTup, ~sprite::Updatable>,
-	priv hud:      ~sprite::Updatable,
-	
+	priv sprites:   HashMap<MotionTup, ~sprite::Updatable>,
+	priv hud:       ~sprite::Updatable,
+	priv hud_fill:  ~sprite::Updatable,
+
 	// positioning
 	priv x: units::Game,
 	priv y: units::Game,
@@ -107,11 +108,20 @@ impl Player {
 			~"assets/base/TextBox.bmp",
 		) as ~sprite::Updatable;
 
+		let health_fill_sprite = ~sprite::Sprite::new(
+			graphics,
+			((units::Game(5.0) * units::HALF_TILE), units::Tile(2).to_game()),
+			(units::Game(0.0), (units::Game(3.0) * HALF_TILE)),
+			((units::Game(5.0) * HALF_TILE) - units::Game(2.0), units::HALF_TILE),
+			~"assets/base/TextBox.bmp",
+		) as ~sprite::Updatable;
+
 		// construct new player
 		let mut new_player = Player{
 			elapsed_time: units::Millis(0),
-			sprites: sprite_map,
-			hud:     health_bar_sprite,
+			sprites:   sprite_map,
+			hud:       health_bar_sprite,
+			hud_fill:  health_fill_sprite,
 
 			x: x, 
 			y: y,
@@ -151,8 +161,9 @@ impl Player {
 	}
 
 	/// Draws player's HUD if available
-	pub fn drawHUD(&self, display: &graphics::Graphics) {
+	pub fn draw_hud(&self, display: &graphics::Graphics) {
 		self.hud.draw(display);
+		self.hud_fill.draw(display);
 	}
 
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
