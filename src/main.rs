@@ -2,7 +2,6 @@
 
 extern crate sdl2;
 extern crate collections;
-extern crate sync;
 
 pub mod game;
 

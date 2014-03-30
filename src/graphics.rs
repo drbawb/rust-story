@@ -1,3 +1,11 @@
+use std::rc::Rc;
+
+use collections::hashmap::HashMap;
+
+use game;
+use game::units;
+use game::units::{AsPixel};
+
 use sdl2::rect;
 use sdl2::pixels;
 use sdl2::surface;
@@ -5,17 +13,10 @@ use sdl2::render;
 use sdl2::video;
 use sdl2::mouse;
 
-use sync::Arc;
-use collections::hashmap::HashMap;
-
-use game;
-use game::units;
-use game::units::{AsPixel};
-
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
 	priv screen:   ~render::Renderer,
-	sprite_cache:  HashMap<~str, Arc<~render::Texture>>,
+	sprite_cache:  HashMap<~str, Rc<~render::Texture>>,
 }
 
 impl Graphics {
@@ -46,7 +47,7 @@ impl Graphics {
 			Ok(renderer) => {
 				Graphics{
 					screen:        renderer,
-					sprite_cache:  HashMap::<~str, Arc<~render::Texture>>::new(),
+					sprite_cache:  HashMap::<~str, Rc<~render::Texture>>::new(),
 				}
 			},
 			Err(msg) => {fail!(msg)},
@@ -61,7 +62,7 @@ impl Graphics {
 	/// contexts.
 	pub fn load_image(&mut self, 
 	                  file_path: ~str, 
-	                  transparent_black: bool) -> Arc<~render::Texture> {
+	                  transparent_black: bool) -> Rc<~render::Texture> {
 		
 		// Retrieve a handle or generate a new one if it exists already.
 		let borrowed_display = &self.screen;
@@ -85,7 +86,7 @@ impl Graphics {
 			}
 
 			match borrowed_display.create_texture_from_surface(sprite_surface) {
-				Ok(texture) => Arc::new(texture),
+				Ok(texture) => Rc::new(texture),
 				Err(msg) => fail!("sprite could not be rendered: {}", msg)
 			}
 		});
