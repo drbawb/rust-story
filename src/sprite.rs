@@ -1,7 +1,8 @@
 use sdl2::rect;
 use sdl2::render;
 
-use sync::Arc;
+use std::rc::Rc;
+
 use game::graphics;
 
 use game::units;
@@ -46,7 +47,7 @@ pub trait Updatable : Drawable {
 
 /// Represents a static 32x32 2D character
 pub struct Sprite {
-	sprite_sheet:  Arc<~render::Texture>,
+	sprite_sheet:  Rc<~render::Texture>,
 	source_rect:   rect::Rect,
 	size:    (units::Tile, units::Tile),
 	coords:  (units::Game,units::Game),
@@ -111,7 +112,7 @@ impl Updatable for Sprite {
 /// Frames will be selected based on time-deltas supplied through update
 pub struct AnimatedSprite {
 	source_rect:   rect::Rect,
-	sprite_sheet:  Arc<~render::Texture>,
+	sprite_sheet:  Rc<~render::Texture>,
 
 	priv coords:  (units::Game, units::Game),
 	priv offset:  (units::Tile, units::Tile),
@@ -159,7 +160,7 @@ impl AnimatedSprite {
 			num_frames:   num_frames,        // our frames are drawin w/ a 0-idx'd window.
 			last_update:  units::Millis(0),
 			
-			sprite_sheet:  sheet,  // "i made this" -- we own this side of the Arc()
+			sprite_sheet:  sheet,
 			source_rect:   origin,
 		};
 

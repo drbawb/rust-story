@@ -1,5 +1,7 @@
 use std::slice;
-use sync::{Arc,RWLock};
+
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use game::backdrop;
 use game::graphics;
@@ -32,7 +34,7 @@ impl CollisionTile {
 #[deriving(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Arc<RWLock<~sprite::Updatable:Send+Share>>>
+	sprite:     Option<Rc<RefCell<~sprite::Updatable>>>
 }
 
 impl Tile {
@@ -42,7 +44,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Arc<RWLock<~sprite::Updatable:Send+Share>>,
+	fn from_sprite(sprite: Rc<RefCell<~sprite::Updatable>>,
 	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
@@ -66,44 +68,44 @@ impl Map {
 		static cols: uint = 20; // 640
 
 		let map_path =  ~"assets/base/Stage/PrtCave.bmp";
-		let sprite   =  Arc::new(RWLock::new(
+		let sprite   =  Rc::new(RefCell::new(
 			~sprite::Sprite::new(
 				graphics,
 				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Send+Share
+			) as ~sprite::Updatable
 		));
 
-		let chain_top = Arc::new(RWLock::new(
+		let chain_top = Rc::new(RefCell::new(
 			~sprite::Sprite::new(
 				graphics,
 				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Send+Share
+			) as ~sprite::Updatable
 		));
 
-		let chain_middle = Arc::new(RWLock::new(
+		let chain_middle = Rc::new(RefCell::new(
 			~sprite::Sprite::new(
 				graphics,
 				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Send+Share
+			) as ~sprite::Updatable
 		));
 
-		let chain_bottom = Arc::new(RWLock::new(
+		let chain_bottom = Rc::new(RefCell::new(
 			~sprite::Sprite::new(
 				graphics, 
 				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable:Send+Share
+			) as ~sprite::Updatable
 		));
 
 		let blank_tile = Tile::new();
@@ -157,7 +159,7 @@ impl Map {
 			for b in range(0, self.sprites[a].len()) {
 				match self.sprites[a][b].sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.write();
+						let mut sprite = elem.borrow_mut();
 						sprite.set_position(
 						    (units::Tile(b).to_game(),
 						     units::Tile(a).to_game()));
@@ -176,7 +178,7 @@ impl Map {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.write();
+						let mut sprite = elem.borrow_mut();
 						sprite.set_position(
 						    (units::Tile(b).to_game(),
 						     units::Tile(a).to_game()));
@@ -194,7 +196,7 @@ impl Map {
 			for col in row.iter() {
 				match col.sprite {
 					Some(ref elem) => {
-						let mut sprite = elem.write();
+						let mut sprite = elem.borrow_mut();
 						sprite.update(elapsed_time);
 					}
 					_ => {}

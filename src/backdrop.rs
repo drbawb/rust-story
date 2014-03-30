@@ -1,18 +1,18 @@
-use sync::Arc;
-
-use sdl2::rect::Rect;
-use sdl2::render::Texture;
+use std::rc::Rc;
 
 use game;
 use game::graphics;
 use game::units;
 use game::units::{AsPixel};
 
+use sdl2::rect::Rect;
+use sdl2::render::Texture;
+
 
 static BACKGROUND_SIZE: units::Tile = units::Tile(4);
 
 pub struct FixedBackdrop {
-	surface: Arc<~Texture>
+	surface: Rc<~Texture>
 }
 
 impl FixedBackdrop {
