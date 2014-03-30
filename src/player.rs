@@ -172,10 +172,14 @@ impl Player {
 
 	/// Draws player's HUD if available
 	pub fn draw_hud(&self, display: &graphics::Graphics) {
-		self.hud.draw(display);
-		self.hud_fill.draw(display);
+		if self.is_invincible && self.is_strobed() {
+			return;
+		} else {
+			self.hud.draw(display);
+			self.hud_fill.draw(display);
 
-		self.three.draw(display);
+			self.three.draw(display);
+		}
 	}
 
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
