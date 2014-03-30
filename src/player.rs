@@ -65,6 +65,7 @@ pub struct Player {
 	priv sprites:   HashMap<MotionTup, ~sprite::Updatable>,
 	priv hud:       ~sprite::Updatable,
 	priv hud_fill:  ~sprite::Updatable,
+	priv three:     ~sprite::Updatable,
 
 	// positioning
 	priv x: units::Game,
@@ -116,12 +117,21 @@ impl Player {
 			~"assets/base/TextBox.bmp",
 		) as ~sprite::Updatable;
 
+		let digit_3 = ~sprite::Sprite::new(
+			graphics,
+			(units::Tile(2).to_game(), units::Tile(2).to_game()),
+			((units::Game(3.0) * HALF_TILE), (units::Game(7.0) * HALF_TILE)),
+			(HALF_TILE, HALF_TILE),
+			~"assets/base/TextBox.bmp",
+		);
+
 		// construct new player
 		let mut new_player = Player{
 			elapsed_time: units::Millis(0),
 			sprites:   sprite_map,
 			hud:       health_bar_sprite,
 			hud_fill:  health_fill_sprite,
+			three:     digit_3,
 
 			x: x, 
 			y: y,
@@ -164,6 +174,8 @@ impl Player {
 	pub fn draw_hud(&self, display: &graphics::Graphics) {
 		self.hud.draw(display);
 		self.hud_fill.draw(display);
+
+		self.three.draw(display);
 	}
 
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
