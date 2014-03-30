@@ -150,6 +150,11 @@ impl Player {
 		}
 	}
 
+	/// Draws player's HUD if available
+	pub fn drawHUD(&self, display: &graphics::Graphics) {
+		self.hud.draw(display);
+	}
+
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
 	/// Determines which sprite-sheet should be used for thsi frame.
 	/// Forwards the elapsed time to the current sprite.
