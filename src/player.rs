@@ -8,7 +8,7 @@ use game::collisions::{Info,Rectangle};
 use game::map;
 
 use game::units;
-use game::units::{AsGame};
+use game::units::{AsGame,HALF_TILE};
 
 type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 
@@ -62,8 +62,11 @@ static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites: HashMap<MotionTup, ~sprite::Updatable>,
-	
+	priv sprites:   HashMap<MotionTup, ~sprite::Updatable>,
+	priv hud:       ~sprite::Updatable,
+	priv hud_fill:  ~sprite::Updatable,
+	priv three:     ~sprite::Updatable,
+
 	// positioning
 	priv x: units::Game,
 	priv y: units::Game,
@@ -97,11 +100,38 @@ impl Player {
 		// insert sprites into map
 		let sprite_map = 
 			HashMap::<MotionTup, ~sprite::Updatable>::new();
+		
+		let health_bar_sprite = ~sprite::Sprite::new(
+			graphics, 
+			(units::Tile(1).to_game(), units::Tile(2).to_game()),
+			(units::Game(0.0), (units::Game(5.0) * HALF_TILE)),
+			(units::Tile(4).to_game(), units::HALF_TILE),
+			~"assets/base/TextBox.bmp",
+		) as ~sprite::Updatable;
+
+		let health_fill_sprite = ~sprite::Sprite::new(
+			graphics,
+			((units::Game(5.0) * units::HALF_TILE), units::Tile(2).to_game()),
+			(units::Game(0.0), (units::Game(3.0) * HALF_TILE)),
+			((units::Game(5.0) * HALF_TILE) - units::Game(2.0), units::HALF_TILE),
+			~"assets/base/TextBox.bmp",
+		) as ~sprite::Updatable;
+
+		let digit_3 = ~sprite::Sprite::new(
+			graphics,
+			(units::Tile(2).to_game(), units::Tile(2).to_game()),
+			((units::Game(3.0) * HALF_TILE), (units::Game(7.0) * HALF_TILE)),
+			(HALF_TILE, HALF_TILE),
+			~"assets/base/TextBox.bmp",
+		);
 
 		// construct new player
 		let mut new_player = Player{
 			elapsed_time: units::Millis(0),
-			sprites: sprite_map,
+			sprites:   sprite_map,
+			hud:       health_bar_sprite,
+			hud_fill:  health_fill_sprite,
+			three:     digit_3,
 
 			x: x, 
 			y: y,
@@ -137,6 +167,18 @@ impl Player {
 			return;
 		} else {
 			self.sprites.get(&self.movement).draw(display);
+		}
+	}
+
+	/// Draws player's HUD if available
+	pub fn draw_hud(&self, display: &graphics::Graphics) {
+		if self.is_invincible && self.is_strobed() {
+			return;
+		} else {
+			self.hud.draw(display);
+			self.hud_fill.draw(display);
+
+			self.three.draw(display);
 		}
 	}
 
@@ -528,7 +570,7 @@ impl Player {
 	}
 
 	pub fn center_x(&self) -> units::Game {
-		self.x + (units::Tile(1).to_game() / units::Game(2.0))
+		self.x + HALF_TILE
 	}
 
 	// x-axis collision detection

@@ -169,14 +169,20 @@ impl Game {
 
 	/// Instructs our actors to draw their current state to the screen.
 	fn draw(&self) {
+		// background
 		self.map.draw_background(&self.display);
 		self.map.draw_sprites(&self.display);
+
+		// foreground
 		self.quote.draw(&self.display);
 		self.yatty.draw(&self.display);
 		self.map.draw(&self.display);
+
+		// ui
+		self.quote.draw_hud(&self.display);
 	}
 
-	/// Passes the current time in milliseconds to our underlying actors.	
+	/// Passes the current time in milliseconds to our underlying actors.
 	fn update(&mut self, elapsed_time: units::Millis) {
 		self.map.update(elapsed_time);
 		self.quote.update(elapsed_time, &self.map);
