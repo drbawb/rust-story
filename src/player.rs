@@ -62,7 +62,8 @@ static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites: HashMap<MotionTup, ~sprite::Updatable>,
+	priv sprites:  HashMap<MotionTup, ~sprite::Updatable>,
+	priv hud:      ~sprite::Updatable,
 	
 	// positioning
 	priv x: units::Game,
@@ -97,11 +98,20 @@ impl Player {
 		// insert sprites into map
 		let sprite_map = 
 			HashMap::<MotionTup, ~sprite::Updatable>::new();
+		
+		let health_bar_sprite = ~sprite::Sprite::new(
+			graphics, 
+			(units::Tile(1).to_game(), units::Tile(2).to_game()),
+			(units::Game(0.0), (units::Game(5.0) * HALF_TILE)),
+			(units::Tile(4).to_game(), units::HALF_TILE),
+			~"assets/base/TextBox.bmp",
+		) as ~sprite::Updatable;
 
 		// construct new player
 		let mut new_player = Player{
 			elapsed_time: units::Millis(0),
 			sprites: sprite_map,
+			hud:     health_bar_sprite,
 
 			x: x, 
 			y: y,
