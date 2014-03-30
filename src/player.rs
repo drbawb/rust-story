@@ -8,7 +8,7 @@ use game::collisions::{Info,Rectangle};
 use game::map;
 
 use game::units;
-use game::units::{AsGame};
+use game::units::{AsGame,HALF_TILE};
 
 type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 
@@ -528,7 +528,7 @@ impl Player {
 	}
 
 	pub fn center_x(&self) -> units::Game {
-		self.x + (units::Tile(1).to_game() / units::Game(2.0))
+		self.x + HALF_TILE
 	}
 
 	// x-axis collision detection

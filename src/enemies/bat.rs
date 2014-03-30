@@ -7,7 +7,7 @@ use game::sprite;
 use game::graphics;
 
 use game::units;
-use game::units::{AsGame};
+use game::units::HALF_TILE;
 
 static ANGULAR_VELOCITY: units::AngularVelocity 
 	= units::AngularVelocity(120.0 / 1000.0); // 120 deg/sec, or .12 deg/ms
@@ -81,22 +81,20 @@ impl CaveBat {
 	}
 
 	pub fn damage_rectangle(&self) -> Rectangle {
-		let half_tile = units::Tile(1).to_game() / units::Game(2.0);
-		
 		Rectangle {
-			x: self.x + half_tile, y: self.y + half_tile,
+			x: self.x + HALF_TILE, y: self.y + HALF_TILE,
 			width: units::Game(0.0), height: units::Game(0.0),
 		}
 	}
 	
 	fn center_x(&self) -> units::Game {
-		self.x + (units::Tile(1).to_game() / units::Game(2.0))
+		self.x + HALF_TILE
 	}
 
 	pub fn update(&mut self, elapsed_time: units::Millis, player_x: units::Game) {
 		let av: units::Degrees = ANGULAR_VELOCITY * elapsed_time;
 		let amp: units::Game = // peak height of the wave in game units
-			units::Tile(5).to_game() / units::Game(2.0);
+			units::Game(5.0) * units::HALF_TILE;
 		
 		self.flight_angle = self.flight_angle + av;
 		let wave: units::Game = 

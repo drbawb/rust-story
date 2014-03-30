@@ -1,4 +1,6 @@
 // Re-export the sub-libraries under the `units::` namespace
+pub use game::units::drawing::HALF_TILE;
+
 pub use game::units::drawing::{AsGame,AsTile,AsPixel};
 pub use game::units::drawing::{Game,Tile,Pixel};
 

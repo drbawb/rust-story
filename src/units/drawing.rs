@@ -2,7 +2,7 @@ use std::f64;
 
 static TILE_SIZE: i32          =  32;
 static SCALE: f64              = 1.0;
-static HALF_TILE: Game  = Game(TILE_SIZE as f64 / 2.0);
+pub static HALF_TILE: Game  = Game(TILE_SIZE as f64 / 2.0);
 
 pub trait AsGame  { fn to_game(&self)  -> Game;  }
 pub trait AsTile  { fn to_tile(&self)  -> Tile;  }
