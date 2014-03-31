@@ -62,16 +62,16 @@ static HEALTH_BAR_X: units::Tile           = units::Tile(2);
 static HEALTH_BAR_Y: units::Tile           = units::Tile(2);
 static HEALTH_BAR_OFS_X: units::HalfTile   = units::HalfTile(0);
 static HEALTH_BAR_OFS_Y: units::HalfTile   = units::HalfTile(5);
-static HEALTH_BAR_W: units::HalfTile   = units::HalfTile(8);
-static HEALTH_BAR_H: units::HalfTile  = units::HalfTile(1);
+static HEALTH_BAR_W: units::HalfTile       = units::HalfTile(8);
+static HEALTH_BAR_H: units::HalfTile       = units::HalfTile(1);
 
 static HEALTH_FILL_X: units::HalfTile      = units::HalfTile(5);
 static HEALTH_FILL_Y: units::HalfTile      = units::HalfTile(4);
 static HEALTH_FILL_OFS_X: units::HalfTile  = units::HalfTile(0);
 static HEALTH_FILL_OFS_Y: units::HalfTile  = units::HalfTile(3);
 
-static FILL_SHIFT: units::Game              = units::Game(2.0);	
-static HEALTH_FILL_W:  units::HalfTile  = units::HalfTile(5);
+static FILL_SHIFT: units::Game         = units::Game(2.0);	
+static HEALTH_FILL_W:  units::HalfTile = units::HalfTile(5);
 static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 
 /// Encapsulates the pysical motion of a player as it relates to
