@@ -2,7 +2,6 @@ use std::f64;
 
 static TILE_SIZE: i32          =  32;
 static SCALE: f64              = 1.0;
-pub static HALF_TILE: Game     = Game(TILE_SIZE as f64 / 2.0);
 
 pub trait AsGame  { fn to_game(&self)  -> Game;  }
 pub trait AsTile  { fn to_tile(&self)  -> Tile;  }
@@ -83,6 +82,21 @@ impl<T: AsPixel> Add<T, Pixel> for Pixel {
 	fn add(&self, rhs: &T) -> Pixel {
 		let (Pixel(a), Pixel(b)) = (*self, rhs.to_pixel());
 		Pixel(a + b)
+	}
+}
+
+/// A `HalfTile` represents half of the game's base tile size.
+/// 
+/// (This will ultimately be 16 Games, or some scaled number of
+/// pixels.)
+#[deriving(Eq,Ord)]
+pub struct HalfTile(uint);
+
+impl AsGame for HalfTile {
+	#[inline]
+	fn to_game(&self) -> Game {
+		let HalfTile(a) = *self;
+		Game((a * (TILE_SIZE / 2)) as f64)
 	}
 }
 
