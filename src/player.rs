@@ -58,6 +58,7 @@ static Y_BOX: Rectangle = Rectangle {
 static DAMAGE_INVINCIBILITY: units::Millis  = units::Millis(3000);
 static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 
+static HEALTH_BAR_X: units::Game = units::Tile(2).to_game();
 
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
@@ -100,20 +101,34 @@ impl Player {
 		// insert sprites into map
 		let sprite_map = 
 			HashMap::<MotionTup, ~sprite::Updatable>::new();
-		
+
+		// "statics" 
+		let HEALTH_BAR_Y      = units::Tile(2).to_game();
+		let HEALTH_BAR_OFS_X  = units::Game(0.0);
+		let HEALTH_BAR_OFS_Y  = units::Game(5.0) * HALF_TILE;
+		let HEALTH_BAR_WIDTH  = units::Tile(4).to_game();
+		let HEALTH_BAR_HEIGHT = units::HALF_TILE;
+
+		let HEALTH_FILL_X      = units::Game(5.0) * units::HALF_TILE;
+		let HEALTH_FILL_Y      = units::Tile(2).to_game();
+		let HEALTH_FILL_OFS_X  = units::Game(0.0);
+		let HEALTH_FILL_OFS_Y  = units::Game(3.0) * HALF_TILE;
+		let HEALTH_FILL_WIDTH  = (units::Game(5.0) * HALF_TILE) - units::Game(2.0);
+		let HEALTH_FILL_HEIGHT = units::HALF_TILE;
+
 		let health_bar_sprite = ~sprite::Sprite::new(
 			graphics, 
-			(units::Tile(1).to_game(), units::Tile(2).to_game()),
-			(units::Game(0.0), (units::Game(5.0) * HALF_TILE)),
-			(units::Tile(4).to_game(), units::HALF_TILE),
+			(HEALTH_BAR_X, HEALTH_BAR_Y),
+			(HEALTH_BAR_OFS_X, HEALTH_BAR_OFS_Y),
+			(HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT),
 			~"assets/base/TextBox.bmp",
 		) as ~sprite::Updatable;
 
 		let health_fill_sprite = ~sprite::Sprite::new(
 			graphics,
-			((units::Game(5.0) * units::HALF_TILE), units::Tile(2).to_game()),
-			(units::Game(0.0), (units::Game(3.0) * HALF_TILE)),
-			((units::Game(5.0) * HALF_TILE) - units::Game(2.0), units::HALF_TILE),
+			(HEALTH_FILL_X, HEALTH_FILL_Y),
+			(HEALTH_FILL_OFS_X, HEALTH_FILL_OFS_Y),
+			(HEALTH_FILL_WIDTH, HEALTH_FILL_HEIGHT),
 			~"assets/base/TextBox.bmp",
 		) as ~sprite::Updatable;
 
