@@ -8,7 +8,7 @@ use game::collisions::{Info,Rectangle};
 use game::map;
 
 use game::units;
-use game::units::{AsGame,HALF_TILE};
+use game::units::AsGame;
 
 type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 
@@ -58,7 +58,21 @@ static Y_BOX: Rectangle = Rectangle {
 static DAMAGE_INVINCIBILITY: units::Millis  = units::Millis(3000);
 static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 
-static HEALTH_BAR_X: units::Game = units::Tile(2).to_game();
+static HEALTH_BAR_X: units::Tile           = units::Tile(2);
+static HEALTH_BAR_Y: units::Tile           = units::Tile(2);
+static HEALTH_BAR_OFS_X: units::HalfTile   = units::HalfTile(0);
+static HEALTH_BAR_OFS_Y: units::HalfTile   = units::HalfTile(5);
+static HEALTH_BAR_WIDTH: units::HalfTile   = units::HalfTile(8);
+static HEALTH_BAR_HEIGHT: units::HalfTile  = units::HalfTile(1);
+
+static HEALTH_FILL_X: units::HalfTile      = units::HalfTile(5);
+static HEALTH_FILL_Y: units::HalfTile      = units::HalfTile(4);
+static HEALTH_FILL_OFS_X: units::HalfTile  = units::HalfTile(0);
+static HEALTH_FILL_OFS_Y: units::HalfTile  = units::HalfTile(3);
+
+static FILL_SHIFT: units::Game              = units::Game(2.0);	
+static HEALTH_FILL_WIDTH:  units::HalfTile  = units::HalfTile(5);
+static HEALTH_FILL_HEIGHT: units::HalfTile  = units::HalfTile(1);
 
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
@@ -102,20 +116,6 @@ impl Player {
 		let sprite_map = 
 			HashMap::<MotionTup, ~sprite::Updatable>::new();
 
-		// "statics" 
-		let HEALTH_BAR_Y      = units::Tile(2).to_game();
-		let HEALTH_BAR_OFS_X  = units::Game(0.0);
-		let HEALTH_BAR_OFS_Y  = units::Game(5.0) * HALF_TILE;
-		let HEALTH_BAR_WIDTH  = units::Tile(4).to_game();
-		let HEALTH_BAR_HEIGHT = units::HALF_TILE;
-
-		let HEALTH_FILL_X      = units::Game(5.0) * units::HALF_TILE;
-		let HEALTH_FILL_Y      = units::Tile(2).to_game();
-		let HEALTH_FILL_OFS_X  = units::Game(0.0);
-		let HEALTH_FILL_OFS_Y  = units::Game(3.0) * HALF_TILE;
-		let HEALTH_FILL_WIDTH  = (units::Game(5.0) * HALF_TILE) - units::Game(2.0);
-		let HEALTH_FILL_HEIGHT = units::HALF_TILE;
-
 		let health_bar_sprite = ~sprite::Sprite::new(
 			graphics, 
 			(HEALTH_BAR_X, HEALTH_BAR_Y),
@@ -128,15 +128,15 @@ impl Player {
 			graphics,
 			(HEALTH_FILL_X, HEALTH_FILL_Y),
 			(HEALTH_FILL_OFS_X, HEALTH_FILL_OFS_Y),
-			(HEALTH_FILL_WIDTH, HEALTH_FILL_HEIGHT),
+			(HEALTH_FILL_WIDTH.to_game() - FILL_SHIFT, HEALTH_FILL_HEIGHT.to_game()),
 			~"assets/base/TextBox.bmp",
 		) as ~sprite::Updatable;
 
 		let digit_3 = ~sprite::Sprite::new(
 			graphics,
 			(units::Tile(2).to_game(), units::Tile(2).to_game()),
-			((units::Game(3.0) * HALF_TILE), (units::Game(7.0) * HALF_TILE)),
-			(HALF_TILE, HALF_TILE),
+			(units::HalfTile(3), units::HalfTile(7)),
+			(units::HalfTile(1), units::HalfTile(1)),
 			~"assets/base/TextBox.bmp",
 		);
 
@@ -585,7 +585,7 @@ impl Player {
 	}
 
 	pub fn center_x(&self) -> units::Game {
-		self.x + HALF_TILE
+		self.x + units::HalfTile(1)
 	}
 
 	// x-axis collision detection

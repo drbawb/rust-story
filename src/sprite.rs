@@ -53,21 +53,24 @@ pub struct Sprite {
 	coords:  (units::Game, units::Game),
 }
 
-impl<O:AsGame, S:AsGame> Sprite {
+impl<C: AsGame, O:AsGame, S:AsGame> Sprite {
 	/// A new sprite which will draw itself at `coords`
 	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
 	pub fn new(
 		graphics: &mut graphics::Graphics, 
-		coords:  (units::Game,units::Game),  // position on screen
+		coords:  (C,C),  // position on screen
 		offset:  (O,O),  // source_x, source_ys
 		size:    (S,S),  // width, height
 		file_name: ~str
 	) -> Sprite {
 		let (w,h) = size;
 		let (x,y) = offset;
+		let (px, py) = coords;
 
+		// convert from AsGame trait
 		let (norm_w,norm_h) = (w.to_game(), h.to_game());
 		let (norm_x,norm_y) = (x.to_game(), y.to_game());
+		let (pos_x, pos_y)  = (px.to_game(), py.to_game());
 
 		let (units::Pixel(wi), units::Pixel(hi)) = 
 			(norm_w.to_pixel(), norm_h.to_pixel());
@@ -81,7 +84,7 @@ impl<O:AsGame, S:AsGame> Sprite {
 			sprite_sheet:  sheet,
 			source_rect:   origin,
 			size:          (norm_w,norm_h),
-			coords:        coords,
+			coords:        (pos_x,pos_y),
 		};
 	}
 }
