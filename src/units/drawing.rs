@@ -96,7 +96,7 @@ impl AsGame for HalfTile {
 	#[inline]
 	fn to_game(&self) -> Game {
 		let HalfTile(a) = *self;
-		Game((a * (TILE_SIZE / 2)) as f64)
+		Game((a * (TILE_SIZE as uint / 2)) as f64)
 	}
 }
 
