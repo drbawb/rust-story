@@ -12,7 +12,7 @@ trait AsFloat {
 pub struct Millis(int);
 
 impl Add<Millis,Millis> for Millis {
-	#[inline(always)]
+	#[inline]
 	fn add(&self, rhs: &Millis) -> Millis {
 		let (Millis(t0), Millis(t1)) = (*self, *rhs);
 		Millis(t0 + t1)
@@ -20,7 +20,7 @@ impl Add<Millis,Millis> for Millis {
 }
 
 impl Sub<Millis,Millis> for Millis {
-	#[inline(always)]
+	#[inline]
 	fn sub(&self, rhs: &Millis) -> Millis {
 		let (Millis(t0), Millis(t1)) = (*self, *rhs);
 		Millis(t0 - t1)
@@ -37,18 +37,18 @@ impl Sub<Millis,Millis> for Millis {
 pub struct Velocity(f64);
 
 impl AsFloat for Velocity {
-	#[inline(always)]
+	#[inline]
 	fn as_f64(&self) -> f64 {
 		let Velocity(v0) = *self;
 		return v0;
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn as_nt(val: f64) -> Velocity { Velocity(val) }
 }
 
 impl Neg<Velocity> for Velocity {
-	#[inline(always)]
+	#[inline]
 	fn neg(&self) -> Velocity {
 		let Velocity(v0) = *self;
 		Velocity(-v0)
@@ -56,7 +56,7 @@ impl Neg<Velocity> for Velocity {
 }
 
 impl Add<Velocity, Velocity> for Velocity {
-	#[inline(always)]
+	#[inline]
 	fn add(&self, rhs: &Velocity) -> Velocity {
 		let (Velocity(v0), Velocity(v1)) = (*self, *rhs);
 		Velocity(v0 + v1)
@@ -64,7 +64,7 @@ impl Add<Velocity, Velocity> for Velocity {
 }
 
 impl Sub<Velocity, Velocity> for Velocity {
-	#[inline(always)]
+	#[inline]
 	fn sub(&self, rhs: &Velocity) -> Velocity {
 		let (Velocity(v0), Velocity(v1)) = (*self, *rhs);
 		Velocity(v0 - v1)
@@ -74,7 +74,7 @@ impl Sub<Velocity, Velocity> for Velocity {
 /// Any velocity multiplied by some length in time `t`
 /// results in a distance measured in `Games`
 impl Mul<Millis,Game> for Velocity {
-	#[inline(always)]
+	#[inline]
 	fn mul(&self, rhs: &Millis) -> Game {
 		let (Velocity(v0), Millis(t)) = (*self, *rhs);
 		Game(v0 * t as f64)
@@ -88,7 +88,7 @@ pub struct Acceleration(f64);
 /// Acceleration `a` multipled by some time `t` results
 /// in `Velocity(a * t)`
 impl Mul<Millis, Velocity> for Acceleration {
-	#[inline(always)]
+	#[inline]
 	fn mul(&self, rhs: &Millis) -> Velocity {
 		let (Acceleration(a), Millis(t)) = (*self, *rhs);
 		Velocity(a * t as f64)
@@ -96,7 +96,7 @@ impl Mul<Millis, Velocity> for Acceleration {
 }
 
 impl Neg<Acceleration> for Acceleration {
-	#[inline(always)]
+	#[inline]
 	fn neg(&self) -> Acceleration {
 		let Acceleration(a) = *self;
 		Acceleration(-a)
@@ -115,7 +115,7 @@ impl Degrees {
 }
 
 impl Add<Degrees,Degrees> for Degrees {
-	#[inline(always)]
+	#[inline]
 	fn add(&self, rhs: &Degrees) -> Degrees {
 		let (Degrees(d0), Degrees(d1)) = (*self, *rhs);
 		Degrees(d0 + d1)
@@ -125,7 +125,7 @@ impl Add<Degrees,Degrees> for Degrees {
 /// Some number of Degrees `d` divided by some time `t` yields
 /// an AngularVelocity `av`
 impl Div<Millis,AngularVelocity> for Degrees {
-	#[inline(always)]
+	#[inline]
 	fn div(&self, rhs: &Millis) -> AngularVelocity {
 		let (Degrees(d), Millis(t)) = (*self, *rhs);
 		AngularVelocity(d / t as f64)
@@ -139,7 +139,7 @@ pub struct AngularVelocity(f64);
 /// Some AngularVelocity `av` multiplied by some time `t` yields
 /// a number of degrees `d`.
 impl Mul<Millis, Degrees> for AngularVelocity {
-	#[inline(always)]
+	#[inline]
 	fn mul(&self, rhs: &Millis) -> Degrees {
 		let (AngularVelocity(av), Millis(t)) = (*self, *rhs);
 		Degrees(av * t as f64)
