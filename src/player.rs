@@ -118,7 +118,6 @@ impl Player {
 
 		let health_bar_sprite = ~sprite::Sprite::new(
 			graphics, 
-			(HEALTH_BAR_X, HEALTH_BAR_Y),
 			(HEALTH_BAR_OFS_X, HEALTH_BAR_OFS_Y),
 			(HEALTH_BAR_W, HEALTH_BAR_H),
 			~"assets/base/TextBox.bmp",
@@ -126,7 +125,6 @@ impl Player {
 
 		let health_fill_sprite = ~sprite::Sprite::new(
 			graphics,
-			(HEALTH_FILL_X, HEALTH_FILL_Y),
 			(HEALTH_FILL_OFS_X, HEALTH_FILL_OFS_Y),
 			(HEALTH_FILL_W.to_game() - FILL_SHIFT, HEALTH_FILL_H.to_game()),
 			~"assets/base/TextBox.bmp",
@@ -134,7 +132,6 @@ impl Player {
 
 		let digit_3 = ~sprite::Sprite::new(
 			graphics,
-			(units::Tile(2).to_game(), units::Tile(2).to_game()),
 			(units::HalfTile(3), units::HalfTile(7)),
 			(units::HalfTile(1), units::HalfTile(1)),
 			~"assets/base/TextBox.bmp",
@@ -413,7 +410,6 @@ impl Player {
 				
 					~sprite::Sprite::new(
 						graphics, 
-						(units::Game(0.0), units::Game(0.0)), 
 						(motion_frame + (looking_frame), facing_frame), 
 						(units::Tile(1), units::Tile(1)),	
 						file_path
@@ -432,7 +428,6 @@ impl Player {
 					
 					~sprite::Sprite::new(
 						graphics,
-						(units::Game(0.0), units::Game(0.0)),
 						(looking_frame, facing_frame),
 						(units::Tile(1), units::Tile(1)),
 						file_path

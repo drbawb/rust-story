@@ -69,7 +69,6 @@ impl Map {
 		let sprite   =  Rc::new(
 			~sprite::Sprite::new(
 				graphics,
-				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
@@ -79,7 +78,6 @@ impl Map {
 		let chain_top = Rc::new(
 			~sprite::Sprite::new(
 				graphics,
-				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
@@ -89,7 +87,6 @@ impl Map {
 		let chain_middle = Rc::new(
 			~sprite::Sprite::new(
 				graphics,
-				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
@@ -99,7 +96,6 @@ impl Map {
 		let chain_bottom = Rc::new(
 			~sprite::Sprite::new(
 				graphics, 
-				(units::Game(0.0), units::Game(0.0)),
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()

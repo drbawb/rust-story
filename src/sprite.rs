@@ -51,27 +51,23 @@ pub struct Sprite {
 	sprite_sheet:  Rc<~render::Texture>,
 	source_rect:   rect::Rect,
 	size:    (units::Game, units::Game),
-	coords:  (units::Game, units::Game),
 }
 
-impl<C: AsGame, O:AsGame, S:AsGame> Sprite {
+impl<O:AsGame, S:AsGame> Sprite {
 	/// A new sprite which will draw itself at `coords`
 	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
 	pub fn new(
 		graphics: &mut graphics::Graphics, 
-		coords:  (C,C),  // position on screen
 		offset:  (O,O),  // source_x, source_ys
 		size:    (S,S),  // width, height
 		file_name: ~str
 	) -> Sprite {
 		let (w,h) = size;
 		let (x,y) = offset;
-		let (px, py) = coords;
 
 		// convert from AsGame trait
 		let (norm_w,norm_h) = (w.to_game(), h.to_game());
 		let (norm_x,norm_y) = (x.to_game(), y.to_game());
-		let (pos_x, pos_y)  = (px.to_game(), py.to_game());
 
 		let (units::Pixel(wi), units::Pixel(hi)) = 
 			(norm_w.to_pixel(), norm_h.to_pixel());
@@ -85,7 +81,6 @@ impl<C: AsGame, O:AsGame, S:AsGame> Sprite {
 			sprite_sheet:  sheet,
 			source_rect:   origin,
 			size:          (norm_w,norm_h),
-			coords:        (pos_x,pos_y),
 		};
 	}
 }
@@ -118,7 +113,6 @@ pub struct AnimatedSprite {
 	pub source_rect:   rect::Rect,
 	pub sprite_sheet:  Rc<~render::Texture>,
 
-	coords:  (units::Game, units::Game),
 	offset:  (units::Tile, units::Tile),
 	size:    (units::Tile, units::Tile),
 
@@ -156,7 +150,6 @@ impl AnimatedSprite {
 		let sheet = graphics.load_image(sheet_path, true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
 			offset:  offset,
-			coords:  (units::Game(0.0), units::Game(0.0)),
 			size:    size,
 			
 			fps: fps,
