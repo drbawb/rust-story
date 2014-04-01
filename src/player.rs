@@ -77,30 +77,30 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	priv sprites:   HashMap<MotionTup, ~sprite::Updatable>,
-	priv hud:       ~sprite::Updatable,
-	priv hud_fill:  ~sprite::Updatable,
-	priv three:     ~sprite::Updatable,
+	sprites:   HashMap<MotionTup, ~sprite::Updatable>,
+	hud:       ~sprite::Updatable,
+	hud_fill:  ~sprite::Updatable,
+	three:     ~sprite::Updatable,
 
 	// positioning
-	priv x: units::Game,
-	priv y: units::Game,
-	priv movement:  MotionTup,
-	priv on_ground: bool,
+	x: units::Game,
+	y: units::Game,
+	movement:  MotionTup,
+	on_ground: bool,
 
 	// physics
-	priv elapsed_time:  units::Millis,
-	priv velocity_x:    units::Velocity,
-	priv velocity_y:    units::Velocity,
-	priv accel_x:       int,
+	elapsed_time:  units::Millis,
+	velocity_x:    units::Velocity,
+	velocity_y:    units::Velocity,
+	accel_x:       int,
 
 	// state
-	priv is_interacting:  bool,
-	priv is_invincible:   bool,
-	priv is_jump_active:  bool,
+	is_interacting:  bool,
+	is_invincible:   bool,
+	is_jump_active:  bool,
 
 	// timers
-	priv invincible_time: units::Millis,
+	invincible_time: units::Millis,
 }
 
 

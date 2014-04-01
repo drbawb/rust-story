@@ -51,9 +51,9 @@ impl Tile {
 }
 
 pub struct Map {
-	priv background:  backdrop::FixedBackdrop,
-	priv sprites:     ~[~[Tile]],
-	priv tiles:       ~[~[Tile]],
+	background:  backdrop::FixedBackdrop,
+	sprites:     ~[~[Tile]],
+	tiles:       ~[~[Tile]],
 }
 
 impl Map {

@@ -118,18 +118,18 @@ impl Updatable for Sprite {
 /// Represents a 32x32 2D character w/ a number of frames
 /// Frames will be selected based on time-deltas supplied through update
 pub struct AnimatedSprite {
-	source_rect:   rect::Rect,
-	sprite_sheet:  Rc<~render::Texture>,
+	pub source_rect:   rect::Rect,
+	pub sprite_sheet:  Rc<~render::Texture>,
 
-	priv coords:  (units::Game, units::Game),
-	priv offset:  (units::Tile, units::Tile),
-	priv size:    (units::Tile, units::Tile),
+	coords:  (units::Game, units::Game),
+	offset:  (units::Tile, units::Tile),
+	size:    (units::Tile, units::Tile),
 
-	priv current_frame:  units::Frame,
-	priv num_frames:     units::Frame,
-	priv fps:            units::Fps,
+	current_frame:  units::Frame,
+	num_frames:     units::Frame,
+	fps:            units::Fps,
 
-	priv last_update: units::Millis,
+	last_update: units::Millis,
 }
 
 impl AnimatedSprite {

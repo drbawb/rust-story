@@ -1,16 +1,16 @@
 use game::units;
 
 pub struct Info {
-	collided:  bool,
-	row:       units::Tile,
-	col:       units::Tile,
+	pub collided:  bool,
+	pub row:       units::Tile,
+	pub col:       units::Tile,
 }
 
 pub struct Rectangle {
-	x:      units::Game,
-	y:      units::Game,
-	width:  units::Game,
-	height: units::Game,
+	pub x:      units::Game,
+	pub y:      units::Game,
+	pub width:  units::Game,
+	pub height: units::Game,
 }
 
 impl Rectangle {

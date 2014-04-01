@@ -25,12 +25,12 @@ pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game {
-	priv quote:  player::Player,
-	priv yatty:  enemies::CaveBat,
-	priv map:    map::Map,
+	quote:  player::Player,
+	yatty:  enemies::CaveBat,
+	map:    map::Map,
 
-	priv display:     graphics::Graphics,
-	priv controller:  input::Input,
+	display:     graphics::Graphics,
+	controller:  input::Input,
 }
 
 impl Game {

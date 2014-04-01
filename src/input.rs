@@ -8,9 +8,9 @@ use collections::hashmap::HashMap;
 ///- Released keys
 ///- Held keys
 pub struct Input {
-	priv pressed_keys:   HashMap<u32, bool>,
-	priv released_keys:  HashMap<u32, bool>,
-	priv held_keys:      HashMap<u32, bool>,
+	pressed_keys:   HashMap<u32, bool>,
+	released_keys:  HashMap<u32, bool>,
+	held_keys:      HashMap<u32, bool>,
 
 }
 

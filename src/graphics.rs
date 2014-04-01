@@ -15,8 +15,8 @@ use sdl2::mouse;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
-	priv screen:   ~render::Renderer,
-	sprite_cache:  HashMap<~str, Rc<~render::Texture>>,
+	screen:   ~render::Renderer,
+	pub sprite_cache:  HashMap<~str, Rc<~render::Texture>>,
 }
 
 impl Graphics {
