@@ -8,6 +8,8 @@ use game::graphics;
 use game::units;
 use game::units::{AsGame,AsPixel};
 
+pub type CoordPair = (units::Game, units::Game);
+
 #[deriving(Hash,Eq,TotalEq)]
 pub enum Motion {
 	Walking,
@@ -36,13 +38,12 @@ pub static LOOKINGS: [Looking, ..3] = [Up, Down, Horizontal];
 
 /// Any object which can be represented in 2D space
 pub trait Drawable { 
-	fn draw(&self, display: &graphics::Graphics);
+	fn draw(&self, display: &graphics::Graphics, coords: CoordPair);
 }
 
 /// Any object which understands time and placement in 2D space.
 pub trait Updatable : Drawable { 
 	fn update(&mut self, elapsed_time: units::Millis);
-	fn set_position(&mut self, coords: (units::Game,units::Game));
 }
 
 /// Represents a static 32x32 2D character
@@ -91,9 +92,9 @@ impl<C: AsGame, O:AsGame, S:AsGame> Sprite {
 
 impl Drawable for Sprite {
 	/// Draws selfs @ coordinates provided by 
-	fn draw(&self, display: &graphics::Graphics) {
+	fn draw (&self, display: &graphics::Graphics, coords: CoordPair) {
 		let (w,h) = self.size;
-		let (x,y) = self.coords;
+		let (x,y) = coords;
 		
 		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
 		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
@@ -108,10 +109,6 @@ impl Drawable for Sprite {
 impl Updatable for Sprite {
 	fn update(&mut self, elapsed_time: units::Millis) {
 		// no-op for static sprite.
-	}
-
-	fn set_position(&mut self, coords: (units::Game,units::Game)) {
-		self.coords = coords;
 	}
 }
 
@@ -194,17 +191,14 @@ impl Updatable for AnimatedSprite {
 			}
 		}
 	}
-
-	fn set_position(&mut self, coords: (units::Game,units::Game)) {
-		self.coords = coords;
-	}
 }
 
 impl Drawable for AnimatedSprite {
 	/// Draws selfs @ coordinates provided by `Updatable` trait
-	fn draw(&self, display: &graphics::Graphics) {
+	fn draw(&self, display: &graphics::Graphics, coords: CoordPair) {
 		let (w,h) = self.size;
-		let (x,y) = self.coords;
+		let (x,y) = coords;
+		
 		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
 		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
 
