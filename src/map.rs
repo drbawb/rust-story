@@ -1,7 +1,5 @@
 use std::slice;
-
 use std::rc::Rc;
-use std::cell::RefCell;
 
 use game::backdrop;
 use game::graphics;
@@ -34,7 +32,7 @@ impl CollisionTile {
 #[deriving(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Rc<RefCell<~sprite::Updatable>>>
+	sprite:     Option<Rc<~sprite::Updatable>>
 }
 
 impl Tile {
@@ -44,7 +42,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Rc<RefCell<~sprite::Updatable>>,
+	fn from_sprite(sprite: Rc<~sprite::Updatable>,
 	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
@@ -68,7 +66,7 @@ impl Map {
 		static cols: uint = 20; // 640
 
 		let map_path =  ~"assets/base/Stage/PrtCave.bmp";
-		let sprite   =  Rc::new(RefCell::new(
+		let sprite   =  Rc::new(
 			~sprite::Sprite::new(
 				graphics,
 				(units::Game(0.0), units::Game(0.0)),
@@ -76,9 +74,9 @@ impl Map {
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as ~sprite::Updatable
-		));
+		);
 
-		let chain_top = Rc::new(RefCell::new(
+		let chain_top = Rc::new(
 			~sprite::Sprite::new(
 				graphics,
 				(units::Game(0.0), units::Game(0.0)),
@@ -86,9 +84,9 @@ impl Map {
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as ~sprite::Updatable
-		));
+		);
 
-		let chain_middle = Rc::new(RefCell::new(
+		let chain_middle = Rc::new(
 			~sprite::Sprite::new(
 				graphics,
 				(units::Game(0.0), units::Game(0.0)),
@@ -96,9 +94,9 @@ impl Map {
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as ~sprite::Updatable
-		));
+		);
 
-		let chain_bottom = Rc::new(RefCell::new(
+		let chain_bottom = Rc::new(
 			~sprite::Sprite::new(
 				graphics, 
 				(units::Game(0.0), units::Game(0.0)),
@@ -106,7 +104,7 @@ impl Map {
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as ~sprite::Updatable
-		));
+		);
 
 		let blank_tile = Tile::new();
 		let wall_tile = Tile::from_sprite(sprite, Wall);
@@ -158,8 +156,7 @@ impl Map {
 		for a in range(0, self.sprites.len()) {
 			for b in range(0, self.sprites[a].len()) {
 				match self.sprites[a][b].sprite {
-					Some(ref elem) => {
-						let mut sprite = elem.borrow_mut();
+					Some(ref sprite) => {
 						sprite.draw(graphics, 
 						            (units::Tile(b).to_game(),
 						             units::Tile(a).to_game()));
@@ -175,9 +172,7 @@ impl Map {
 		for a in range(0, self.tiles.len()) {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].sprite {
-					Some(ref elem) => {
-						let mut sprite = elem.borrow_mut();
-
+					Some(ref sprite) => {
 						sprite.draw(graphics,
 						            (units::Tile(b).to_game(),
 						             units::Tile(a).to_game()));
@@ -189,18 +184,18 @@ impl Map {
 		}
 	}
 
+
+	/// no-op for demo map
+	#[allow(unused_variable)]
 	pub fn update(&mut self, elapsed_time: units::Millis) {
-		for row in self.tiles.iter() {
-			for col in row.iter() {
-				match col.sprite {
-					Some(ref elem) => {
-						let mut sprite = elem.borrow_mut();
-						sprite.update(elapsed_time);
-					}
-					_ => {}
-				};
-			}
-		}
+		/* 
+		 * This was effectively unused and IMHO does not warrant the
+		 * complexity introduced by using dynamic borrow-ck'ing.
+		 * 
+		 * As most background sprites are shared [in this demo map] any
+		 * animations would look really goofy as all tiles would
+		 * advance their frames in perfect sync.
+		 */
 	}
 
 	/// Checks if `Rectangle` is colliding with any tiles in the foreground.
