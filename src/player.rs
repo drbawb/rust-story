@@ -65,13 +65,13 @@ static HEALTH_BAR_OFS_Y: units::HalfTile   = units::HalfTile(5);
 static HEALTH_BAR_W: units::HalfTile       = units::HalfTile(8);
 static HEALTH_BAR_H: units::HalfTile       = units::HalfTile(1);
 
-static HEALTH_FILL_X: units::HalfTile      = units::HalfTile(5);
-static HEALTH_FILL_Y: units::HalfTile      = units::HalfTile(4);
+static HEALTH_FILL_X: units::HalfTile          = units::HalfTile(7);
+static HEALTH_FILL_Y: units::HalfTile          = units::HalfTile(4);
 static HEALTH_FILL_OFS_X: units::HalfTile  = units::HalfTile(0);
 static HEALTH_FILL_OFS_Y: units::HalfTile  = units::HalfTile(3);
 
 static FILL_SHIFT: units::Game         = units::Game(2.0);	
-static HEALTH_FILL_W:  units::HalfTile = units::HalfTile(5);
+static HEALTH_FILL_W: units::HalfTile  = units::HalfTile(5);
 static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 
 /// Encapsulates the pysical motion of a player as it relates to
@@ -181,7 +181,7 @@ impl Player {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {
-			self.sprites.get(&self.movement).draw(display);
+			self.sprites.get(&self.movement).draw(display, (self.x, self.y));
 		}
 	}
 
@@ -190,10 +190,17 @@ impl Player {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {
-			self.hud.draw(display);
-			self.hud_fill.draw(display);
-
-			self.three.draw(display);
+			self.hud.draw(display,
+			              (HEALTH_BAR_X.to_game(),
+			               HEALTH_BAR_Y.to_game()));
+			
+			self.hud_fill.draw(display,
+			                   (HEALTH_FILL_X.to_game(),
+			                    HEALTH_FILL_Y.to_game()));
+			
+			self.three.draw(display, 
+			                (units::Tile(3).to_game(),
+			                 units::Tile(2).to_game()));
 		}
 	}
 
@@ -206,7 +213,6 @@ impl Player {
 		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
-		self.set_position((self.x, self.y));
 		self.sprites.get_mut(&self.movement).update(elapsed_time);
 
 		if self.is_invincible {
@@ -371,12 +377,6 @@ impl Player {
 	pub fn set_looking(&mut self, direction: sprite::Looking) {
 		let (last_action, last_facing, _) = self.movement;
 		self.movement = (last_action, last_facing, direction);
-	}
-
-	/// Instructs the current sprite-sheet to position itself
-	/// at the coordinates specified by `coords:(x,y)`.
-	fn set_position(&mut self, coords: (units::Game, units::Game)) {
-		self.sprites.get_mut(&self.movement).set_position(coords);
 	}
 
 	/// Loads a sprite for the selected `movement`, stores it in the player's sprite map.
