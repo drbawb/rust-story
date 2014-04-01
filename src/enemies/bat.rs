@@ -111,10 +111,9 @@ impl CaveBat {
 
 		let sprite_ref = self.sprites.get_mut(&self.facing);
 		sprite_ref.update(elapsed_time);
-		sprite_ref.set_position((self.x, self.y));
 	}
 
 	pub fn draw(&self, display: &graphics::Graphics) {
-		self.sprites.get(&self.facing).draw(display);
+		self.sprites.get(&self.facing).draw(display, (self.x, self.y));
 	}
 }

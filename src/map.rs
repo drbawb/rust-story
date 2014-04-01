@@ -160,11 +160,9 @@ impl Map {
 				match self.sprites[a][b].sprite {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow_mut();
-						sprite.set_position(
-						    (units::Tile(b).to_game(),
-						     units::Tile(a).to_game()));
-
-						sprite.draw(graphics);
+						sprite.draw(graphics, 
+						            (units::Tile(b).to_game(),
+						             units::Tile(a).to_game()));
 					}
 					_ => {}
 				};
@@ -179,11 +177,11 @@ impl Map {
 				match self.tiles[a][b].sprite {
 					Some(ref elem) => {
 						let mut sprite = elem.borrow_mut();
-						sprite.set_position(
-						    (units::Tile(b).to_game(),
-						     units::Tile(a).to_game()));
 
-						sprite.draw(graphics);
+						sprite.draw(graphics,
+						            (units::Tile(b).to_game(),
+						             units::Tile(a).to_game()));
+;
 					}
 					_ => {}
 				};
