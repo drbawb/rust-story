@@ -10,4 +10,4 @@ install:
   - cd -
 script:
   - make deps
-  - make debug
+  - make
