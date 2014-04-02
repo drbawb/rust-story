@@ -77,10 +77,10 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
-	sprites:   HashMap<MotionTup, ~sprite::Updatable>,
-	hud:       ~sprite::Updatable,
-	hud_fill:  ~sprite::Updatable,
-	three:     ~sprite::Updatable,
+	sprites:   HashMap<MotionTup, ~sprite::Updatable<units::Game>>,
+	hud:       ~sprite::Updatable<units::Game>,
+	hud_fill:  ~sprite::Updatable<units::Game>,
+	three:     ~sprite::Updatable<units::Game>,
 
 	// positioning
 	x: units::Game,
@@ -114,21 +114,21 @@ impl Player {
 	pub fn new(graphics: &mut graphics::Graphics, x: units::Game, y: units::Game) -> Player {
 		// insert sprites into map
 		let sprite_map = 
-			HashMap::<MotionTup, ~sprite::Updatable>::new();
+			HashMap::<MotionTup, ~sprite::Updatable<_>>::new();
 
 		let health_bar_sprite = ~sprite::Sprite::new(
 			graphics, 
 			(HEALTH_BAR_OFS_X, HEALTH_BAR_OFS_Y),
 			(HEALTH_BAR_W, HEALTH_BAR_H),
 			~"assets/base/TextBox.bmp",
-		) as ~sprite::Updatable;
+		) as ~sprite::Updatable<_>;
 
 		let health_fill_sprite = ~sprite::Sprite::new(
 			graphics,
 			(HEALTH_FILL_OFS_X, HEALTH_FILL_OFS_Y),
 			(HEALTH_FILL_W.to_game() - FILL_SHIFT, HEALTH_FILL_H.to_game()),
 			~"assets/base/TextBox.bmp",
-		) as ~sprite::Updatable;
+		) as ~sprite::Updatable<_>;
 
 		let digit_3 = ~sprite::Sprite::new(
 			graphics,
@@ -384,7 +384,7 @@ impl Player {
 		graphics: &mut graphics::Graphics, 
 		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
 	) {
-		self.sprites.find_or_insert_with(movement, |key| -> ~sprite::Updatable {
+		self.sprites.find_or_insert_with(movement, |key| -> ~sprite::Updatable<_> {
 			let file_path = ~"assets/base/MyChar.bmp";
 			let (motion, facing, _) = *key;
 			let motion_frame = match motion {
@@ -413,7 +413,7 @@ impl Player {
 						(motion_frame + (looking_frame), facing_frame), 
 						(units::Tile(1), units::Tile(1)),	
 						file_path
-					) as ~sprite::Updatable 
+					) as ~sprite::Updatable<_> 
 				}
 
 				// static: jumping or falling
@@ -431,7 +431,7 @@ impl Player {
 						(looking_frame, facing_frame),
 						(units::Tile(1), units::Tile(1)),
 						file_path
-					) as ~sprite::Updatable
+					) as ~sprite::Updatable<_>
 				}
 
 				// dynamic: 
@@ -446,7 +446,7 @@ impl Player {
 						(motion_frame + looking_frame, facing_frame),
 						(units::Tile(1), units::Tile(1)),
 						SPRITE_NUM_FRAMES, SPRITE_FPS
-					).unwrap() as ~sprite::Updatable
+					).unwrap() as ~sprite::Updatable<_>
 				}
 			}
 		});
