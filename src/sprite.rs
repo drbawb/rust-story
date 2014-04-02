@@ -8,8 +8,6 @@ use game::graphics;
 use game::units;
 use game::units::{AsGame,AsPixel};
 
-pub type CoordPair = (units::Game, units::Game);
-
 #[deriving(Hash,Eq,TotalEq)]
 pub enum Motion {
 	Walking,
@@ -37,12 +35,16 @@ pub enum Looking {
 pub static LOOKINGS: [Looking, ..3] = [Up, Down, Horizontal];
 
 /// Any object which can be represented in 2D space
-pub trait Drawable { 
-	fn draw(&self, display: &graphics::Graphics, coords: CoordPair);
+/// Coord represents the unit which describes this object's
+/// position in 3D space.
+///
+/// Said unit must be expressible in terms of `Game`
+pub trait Drawable<Coord> { 
+	fn draw(&self, display: &graphics::Graphics, coords: (Coord,Coord));
 }
 
 /// Any object which understands time and placement in 2D space.
-pub trait Updatable : Drawable { 
+pub trait Updatable<T> : Drawable<T> { 
 	fn update(&mut self, elapsed_time: units::Millis);
 }
 
@@ -85,14 +87,15 @@ impl<O:AsGame, S:AsGame> Sprite {
 	}
 }
 
-impl Drawable for Sprite {
+impl<C: AsGame> Drawable<C> for Sprite {
 	/// Draws selfs @ coordinates provided by 
-	fn draw (&self, display: &graphics::Graphics, coords: CoordPair) {
+	fn draw (&self, display: &graphics::Graphics, coords: (C,C)) {
 		let (w,h) = self.size;
 		let (x,y) = coords;
 		
 		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
-		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
+		let (units::Pixel(xi), units::Pixel(yi)) = 
+			(x.to_game().to_pixel(), y.to_game().to_pixel());
 	
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 
@@ -101,7 +104,7 @@ impl Drawable for Sprite {
 }
 
 #[allow(unused_variable)]
-impl Updatable for Sprite {
+impl<C: AsGame> Updatable<C> for Sprite {
 	fn update(&mut self, elapsed_time: units::Millis) {
 		// no-op for static sprite.
 	}
@@ -165,7 +168,7 @@ impl AnimatedSprite {
 	}
 }
 
-impl Updatable for AnimatedSprite {
+impl<C: AsGame> Updatable<C> for AnimatedSprite {
 	/// Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self, elapsed_time: units::Millis) {
 		let frame_time = units::Millis(1000 / self.fps as int);
@@ -186,14 +189,15 @@ impl Updatable for AnimatedSprite {
 	}
 }
 
-impl Drawable for AnimatedSprite {
+impl<C: AsGame> Drawable<C> for AnimatedSprite {
 	/// Draws selfs @ coordinates provided by `Updatable` trait
-	fn draw(&self, display: &graphics::Graphics, coords: CoordPair) {
+	fn draw(&self, display: &graphics::Graphics, coords: (C,C)) {
 		let (w,h) = self.size;
 		let (x,y) = coords;
 		
 		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
-		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
+		let (units::Pixel(xi), units::Pixel(yi)) = 
+			(x.to_game().to_pixel(), y.to_game().to_pixel());
 
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 		display.blit_surface(*self.sprite_sheet, &self.source_rect, &dest_rect);
