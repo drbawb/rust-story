@@ -77,13 +77,14 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
+	// assets
 	sprites:   HashMap<MotionTup, ~sprite::Updatable<units::Game>>,
-	hud:       ~sprite::Updatable<units::Game>,
-	hud_fill:  ~sprite::Updatable<units::Game>,
-	three:     ~sprite::Updatable<units::Game>,
+	three:     ~sprite::Updatable<units::Tile>,
+	hud:       ~sprite::Updatable<units::Tile>,
+	hud_fill:  ~sprite::Updatable<units::HalfTile>,
 
 	// positioning
-	x: units::Game,
+	x: units::Game, 
 	y: units::Game,
 	movement:  MotionTup,
 	on_ground: bool,
@@ -188,16 +189,16 @@ impl Player {
 			return;
 		} else {
 			self.hud.draw(display,
-			              (HEALTH_BAR_X.to_game(),
-			               HEALTH_BAR_Y.to_game()));
+			              (HEALTH_BAR_X,
+			               HEALTH_BAR_Y));
 			
 			self.hud_fill.draw(display,
-			                   (HEALTH_FILL_X.to_game(),
-			                    HEALTH_FILL_Y.to_game()));
+			                   (HEALTH_FILL_X,
+			                    HEALTH_FILL_Y));
 			
 			self.three.draw(display, 
-			                (units::Tile(3).to_game(),
-			                 units::Tile(2).to_game()));
+			                (units::Tile(3),
+			                 units::Tile(2)));
 		}
 	}
 
