@@ -32,7 +32,7 @@ impl CollisionTile {
 #[deriving(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Rc<~sprite::Updatable>>
+	sprite:     Option<Rc<~sprite::Updatable<units::Game>>>
 }
 
 impl Tile {
@@ -42,7 +42,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Rc<~sprite::Updatable>,
+	fn from_sprite(sprite: Rc<~sprite::Updatable<units::Game>>,
 	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
@@ -72,7 +72,7 @@ impl Map {
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable
+			) as ~sprite::Updatable<_>
 		);
 
 		let chain_top = Rc::new(
@@ -81,7 +81,7 @@ impl Map {
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable
+			) as ~sprite::Updatable<_>
 		);
 
 		let chain_middle = Rc::new(
@@ -90,7 +90,7 @@ impl Map {
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable
+			) as ~sprite::Updatable<_>
 		);
 
 		let chain_bottom = Rc::new(
@@ -99,7 +99,7 @@ impl Map {
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable
+			) as ~sprite::Updatable<_>
 		);
 
 		let blank_tile = Tile::new();
