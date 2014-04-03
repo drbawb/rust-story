@@ -38,7 +38,7 @@ pub static LOOKINGS: [Looking, ..3] = [Up, Down, Horizontal];
 /// Coord represents the unit which describes this object's
 /// position in 3D space.
 ///
-/// Said unit must be expressible in terms of `Game`
+/// Said unit must be expressible in terms of `Game` units.
 pub trait Drawable<Coord> { 
 	fn draw(&self, display: &graphics::Graphics, coords: (Coord,Coord));
 }

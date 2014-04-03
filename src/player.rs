@@ -146,7 +146,7 @@ impl Player {
 			hud_fill:  health_fill_sprite,
 			three:     digit_3,
 
-			x: x, 
+			x: x,
 			y: y,
 			movement: (sprite::Standing, sprite::East, sprite::Horizontal),
 			on_ground: false,
