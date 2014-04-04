@@ -10,7 +10,7 @@ compile:
 	mkdir -p bin
 	$(RUSTC) $(RUST_FLAGS) -o bin/rust-story $(LDFLAGS) src/main.rs
 
-veyron: RUST_FLAGS += -O -Z time-passes
+veyron: RUST_FLAGS += -O -Z time-passes -Z lto
 veyron: all
 
 
