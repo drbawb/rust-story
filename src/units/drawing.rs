@@ -11,7 +11,7 @@ pub trait AsPixel { fn to_pixel(&self) -> Pixel; }
 /// Converting a `Game` to pixels will round it to the nearest coordinate,
 /// scaled based on the desired tile size & resolution.
 #[deriving(Eq,Ord)]
-pub struct Game(f64);
+pub struct Game(pub f64);
 
 impl AsGame for Game {
 	#[inline]
@@ -69,7 +69,7 @@ impl <T: AsGame> Div<T, Game> for Game {
 
 /// A `Pixel` represents an absolute coordinate on a surface.
 #[deriving(Eq,Ord)]
-pub struct Pixel(i32);
+pub struct Pixel(pub i32);
 
 impl AsPixel for Pixel {
 	#[inline]
@@ -90,7 +90,7 @@ impl<T: AsPixel> Add<T, Pixel> for Pixel {
 /// (This will ultimately be 16 Games, or some scaled number of
 /// pixels.)
 #[deriving(Eq,Ord)]
-pub struct HalfTile(uint);
+pub struct HalfTile(pub uint);
 
 impl AsGame for HalfTile {
 	#[inline]
@@ -105,7 +105,7 @@ impl AsGame for HalfTile {
 ///
 /// This may ultimately be scaled if converted to `Games` or `Pixels`
 #[deriving(Eq,Ord)]
-pub struct Tile(uint);
+pub struct Tile(pub uint);
 
 impl AsGame for Tile {
 	#[inline]

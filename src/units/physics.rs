@@ -9,7 +9,7 @@ trait AsFloat {
 /// Millis represents a length of time in milliseconds as a signed integer.
 /// (NOTE: As `Millis` supports basic arithmetic: "negative time" is possible.)
 #[deriving(Eq,Ord,TotalEq,TotalOrd)]
-pub struct Millis(int);
+pub struct Millis(pub int);
 
 impl Add<Millis,Millis> for Millis {
 	#[inline]
@@ -34,7 +34,7 @@ impl Sub<Millis,Millis> for Millis {
 /// they are higher precision types, they will also automatically
 /// scale the render distance when converted to pixels.)
 #[deriving(Eq,Ord)]
-pub struct Velocity(f64);
+pub struct Velocity(pub f64);
 
 impl AsFloat for Velocity {
 	#[inline]
@@ -83,7 +83,7 @@ impl Mul<Millis,Game> for Velocity {
 
 /// Acceleration is defined as `(Games/ms)/ms`
 #[deriving(Eq,Ord)]
-pub struct Acceleration(f64);
+pub struct Acceleration(pub f64);
 
 /// Acceleration `a` multipled by some time `t` results
 /// in `Velocity(a * t)`
@@ -104,7 +104,7 @@ impl Neg<Acceleration> for Acceleration {
 }
 
 #[deriving(Eq,Ord)]
-pub struct Degrees(f64);
+pub struct Degrees(pub f64);
 
 impl Degrees {
 	/// Degrees are converted to radians as follows: `Degrees * (PI / 180.0)`
@@ -134,7 +134,7 @@ impl Div<Millis,AngularVelocity> for Degrees {
 
 /// AngularVelocity is defined as `Degrees/Millis` and is stored in a float.
 #[deriving(Eq,Ord)]
-pub struct AngularVelocity(f64);
+pub struct AngularVelocity(pub f64);
 
 /// Some AngularVelocity `av` multiplied by some time `t` yields
 /// a number of degrees `d`.
