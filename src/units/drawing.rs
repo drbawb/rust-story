@@ -1,5 +1,3 @@
-use std::f64;
-
 static TILE_SIZE: i32          =  32;
 static SCALE: f64              = 1.0;
 
@@ -28,7 +26,7 @@ impl AsTile for Game {
 
 impl AsPixel for Game {
 	#[inline]
-	fn to_pixel(&self) -> Pixel { let Game(a) = *self; Pixel(f64::round(a / SCALE) as i32) }
+	fn to_pixel(&self) -> Pixel { let Game(a) = *self; Pixel((a / SCALE).round() as i32) }
 }
 
 // Allow `+` operator for anything which can be converted `#to_game()` 
