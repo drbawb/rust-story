@@ -234,15 +234,22 @@ impl Player {
 
 		self.velocity_x = self.velocity_x + (accel_x * self.elapsed_time);
 
+		// apply maximum bounds to velocity based on situation	
 		if self.accel_x < 0 {
-			self.velocity_x =  units::max(self.velocity_x, -MAX_VELOCITY_X);
+			self.velocity_x = units::Velocity((*self.velocity_x).max(-*MAX_VELOCITY_X));
 		} else if self.accel_x > 0 {
-			self.velocity_x = units::min(self.velocity_x, MAX_VELOCITY_X);
+			self.velocity_x = units::Velocity((*self.velocity_x).min( *MAX_VELOCITY_X));
 		} else if self.on_ground() {
+			let v_friction = FRICTION * self.elapsed_time;
+
 			self.velocity_x = if self.velocity_x > units::Velocity(0.0) {
-				units::max(units::Velocity(0.0), self.velocity_x - (FRICTION * self.elapsed_time))
+				units::Velocity(
+					(*units::Velocity(0.0)).max(*(self.velocity_x - v_friction))
+				)
 			} else {
-				units::min(units::Velocity(0.0), self.velocity_x + (FRICTION * self.elapsed_time))
+				units::Velocity(
+					(*units::Velocity(0.0)).min(*(self.velocity_x + v_friction))
+				)
 			};
 		}
 
@@ -296,10 +303,8 @@ impl Player {
 				GRAVITY
 			};
 
-		self.velocity_y = units::min(
-			self.velocity_y + (gravity * self.elapsed_time), 
-			MAX_VELOCITY_Y
-		);
+		let v_gravity = self.velocity_y + (gravity * self.elapsed_time);
+		self.velocity_y = units::Velocity((*v_gravity).min(*MAX_VELOCITY_Y));
 
 		// calculate delta
 		let delta = self.velocity_y * self.elapsed_time;
@@ -560,7 +565,7 @@ impl Player {
 	pub fn take_damage(&mut self) {
 		if self.is_invincible { return; }
 
-		self.velocity_y = units::min(self.velocity_y, -SHORT_JUMP_SPEED);
+		self.velocity_y = units::Velocity((*self.velocity_y).min(-*SHORT_JUMP_SPEED));
 
 		self.is_invincible    = true;
 		self.invincible_time  = units::Millis(0);
