@@ -2,7 +2,6 @@
 pub use game::units::drawing::{AsGame,AsTile,AsPixel};
 pub use game::units::drawing::{Game,Tile,HalfTile,Pixel};
 
-pub use game::units::physics::{min,max};
 pub use game::units::physics::{Millis,Velocity,Acceleration};
 pub use game::units::physics::{Degrees,AngularVelocity};
 

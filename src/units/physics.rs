@@ -1,11 +1,6 @@
 use std::f64;
 use super::drawing::{Game}; 
 
-trait AsFloat {
-	fn as_f64(&self)   ->  f64;
-	fn as_nt(val: f64) -> Self;
-}
-
 /// Millis represents a length of time in milliseconds as a signed integer.
 /// (NOTE: As `Millis` supports basic arithmetic: "negative time" is possible.)
 #[deriving(Eq,Ord,TotalEq,TotalOrd)]
@@ -36,15 +31,9 @@ impl Sub<Millis,Millis> for Millis {
 #[deriving(Eq,Ord)]
 pub struct Velocity(pub f64);
 
-impl AsFloat for Velocity {
-	#[inline]
-	fn as_f64(&self) -> f64 {
-		let Velocity(v0) = *self;
-		return v0;
-	}
-
-	#[inline]
-	fn as_nt(val: f64) -> Velocity { Velocity(val) }
+/// Allows dereferencing `Velocity(f64)` to the direct value
+impl Deref<f64> for Velocity {
+	fn deref<'a>(&'a self) -> &'a f64 { let Velocity(ref inner_val) = *self; inner_val }
 }
 
 impl Neg<Velocity> for Velocity {
@@ -144,14 +133,6 @@ impl Mul<Millis, Degrees> for AngularVelocity {
 		let (AngularVelocity(av), Millis(t)) = (*self, *rhs);
 		Degrees(av * t as f64)
 	}
-}
-
-pub fn min<T: AsFloat>(lhs: T, rhs: T) -> T {
-	AsFloat::as_nt(lhs.as_f64().min(rhs.as_f64()))
-}
-
-pub fn max<T: AsFloat>(lhs: T, rhs: T) -> T {
-	AsFloat::as_nt(lhs.as_f64().max(rhs.as_f64()))
 }
 
 pub type Frame = uint;
