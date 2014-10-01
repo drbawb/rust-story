@@ -120,26 +120,28 @@ impl Map {
 	
 		// init `floor`
 		for i in range(0, cols) {
-			map.tiles[rows - 1][i] = wall_tile.clone(); // store a reference
+			*(map.tiles
+			     .get_mut(rows - 1)
+			     .get_mut(i)) = wall_tile.clone(); // store a reference
 		}
 
 		// "safety wall"
 		for i in range (0, rows) {
-			map.tiles[i][0] = wall_tile.clone();
-			map.tiles[i][cols - 1] = wall_tile.clone();
+			*(map.tiles.get_mut(i).get_mut(0))        = wall_tile.clone();
+			*(map.tiles.get_mut(i).get_mut(cols - 1)) = wall_tile.clone();
 		}
 
 
-		map.tiles[rows - 2][3] = wall_tile.clone();
-		map.tiles[rows - 2][5] = wall_tile.clone();
-		
-		map.tiles[rows - 3][4] = wall_tile.clone();
-		map.tiles[rows - 4][3] = wall_tile.clone();
-		map.tiles[rows - 5][2] = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 2).get_mut(3)) = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 2).get_mut(5)) = wall_tile.clone();
 
-		map.sprites[rows - 4][2] = ct_tile.clone();
-		map.sprites[rows - 3][2] = cm_tile.clone();
-		map.sprites[rows - 2][2] = cb_tile.clone();
+		*(map.tiles.get_mut(rows - 3).get_mut(4)) = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 4).get_mut(3)) = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 5).get_mut(2)) = wall_tile.clone();
+
+		*(map.sprites.get_mut(rows - 4).get_mut(2)) = ct_tile.clone();
+		*(map.sprites.get_mut(rows - 3).get_mut(2)) = cm_tile.clone();
+		*(map.sprites.get_mut(rows - 2).get_mut(2)) = cb_tile.clone();
 	
 		map
 	}
