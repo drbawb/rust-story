@@ -29,28 +29,28 @@ impl CollisionTile {
 
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[deriving(Clone)]
-struct Tile<'a> {
+struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>+'a>>>
+	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>+'static>>>
 }
 
-impl<'a> Tile<'a> {
+impl Tile {
 	/// Creates n air tile w/ no sprite.
-	fn new() -> Tile<'a> {
+	fn new() -> Tile {
 		Tile { tile_type: Air, sprite: None }
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite<'a>(sprite: Rc<Box<sprite::Updatable<units::Game>>+'a>,
-	               tile_type: TileType) -> Tile<'a> {
+	fn from_sprite(sprite: Rc<Box<sprite::Updatable<units::Game>+'static>>,
+	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite.clone()) }
 	}
 }
 
 pub struct Map {
 	background:  backdrop::FixedBackdrop,
-	sprites:     Vec<Vec<Tile<'static>>>,
-	tiles:       Vec<Vec<Tile<'static>>>,
+	sprites:     Vec<Vec<Tile>>,
+	tiles:       Vec<Vec<Tile>>,
 }
 
 impl Map {
