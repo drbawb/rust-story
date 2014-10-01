@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use game;
-use game::graphics;
-use game::units;
-use game::units::{AsPixel};
+use graphics;
+use units;
+use units::{AsPixel};
 
 use sdl2::rect::Rect;
 use sdl2::render::Texture;

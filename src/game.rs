@@ -1,7 +1,13 @@
 use std::cmp;
 use std::io::Timer;
 
-use game::units::{AsGame};
+use enemies;
+use graphics;
+use input;
+use map;
+use player;
+use units;
+use units::{AsGame};
 
 use sdl2::sdl;
 use sdl2::event;

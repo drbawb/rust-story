@@ -1,11 +1,11 @@
-use collections::hashmap::HashMap;
+use std::collections::HashMap;
 
-use game::collisions::Rectangle;
-use game::sprite;
-use game::graphics;
+use collisions::Rectangle;
+use sprite;
+use graphics;
 
-use game::units;
-use game::units::AsGame;
+use units;
+use units::AsGame;
 
 static ANGULAR_VELOCITY: units::AngularVelocity 
 	= units::AngularVelocity(120.0 / 1000.0); // 120 deg/sec, or .12 deg/ms

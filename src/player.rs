@@ -1,14 +1,14 @@
-use collections::hashmap::HashMap;
+use std::collections::HashMap;
 
-use game::graphics;
-use game::sprite;
+use graphics;
+use sprite;
 
 
-use game::collisions::{Info,Rectangle};
-use game::map;
+use collisions::{Info,Rectangle};
+use map;
 
-use game::units;
-use game::units::AsGame;
+use units;
+use units::AsGame;
 
 type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
 

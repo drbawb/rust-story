@@ -1,6 +1,6 @@
 use sdl2::keycode;
 
-use collections::hashmap::HashMap;
+use std::collections::HashMap;
 
 /// Responds to inquiries regarding three sets of keyboard input.
 ///

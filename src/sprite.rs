@@ -3,12 +3,12 @@ use sdl2::render;
 
 use std::rc::Rc;
 
-use game::graphics;
+use graphics;
 
-use game::units;
-use game::units::{AsGame,AsPixel};
+use units;
+use units::{AsGame,AsPixel};
 
-#[deriving(Hash,Eq,TotalEq)]
+#[deriving(Hash,Eq)]
 pub enum Motion {
 	Walking,
 	Standing,
@@ -19,14 +19,14 @@ pub enum Motion {
 pub static MOTIONS: [Motion, ..5] = [Walking, Standing, Interacting, Jumping, Falling];
 
 
-#[deriving(Hash,Eq,TotalEq)]
+#[deriving(Hash,Eq)]
 pub enum Facing {
 	West,
 	East
 }
 pub static FACINGS: [Facing, ..2] = [West, East];
 
-#[deriving(Hash,Eq,TotalEq)]
+#[deriving(Hash,Eq)]
 pub enum Looking {
 	Up,
 	Down,

@@ -1,10 +1,10 @@
 use std::rc::Rc;
 
-use collections::hashmap::HashMap;
+use std::collections::HashMap;
 
 use game;
-use game::units;
-use game::units::{AsPixel};
+use units;
+use units::{AsPixel};
 
 use sdl2::rect;
 use sdl2::pixels;

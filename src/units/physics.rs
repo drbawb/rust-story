@@ -2,7 +2,7 @@ use super::drawing::{Game};
 
 /// Millis represents a length of time in milliseconds as a signed integer.
 /// (NOTE: As `Millis` supports basic arithmetic: "negative time" is possible.)
-#[deriving(Eq,Ord,TotalEq,TotalOrd)]
+#[deriving(Eq,Ord)]
 pub struct Millis(pub int);
 
 impl Add<Millis,Millis> for Millis {

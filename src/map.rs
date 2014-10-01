@@ -1,13 +1,13 @@
 use std::slice;
 use std::rc::Rc;
 
-use game::backdrop;
-use game::graphics;
-use game::sprite;
-use game::units;
+use backdrop;
+use graphics;
+use sprite;
+use units;
 
-use game::collisions::Rectangle;
-use game::units::{AsGame,AsTile};
+use collisions::Rectangle;
+use units::{AsGame,AsTile};
 
 #[deriving(Eq,Clone)]
 pub enum TileType {
