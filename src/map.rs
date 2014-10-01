@@ -1,4 +1,3 @@
-use std::slice;
 use std::rc::Rc;
 
 use backdrop;

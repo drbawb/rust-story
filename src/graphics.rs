@@ -103,7 +103,7 @@ impl Graphics {
 	                    src_rect:  &rect::Rect,
 	                    dest_rect: &rect::Rect) {
 		
-		self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
+		let _ = self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
 	pub fn switch_buffers(&self) {
@@ -111,6 +111,6 @@ impl Graphics {
 	}
 
 	pub fn clear_buffer(&self) {
-		self.screen.clear();
+		let _ = self.screen.clear();
 	}
 }
