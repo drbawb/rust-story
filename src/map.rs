@@ -31,7 +31,7 @@ impl CollisionTile {
 #[deriving(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>+'static>>>
+	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>>>>
 }
 
 impl Tile {
@@ -41,7 +41,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Rc<Box<sprite::Updatable<units::Game>+'static>>,
+	fn from_sprite(sprite: Rc<Box<sprite::Updatable<units::Game>>>,
 	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite.clone()) }
 	}

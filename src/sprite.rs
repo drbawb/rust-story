@@ -39,7 +39,7 @@ pub static LOOKINGS: [Looking, ..3] = [Up, Down, Horizontal];
 /// position in 3D space.
 ///
 /// Said unit must be expressible in terms of `Game` units.
-pub trait Drawable<Coord> { 
+pub trait Drawable<Coord> : 'static { 
 	fn draw(&self, display: &graphics::Graphics, coords: (Coord,Coord));
 }
 

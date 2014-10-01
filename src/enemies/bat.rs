@@ -29,7 +29,7 @@ pub struct CaveBat {
 	flight_angle: units::Degrees,
 
 	facing:   sprite::Facing,
-	sprites:  HashMap<sprite::Facing, Box<sprite::Updatable<units::Game>+'static>>,
+	sprites:  HashMap<sprite::Facing, Box<sprite::Updatable<units::Game>>>,
 }
 
 impl CaveBat {
