@@ -179,7 +179,7 @@ impl Player {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {
-			self.sprites.get(&self.movement).draw(display, (self.x, self.y));
+			self.sprites[self.movement].draw(display, (self.x, self.y));
 		}
 	}
 

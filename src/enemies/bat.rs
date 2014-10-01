@@ -112,6 +112,6 @@ impl CaveBat {
 	}
 
 	pub fn draw(&self, display: &graphics::Graphics) {
-		self.sprites.get(&self.facing).draw(display, (self.x, self.y));
+		self.sprites[self.facing].draw(display, (self.x, self.y));
 	}
 }
