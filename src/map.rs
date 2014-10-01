@@ -9,7 +9,7 @@ use units;
 use collisions::Rectangle;
 use units::{AsGame,AsTile};
 
-#[deriving(Eq,Clone)]
+#[deriving(PartialEq,Eq,Clone)]
 pub enum TileType {
 	Air,
 	Wall
