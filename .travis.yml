@@ -1,9 +1,8 @@
-langauge: rust
-
+language: rust
 before_install:
-  - wget http://www.libsdl.org/release/SDL2-2.0.0.tar.gz
-  - tar -zxvf SDL2-2.0.0.tar.gz
-  - cd SDL2-2.0.0
-  - ./configure && make && sudo make install
-  - cd -
-
+  - yes | sudo add-apt-repository ppa:zoogie/sdl2-snapshots
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install libsdl2-dev libsdl2-ttf-dev
+script:
+  - cargo build --verbose
+  - cargo test --verbose
