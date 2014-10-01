@@ -29,7 +29,7 @@ impl Graphics {
 			"rust-story v0.0",                       // title
 			video::PosCentered, video::PosCentered,  // position (x,y)
 			w as int, h as int,
-			[video::InputGrabbed]
+			video::InputGrabbed
 		);
 
 		let window_context = match current_mode {
