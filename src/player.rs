@@ -78,10 +78,10 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
 	// assets
-	sprites:   HashMap<MotionTup, Box<sprite::Updatable<units::Game>>>,
-	three:     Box<sprite::Updatable<units::Tile>>,
-	hud:       Box<sprite::Updatable<units::Tile>>,
-	hud_fill:  Box<sprite::Updatable<units::HalfTile>>,
+	sprites:   HashMap<MotionTup, Box<sprite::Updatable<units::Game>+'static>>,
+	three:     Box<sprite::Updatable<units::Tile>+'static>,
+	hud:       Box<sprite::Updatable<units::Tile>+'static>,
+	hud_fill:  Box<sprite::Updatable<units::HalfTile>+'static>,
 
 	// positioning
 	x: units::Game, 

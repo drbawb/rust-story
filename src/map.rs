@@ -32,7 +32,7 @@ impl CollisionTile {
 #[deriving(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>>>>
+	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>+'static>>>
 }
 
 impl Tile {
@@ -112,10 +112,10 @@ impl Map {
 			background: backdrop::FixedBackdrop::new(
 				format!("assets/base/bkBlue.bmp"), graphics
 			),
-			sprites: slice::from_elem(rows,
-				slice::from_elem(cols, blank_tile.clone())),
-			tiles: slice::from_elem(rows,
-				slice::from_elem(cols, blank_tile.clone()))
+			sprites: Vec::from_elem(rows,
+				 Vec::from_elem(cols, blank_tile.clone())),
+			tiles: Vec::from_elem(rows,
+			       Vec::from_elem(cols, blank_tile.clone()))
 		};
 	
 		// init `floor`
