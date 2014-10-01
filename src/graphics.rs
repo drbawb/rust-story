@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use std::collections::HashMap;
+use std::collections::hashmap::{HashMap, Occupied, Vacant};
 
 use game;
 use units;
@@ -66,30 +66,33 @@ impl Graphics {
 		
 		// Retrieve a handle or generate a new one if it exists already.
 		let borrowed_display = &self.screen;
-		let handle = self.sprite_cache.find_or_insert_with(file_path, |key| {
-			// Load sprite
-			let sprite_path = Path::new((*key).clone());
-			let sprite_window = surface::Surface::from_bmp(&sprite_path);
+		let handle = match self.sprite_cache.entry(file_path.clone()) {
+			Vacant(entry) => {
+				// Load sprite
+				let sprite_path = Path::new(file_path);
+				let sprite_window = surface::Surface::from_bmp(&sprite_path);
 
-			// Store sprite
-			let sprite_surface = match sprite_window {
-				Ok(surface) => surface,
-				Err(msg) => fail!("sprite could not be loaded to a surface: {}", msg),
-			};
+				// Store sprite
+				let sprite_surface = match sprite_window {
+					Ok(surface) => surface,
+					Err(msg) => fail!("sprite could not be loaded to a surface: {}", msg),
+				};
 
-			// wrap surface in texture and store it
-			if transparent_black {
-				match sprite_surface.set_color_key(true, pixels::RGB(0,0,0)) {
-					Ok(_) => {},
-					Err(msg) => fail!("Failed to key sprite: {}", msg),
+				// wrap surface in texture and store it
+				if transparent_black {
+					match sprite_surface.set_color_key(true, pixels::RGB(0,0,0)) {
+						Ok(_) => {},
+						Err(msg) => fail!("Failed to key sprite: {}", msg),
+					}
 				}
-			}
 
-			match borrowed_display.create_texture_from_surface(&sprite_surface) {
-				Ok(texture) => Rc::new(texture),
-				Err(msg) => fail!("sprite could not be rendered: {}", msg)
-			}
-		});
+				match borrowed_display.create_texture_from_surface(&sprite_surface) {
+					Ok(texture) => entry.set(Rc::new(texture)),
+					Err(msg) => fail!("sprite could not be rendered: {}", msg)
+				}
+			},
+			Occupied(entry) => { entry.into_mut() },
+		};
 
 		handle.clone()
 	}

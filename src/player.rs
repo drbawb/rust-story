@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::hashmap::{HashMap,Vacant};
 
 use graphics;
 use sprite;
@@ -390,72 +390,78 @@ impl Player {
 		graphics: &mut graphics::Graphics, 
 		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
 	) {
-		self.sprites.find_or_insert_with(movement, |key| -> Box<sprite::Updatable<_>> {
-			let file_path = format!("assets/base/MyChar.bmp");
-			let (motion, facing, _) = *key;
-			let motion_frame = match motion {
-				sprite::Standing | sprite::Walking => STAND_FRAME,
-				sprite::Interacting => STAND_DOWN_FRAME,
-				sprite::Jumping => JUMP_FRAME,
-				sprite::Falling => FALL_FRAME
-			};
+		match self.sprites.entry(movement) {
+			Vacant(entry) => {
+				let file_path = format!("assets/base/MyChar.bmp");
+				let (motion, facing, _) = movement;
+				let motion_frame = match motion {
+					sprite::Standing | sprite::Walking => STAND_FRAME,
+					sprite::Interacting => STAND_DOWN_FRAME,
+					sprite::Jumping => JUMP_FRAME,
+					sprite::Falling => FALL_FRAME
+				};
 
-			let facing_frame = match facing {
-				sprite::West => FACING_WEST,
-				sprite::East => FACING_EAST
-			};
+				let facing_frame = match facing {
+					sprite::West => FACING_WEST,
+					sprite::East => FACING_EAST
+				};
 
-			match movement {
-				// static: standing in place
-				  (sprite::Standing, _, looking)
-				| (sprite::Interacting, _, looking) => {
-					let looking_frame = match looking {
-						sprite::Up => WALK_UP_OFFSET,
-						_ => units::Tile(0)
-					};
-				
-					box sprite::Sprite::new(
-						graphics, 
-						(motion_frame + (looking_frame), facing_frame), 
-						(units::Tile(1), units::Tile(1)),	
-						file_path
-					) as Box<sprite::Updatable<_>>
-				}
-
-				// static: jumping or falling
-				// (overrides 'STAND_DOWN_FRAME')
-				(sprite::Jumping, _, looking)
-				| (sprite::Falling, _, looking) => {
-					let looking_frame = match looking { // ignored while jumping / falling for now
-						sprite::Down => JUMP_DOWN_FRAME,
-						sprite::Up => WALK_UP_OFFSET,
-						_ => motion_frame
-					};
+				let loaded_sprite = match movement {
+					// static: standing in place
+					  (sprite::Standing, _, looking)
+					| (sprite::Interacting, _, looking) => {
+						let looking_frame = match looking {
+							sprite::Up => WALK_UP_OFFSET,
+							_ => units::Tile(0)
+						};
 					
-					box sprite::Sprite::new(
-						graphics,
-						(looking_frame, facing_frame),
-						(units::Tile(1), units::Tile(1)),
-						file_path
-					) as Box<sprite::Updatable<_>>
-				}
+						box sprite::Sprite::new(
+							graphics, 
+							(motion_frame + (looking_frame), facing_frame), 
+							(units::Tile(1), units::Tile(1)),	
+							file_path
+						) as Box<sprite::Updatable<_>>
+					}
 
-				// dynamic: 
-				(sprite::Walking, _, looking) => {
-					let looking_frame = match looking {
-						sprite::Up => WALK_UP_OFFSET,
-						_ => units::Tile(0)
-					};
-	
-					box sprite::AnimatedSprite::new(
-						graphics, file_path,
-						(motion_frame + looking_frame, facing_frame),
-						(units::Tile(1), units::Tile(1)),
-						SPRITE_NUM_FRAMES, SPRITE_FPS
-					).unwrap() as Box<sprite::Updatable<_>>
-				}
-			}
-		});
+					// static: jumping or falling
+					// (overrides 'STAND_DOWN_FRAME')
+					(sprite::Jumping, _, looking)
+					| (sprite::Falling, _, looking) => {
+						let looking_frame = match looking { // ignored while jumping / falling for now
+							sprite::Down => JUMP_DOWN_FRAME,
+							sprite::Up => WALK_UP_OFFSET,
+							_ => motion_frame
+						};
+						
+						box sprite::Sprite::new(
+							graphics,
+							(looking_frame, facing_frame),
+							(units::Tile(1), units::Tile(1)),
+							file_path
+						) as Box<sprite::Updatable<_>>
+					}
+
+					// dynamic: 
+					(sprite::Walking, _, looking) => {
+						let looking_frame = match looking {
+							sprite::Up => WALK_UP_OFFSET,
+							_ => units::Tile(0)
+						};
+		
+						box sprite::AnimatedSprite::new(
+							graphics, file_path,
+							(motion_frame + looking_frame, facing_frame),
+							(units::Tile(1), units::Tile(1)),
+							SPRITE_NUM_FRAMES, SPRITE_FPS
+						).unwrap() as Box<sprite::Updatable<_>>
+					}
+				};
+
+				entry.set(loaded_sprite);
+			},
+
+			_ => {},
+		};
 	}
 
 	/// The player will immediately face `West`

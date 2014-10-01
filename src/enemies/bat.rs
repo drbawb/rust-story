@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::hashmap::{HashMap, Vacant};
 
 use collisions::Rectangle;
 use sprite;
@@ -59,23 +59,24 @@ impl CaveBat {
 	               display: &mut graphics::Graphics,
 	               facing: sprite::Facing) {
 
-		self.sprites.find_or_insert_with(facing,
-			|key| -> Box<sprite::Updatable<_>> {
+		match self.sprites.entry(facing) {
+			Vacant(entry) => {
 				let asset_path = format!("assets/base/Npc/NpcCemet.bmp");
 				let sprite_x = X_OFFSET;
-				let sprite_y = match *key {
+				let sprite_y = match facing {
 					sprite::West => Y_OFFSET + WEST_OFFSET,
 					sprite::East => Y_OFFSET + EAST_OFFSET,
 				};
 
-				box sprite::AnimatedSprite::new(
+				entry.set(box sprite::AnimatedSprite::new(
 						display, asset_path, 
 						(sprite_x, sprite_y), 
 						(units::Tile(1), units::Tile(1)),
 						SPRITE_FRAMES, SPRITE_FPS
-					).unwrap() as Box<sprite::Updatable<_>>
-			}
-		);
+					).unwrap() as Box<sprite::Updatable<_>>);
+			},
+			_ => {},
+		};
 	}
 
 	pub fn damage_rectangle(&self) -> Rectangle {
