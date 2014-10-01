@@ -7,16 +7,6 @@ use sdl2::sdl;
 use sdl2::event;
 use sdl2::keycode;
 
-pub mod backdrop;
-pub mod collisions;
-pub mod enemies;
-pub mod graphics;
-pub mod input;
-pub mod map;
-pub mod player;
-pub mod sprite;
-pub mod units;
-
 static TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
 
