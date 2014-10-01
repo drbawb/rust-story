@@ -15,8 +15,8 @@ use sdl2::mouse;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
-	screen:   ~render::Renderer,
-	pub sprite_cache:  HashMap<~str, Rc<~render::Texture>>,
+	screen:   Box<render::Renderer>,
+	pub sprite_cache:  HashMap<String, Rc<Box<render::Texture>>>,
 }
 
 impl Graphics {
@@ -47,7 +47,7 @@ impl Graphics {
 			Ok(renderer) => {
 				Graphics{
 					screen:        renderer,
-					sprite_cache:  HashMap::<~str, Rc<~render::Texture>>::new(),
+					sprite_cache:  HashMap::<String, Rc<Box<render::Texture>>>::new(),
 				}
 			},
 			Err(msg) => {fail!(msg)},
@@ -61,8 +61,8 @@ impl Graphics {
 	/// This handle can safely be used in any of the graphics subsystem's rendering
 	/// contexts.
 	pub fn load_image(&mut self, 
-	                  file_path: ~str, 
-	                  transparent_black: bool) -> Rc<~render::Texture> {
+	                  file_path: String, 
+	                  transparent_black: bool) -> Rc<Box<render::Texture>> {
 		
 		// Retrieve a handle or generate a new one if it exists already.
 		let borrowed_display = &self.screen;
@@ -94,7 +94,7 @@ impl Graphics {
 		handle.clone()
 	}
 
-	pub fn remove_image(&mut self, file_path: ~str) {
+	pub fn remove_image(&mut self, file_path: String) {
 		self.sprite_cache.remove(&file_path);
 	}
 	

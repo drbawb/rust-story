@@ -29,14 +29,14 @@ pub struct CaveBat {
 	flight_angle: units::Degrees,
 
 	facing:   sprite::Facing,
-	sprites:  HashMap<sprite::Facing, ~sprite::Updatable<units::Game>>,
+	sprites:  HashMap<sprite::Facing, Box<sprite::Updatable<units::Game>>>,
 }
 
 impl CaveBat {
 	pub fn new(display: &mut graphics::Graphics,
 	           x: units::Game, y: units::Game) -> CaveBat {
 		
-		let sprite_map = HashMap::<sprite::Facing, ~sprite::Updatable<_>>::new();
+		let sprite_map = HashMap::<sprite::Facing, Box<sprite::Updatable<_>>>::new();
 
 		let mut new_bat = CaveBat { 
 			x: x, y: y,
@@ -60,20 +60,20 @@ impl CaveBat {
 	               facing: sprite::Facing) {
 
 		self.sprites.find_or_insert_with(facing,
-			|key| -> ~sprite::Updatable<_> {
-				let asset_path = ~"assets/base/Npc/NpcCemet.bmp";
+			|key| -> Box<sprite::Updatable<_>> {
+				let asset_path = format!("assets/base/Npc/NpcCemet.bmp");
 				let sprite_x = X_OFFSET;
 				let sprite_y = match *key {
 					sprite::West => Y_OFFSET + WEST_OFFSET,
 					sprite::East => Y_OFFSET + EAST_OFFSET,
 				};
 
-				~sprite::AnimatedSprite::new(
+				box sprite::AnimatedSprite::new(
 						display, asset_path, 
 						(sprite_x, sprite_y), 
 						(units::Tile(1), units::Tile(1)),
 						SPRITE_FRAMES, SPRITE_FPS
-					).unwrap() as ~sprite::Updatable<_>
+					).unwrap() as Box<sprite::Updatable<_>>
 			}
 		);
 	}

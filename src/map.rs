@@ -32,7 +32,7 @@ impl CollisionTile {
 #[deriving(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Rc<~sprite::Updatable<units::Game>>>
+	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>>>>
 }
 
 impl Tile {
@@ -42,7 +42,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Rc<~sprite::Updatable<units::Game>>,
+	fn from_sprite(sprite: Rc<Box<sprite::Updatable<units::Game>>>,
 	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite) }
 	}
@@ -50,8 +50,8 @@ impl Tile {
 
 pub struct Map {
 	background:  backdrop::FixedBackdrop,
-	sprites:     ~[~[Tile]],
-	tiles:       ~[~[Tile]],
+	sprites:     Vec<Vec<Tile>>,
+	tiles:       Vec<Vec<Tile>>,
 }
 
 impl Map {
@@ -65,41 +65,41 @@ impl Map {
 		static rows: uint = 15; // 480
 		static cols: uint = 20; // 640
 
-		let map_path =  ~"assets/base/Stage/PrtCave.bmp";
+		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
 		let sprite   =  Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let chain_top = Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let chain_middle = Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let chain_bottom = Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics, 
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let blank_tile = Tile::new();
@@ -110,7 +110,7 @@ impl Map {
 
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
-				~"assets/base/bkBlue.bmp", graphics
+				format!("assets/base/bkBlue.bmp"), graphics
 			),
 			sprites: slice::from_elem(rows,
 				slice::from_elem(cols, blank_tile.clone())),
@@ -203,8 +203,8 @@ impl Map {
 	/// rectangle & tile. -- This method may claim that the player is 
 	/// colliding w/ the edge of a tile that _appears to be_ empty space.
 	#[allow(visible_private_types)]
-	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let mut collision_tiles: ~[CollisionTile] = ~[];
+	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> Vec<CollisionTile> {
+		let mut collision_tiles: Vec<CollisionTile> = Vec::new();
 		
 		let units::Tile(first_row) =  rectangle.top().to_tile();
 		let units::Tile(last_row)  =  rectangle.bottom().to_tile();

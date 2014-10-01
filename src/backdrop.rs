@@ -12,11 +12,11 @@ use sdl2::render::Texture;
 static BACKGROUND_SIZE: units::Tile = units::Tile(4);
 
 pub struct FixedBackdrop {
-	surface: Rc<~Texture>
+	surface: Rc<Box<Texture>>
 }
 
 impl FixedBackdrop {
-	pub fn new(path: ~str, graphics: &mut graphics::Graphics) -> FixedBackdrop {
+	pub fn new(path: String, graphics: &mut graphics::Graphics) -> FixedBackdrop {
 		let asset = graphics.load_image(path, false);
 		FixedBackdrop { surface: asset }
 	}
