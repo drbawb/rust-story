@@ -1,3 +1,0 @@
-[submodule "rust-sdl2"]
-	path = lib/rust-sdl2
-	url = https://github.com/AngryLawyer/rust-sdl2
