@@ -12,7 +12,7 @@ use sdl2::render::Texture;
 static BACKGROUND_SIZE: units::Tile = units::Tile(4);
 
 pub struct FixedBackdrop {
-	surface: Rc<Box<Texture>>
+	surface: Rc<Texture>
 }
 
 impl FixedBackdrop {
@@ -33,7 +33,7 @@ impl FixedBackdrop {
 				let src  = Rect::new(0, 0, tile_size, tile_size);
 				let dest = Rect::new(x, y, tile_size, tile_size);
 
-				graphics.blit_surface(*self.surface, &src, &dest);
+				graphics.blit_surface(&*self.surface, &src, &dest);
 				y+= tile_size;
 			}
 

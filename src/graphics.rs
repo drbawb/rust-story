@@ -15,8 +15,8 @@ use sdl2::mouse;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
-	screen:            Box<render::Renderer<video::Window>>,
-	pub sprite_cache:  HashMap<String, Rc<Box<render::Texture>>>,
+	screen:            render::Renderer<video::Window>,
+	pub sprite_cache:  HashMap<String, Rc<render::Texture>>,
 }
 
 impl Graphics {
@@ -40,14 +40,14 @@ impl Graphics {
 		let render_context = render::Renderer::from_window(
 			window_context,
 			render::DriverAuto,
-			[render::Software],
+			render::Software,
 		);
 
 		let graphics: Graphics = match render_context {
 			Ok(renderer) => {
 				Graphics{
 					screen:        renderer,
-					sprite_cache:  HashMap::<String, Rc<Box<render::Texture>>>::new(),
+					sprite_cache:  HashMap::<String, Rc<render::Texture>>::new(),
 				}
 			},
 			Err(msg) => {fail!(msg)},
@@ -62,7 +62,7 @@ impl Graphics {
 	/// contexts.
 	pub fn load_image(&mut self, 
 	                  file_path: String, 
-	                  transparent_black: bool) -> Rc<Box<render::Texture>> {
+	                  transparent_black: bool) -> Rc<render::Texture> {
 		
 		// Retrieve a handle or generate a new one if it exists already.
 		let borrowed_display = &self.screen;
@@ -85,7 +85,7 @@ impl Graphics {
 				}
 			}
 
-			match borrowed_display.create_texture_from_surface(sprite_surface) {
+			match borrowed_display.create_texture_from_surface(&sprite_surface) {
 				Ok(texture) => Rc::new(texture),
 				Err(msg) => fail!("sprite could not be rendered: {}", msg)
 			}

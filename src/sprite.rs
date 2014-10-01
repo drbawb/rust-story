@@ -99,7 +99,7 @@ impl<C: AsGame> Drawable<C> for Sprite {
 	
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 
-		display.blit_surface(*self.sprite_sheet, &self.source_rect, &dest_rect);
+		display.blit_surface(&*self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }
 
@@ -200,6 +200,6 @@ impl<C: AsGame> Drawable<C> for AnimatedSprite {
 			(x.to_game().to_pixel(), y.to_game().to_pixel());
 
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
-		display.blit_surface(*self.sprite_sheet, &self.source_rect, &dest_rect);
+		display.blit_surface(&*self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }
