@@ -15,7 +15,7 @@ pub enum TileType {
 	Wall
 }
 
-struct CollisionTile {
+pub struct CollisionTile {
 	pub tile_type:  TileType,
 	pub row:        units::Tile,
 	pub col:        units::Tile
@@ -30,28 +30,28 @@ impl CollisionTile {
 
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[deriving(Clone)]
-struct Tile {
+struct Tile<'a> {
 	tile_type:  TileType,
-	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>+'static>>>
+	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>+'a>>>
 }
 
-impl Tile {
+impl<'a> Tile<'a> {
 	/// Creates n air tile w/ no sprite.
-	fn new() -> Tile {
+	fn new() -> Tile<'a> {
 		Tile { tile_type: Air, sprite: None }
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Rc<Box<sprite::Updatable<units::Game>>>,
-	               tile_type: TileType) -> Tile {
-		Tile { tile_type: tile_type, sprite: Some(sprite) }
+	fn from_sprite<'a>(sprite: Rc<Box<sprite::Updatable<units::Game>>+'a>,
+	               tile_type: TileType) -> Tile<'a> {
+		Tile { tile_type: tile_type, sprite: Some(sprite.clone()) }
 	}
 }
 
 pub struct Map {
 	background:  backdrop::FixedBackdrop,
-	sprites:     Vec<Vec<Tile>>,
-	tiles:       Vec<Vec<Tile>>,
+	sprites:     Vec<Vec<Tile<'static>>>,
+	tiles:       Vec<Vec<Tile<'static>>>,
 }
 
 impl Map {
