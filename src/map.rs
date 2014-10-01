@@ -1,21 +1,20 @@
-use std::slice;
 use std::rc::Rc;
 
-use game::backdrop;
-use game::graphics;
-use game::sprite;
-use game::units;
+use backdrop;
+use graphics;
+use sprite;
+use units;
 
-use game::collisions::Rectangle;
-use game::units::{AsGame,AsTile};
+use collisions::Rectangle;
+use units::{AsGame,AsTile};
 
-#[deriving(Eq,Clone)]
+#[deriving(PartialEq,Eq,Clone)]
 pub enum TileType {
 	Air,
 	Wall
 }
 
-struct CollisionTile {
+pub struct CollisionTile {
 	pub tile_type:  TileType,
 	pub row:        units::Tile,
 	pub col:        units::Tile
@@ -30,28 +29,28 @@ impl CollisionTile {
 
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[deriving(Clone)]
-struct Tile {
+struct Tile<'a> {
 	tile_type:  TileType,
-	sprite:     Option<Rc<~sprite::Updatable<units::Game>>>
+	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>+'a>>>
 }
 
-impl Tile {
+impl<'a> Tile<'a> {
 	/// Creates n air tile w/ no sprite.
-	fn new() -> Tile {
+	fn new() -> Tile<'a> {
 		Tile { tile_type: Air, sprite: None }
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Rc<~sprite::Updatable<units::Game>>,
-	               tile_type: TileType) -> Tile {
-		Tile { tile_type: tile_type, sprite: Some(sprite) }
+	fn from_sprite<'a>(sprite: Rc<Box<sprite::Updatable<units::Game>>+'a>,
+	               tile_type: TileType) -> Tile<'a> {
+		Tile { tile_type: tile_type, sprite: Some(sprite.clone()) }
 	}
 }
 
 pub struct Map {
 	background:  backdrop::FixedBackdrop,
-	sprites:     ~[~[Tile]],
-	tiles:       ~[~[Tile]],
+	sprites:     Vec<Vec<Tile<'static>>>,
+	tiles:       Vec<Vec<Tile<'static>>>,
 }
 
 impl Map {
@@ -65,41 +64,41 @@ impl Map {
 		static rows: uint = 15; // 480
 		static cols: uint = 20; // 640
 
-		let map_path =  ~"assets/base/Stage/PrtCave.bmp";
+		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
 		let sprite   =  Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let chain_top = Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let chain_middle = Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let chain_bottom = Rc::new(
-			~sprite::Sprite::new(
+			box sprite::Sprite::new(
 				graphics, 
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as ~sprite::Updatable<_>
+			) as Box<sprite::Updatable<_>>
 		);
 
 		let blank_tile = Tile::new();
@@ -110,36 +109,38 @@ impl Map {
 
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
-				~"assets/base/bkBlue.bmp", graphics
+				format!("assets/base/bkBlue.bmp"), graphics
 			),
-			sprites: slice::from_elem(rows,
-				slice::from_elem(cols, blank_tile.clone())),
-			tiles: slice::from_elem(rows,
-				slice::from_elem(cols, blank_tile.clone()))
+			sprites: Vec::from_elem(rows,
+				 Vec::from_elem(cols, blank_tile.clone())),
+			tiles: Vec::from_elem(rows,
+			       Vec::from_elem(cols, blank_tile.clone()))
 		};
 	
 		// init `floor`
 		for i in range(0, cols) {
-			map.tiles[rows - 1][i] = wall_tile.clone(); // store a reference
+			*(map.tiles
+			     .get_mut(rows - 1)
+			     .get_mut(i)) = wall_tile.clone(); // store a reference
 		}
 
 		// "safety wall"
 		for i in range (0, rows) {
-			map.tiles[i][0] = wall_tile.clone();
-			map.tiles[i][cols - 1] = wall_tile.clone();
+			*(map.tiles.get_mut(i).get_mut(0))        = wall_tile.clone();
+			*(map.tiles.get_mut(i).get_mut(cols - 1)) = wall_tile.clone();
 		}
 
 
-		map.tiles[rows - 2][3] = wall_tile.clone();
-		map.tiles[rows - 2][5] = wall_tile.clone();
-		
-		map.tiles[rows - 3][4] = wall_tile.clone();
-		map.tiles[rows - 4][3] = wall_tile.clone();
-		map.tiles[rows - 5][2] = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 2).get_mut(3)) = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 2).get_mut(5)) = wall_tile.clone();
 
-		map.sprites[rows - 4][2] = ct_tile.clone();
-		map.sprites[rows - 3][2] = cm_tile.clone();
-		map.sprites[rows - 2][2] = cb_tile.clone();
+		*(map.tiles.get_mut(rows - 3).get_mut(4)) = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 4).get_mut(3)) = wall_tile.clone();
+		*(map.tiles.get_mut(rows - 5).get_mut(2)) = wall_tile.clone();
+
+		*(map.sprites.get_mut(rows - 4).get_mut(2)) = ct_tile.clone();
+		*(map.sprites.get_mut(rows - 3).get_mut(2)) = cm_tile.clone();
+		*(map.sprites.get_mut(rows - 2).get_mut(2)) = cb_tile.clone();
 	
 		map
 	}
@@ -202,9 +203,8 @@ impl Map {
 	/// NOTE: This is a simple check of the _outside bounds_ of the
 	/// rectangle & tile. -- This method may claim that the player is 
 	/// colliding w/ the edge of a tile that _appears to be_ empty space.
-	#[allow(visible_private_types)]
-	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> ~[CollisionTile] {
-		let mut collision_tiles: ~[CollisionTile] = ~[];
+	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> Vec<CollisionTile> {
+		let mut collision_tiles: Vec<CollisionTile> = Vec::new();
 		
 		let units::Tile(first_row) =  rectangle.top().to_tile();
 		let units::Tile(last_row)  =  rectangle.bottom().to_tile();

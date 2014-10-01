@@ -1,21 +1,18 @@
 use std::cmp;
 use std::io::Timer;
+use std::time::Duration;
 
-use game::units::{AsGame};
+use enemies;
+use graphics;
+use input;
+use map;
+use player;
+use units;
+use units::{AsGame};
 
 use sdl2::sdl;
 use sdl2::event;
 use sdl2::keycode;
-
-pub mod backdrop;
-pub mod collisions;
-pub mod enemies;
-pub mod graphics;
-pub mod input;
-pub mod map;
-pub mod player;
-pub mod sprite;
-pub mod units;
 
 static TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
@@ -41,7 +38,7 @@ impl Game {
 		
 		// initialize all major subsystems
 		// hide the mouse cursor in our drawing context
-		sdl::init([sdl::InitEverything]);
+		sdl::init(sdl::InitEverything);
 		let mut display = graphics::Graphics::new();
 		let controller  = input::Input::new();
 
@@ -152,7 +149,7 @@ impl Game {
 				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
 				(fd - it) as u64
 			} else { 0 as u64 };
-			timer.sleep(next_frame_time);
+			timer.sleep(Duration::milliseconds(next_frame_time as i64));
 
 			
 			/* Print current FPS to stdout

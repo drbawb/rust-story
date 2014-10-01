@@ -3,12 +3,12 @@ use sdl2::render;
 
 use std::rc::Rc;
 
-use game::graphics;
+use graphics;
 
-use game::units;
-use game::units::{AsGame,AsPixel};
+use units;
+use units::{AsGame,AsPixel};
 
-#[deriving(Hash,Eq,TotalEq)]
+#[deriving(Hash,PartialEq,Eq)]
 pub enum Motion {
 	Walking,
 	Standing,
@@ -19,14 +19,14 @@ pub enum Motion {
 pub static MOTIONS: [Motion, ..5] = [Walking, Standing, Interacting, Jumping, Falling];
 
 
-#[deriving(Hash,Eq,TotalEq)]
+#[deriving(Hash,PartialEq,Eq)]
 pub enum Facing {
 	West,
 	East
 }
 pub static FACINGS: [Facing, ..2] = [West, East];
 
-#[deriving(Hash,Eq,TotalEq)]
+#[deriving(Hash,PartialEq,Eq)]
 pub enum Looking {
 	Up,
 	Down,
@@ -50,7 +50,7 @@ pub trait Updatable<T> : Drawable<T> {
 
 /// Represents a static 32x32 2D character
 pub struct Sprite {
-	sprite_sheet:  Rc<~render::Texture>,
+	sprite_sheet:  Rc<render::Texture>,
 	source_rect:   rect::Rect,
 	size:    (units::Game, units::Game),
 }
@@ -62,7 +62,7 @@ impl<O:AsGame, S:AsGame> Sprite {
 		graphics: &mut graphics::Graphics, 
 		offset:  (O,O),  // source_x, source_ys
 		size:    (S,S),  // width, height
-		file_name: ~str
+		file_name: String,
 	) -> Sprite {
 		let (w,h) = size;
 		let (x,y) = offset;
@@ -99,7 +99,7 @@ impl<C: AsGame> Drawable<C> for Sprite {
 	
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 
-		display.blit_surface(*self.sprite_sheet, &self.source_rect, &dest_rect);
+		display.blit_surface(&*self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }
 
@@ -114,7 +114,7 @@ impl<C: AsGame> Updatable<C> for Sprite {
 /// Frames will be selected based on time-deltas supplied through update
 pub struct AnimatedSprite {
 	pub source_rect:   rect::Rect,
-	pub sprite_sheet:  Rc<~render::Texture>,
+	pub sprite_sheet:  Rc<render::Texture>,
 
 	offset:  (units::Tile, units::Tile),
 	size:    (units::Tile, units::Tile),
@@ -133,14 +133,14 @@ impl AnimatedSprite {
 	/// Returns an error message if sprite-sheet could not be loaded.
 	pub fn new(
 		graphics:    &mut graphics::Graphics,
-		sheet_path:  ~str,
+		sheet_path:  String,
 
 		offset:  (units::Tile, units::Tile),
 		size:    (units::Tile, units::Tile),
 
 		num_frames:  units::Frame,
 		fps:         units::Fps
-	) -> Result<AnimatedSprite, ~str> {
+	) -> Result<AnimatedSprite, String> {
 		// attempt to load sprite-sheet from `assets/MyChar.bmp`
 		let (w,h) = size;
 		let (x,y) = offset;
@@ -200,6 +200,6 @@ impl<C: AsGame> Drawable<C> for AnimatedSprite {
 			(x.to_game().to_pixel(), y.to_game().to_pixel());
 
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
-		display.blit_surface(*self.sprite_sheet, &self.source_rect, &dest_rect);
+		display.blit_surface(&*self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }

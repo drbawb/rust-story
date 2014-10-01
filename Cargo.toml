@@ -1,0 +1,10 @@
+[package]
+name = "rust-story"
+version = "0.23.1"
+authors = [ "drbawb@fatalsyntax.com" ]
+
+[dependencies.sdl2]
+git = "https://github.com/AngryLawyer/rust-sdl2"
+
+[dependencies.rust-sdl2_ttf]
+git = "https://github.com/andelf/rust-sdl2_ttf"

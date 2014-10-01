@@ -1,11 +1,11 @@
-use collections::hashmap::HashMap;
+use std::collections::hashmap::{HashMap, Vacant};
 
-use game::collisions::Rectangle;
-use game::sprite;
-use game::graphics;
+use collisions::Rectangle;
+use sprite;
+use graphics;
 
-use game::units;
-use game::units::AsGame;
+use units;
+use units::AsGame;
 
 static ANGULAR_VELOCITY: units::AngularVelocity 
 	= units::AngularVelocity(120.0 / 1000.0); // 120 deg/sec, or .12 deg/ms
@@ -29,14 +29,14 @@ pub struct CaveBat {
 	flight_angle: units::Degrees,
 
 	facing:   sprite::Facing,
-	sprites:  HashMap<sprite::Facing, ~sprite::Updatable<units::Game>>,
+	sprites:  HashMap<sprite::Facing, Box<sprite::Updatable<units::Game>+'static>>,
 }
 
 impl CaveBat {
 	pub fn new(display: &mut graphics::Graphics,
 	           x: units::Game, y: units::Game) -> CaveBat {
 		
-		let sprite_map = HashMap::<sprite::Facing, ~sprite::Updatable<_>>::new();
+		let sprite_map = HashMap::<sprite::Facing, Box<sprite::Updatable<_>>>::new();
 
 		let mut new_bat = CaveBat { 
 			x: x, y: y,
@@ -59,23 +59,24 @@ impl CaveBat {
 	               display: &mut graphics::Graphics,
 	               facing: sprite::Facing) {
 
-		self.sprites.find_or_insert_with(facing,
-			|key| -> ~sprite::Updatable<_> {
-				let asset_path = ~"assets/base/Npc/NpcCemet.bmp";
+		match self.sprites.entry(facing) {
+			Vacant(entry) => {
+				let asset_path = format!("assets/base/Npc/NpcCemet.bmp");
 				let sprite_x = X_OFFSET;
-				let sprite_y = match *key {
+				let sprite_y = match facing {
 					sprite::West => Y_OFFSET + WEST_OFFSET,
 					sprite::East => Y_OFFSET + EAST_OFFSET,
 				};
 
-				~sprite::AnimatedSprite::new(
+				entry.set(box sprite::AnimatedSprite::new(
 						display, asset_path, 
 						(sprite_x, sprite_y), 
 						(units::Tile(1), units::Tile(1)),
 						SPRITE_FRAMES, SPRITE_FPS
-					).unwrap() as ~sprite::Updatable<_>
-			}
-		);
+					).unwrap() as Box<sprite::Updatable<_>>);
+			},
+			_ => {},
+		};
 	}
 
 	pub fn damage_rectangle(&self) -> Rectangle {
@@ -112,6 +113,6 @@ impl CaveBat {
 	}
 
 	pub fn draw(&self, display: &graphics::Graphics) {
-		self.sprites.get(&self.facing).draw(display, (self.x, self.y));
+		self.sprites[self.facing].draw(display, (self.x, self.y));
 	}
 }

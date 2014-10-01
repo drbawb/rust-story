@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use game;
-use game::graphics;
-use game::units;
-use game::units::{AsPixel};
+use graphics;
+use units;
+use units::{AsPixel};
 
 use sdl2::rect::Rect;
 use sdl2::render::Texture;
@@ -12,11 +12,11 @@ use sdl2::render::Texture;
 static BACKGROUND_SIZE: units::Tile = units::Tile(4);
 
 pub struct FixedBackdrop {
-	surface: Rc<~Texture>
+	surface: Rc<Texture>
 }
 
 impl FixedBackdrop {
-	pub fn new(path: ~str, graphics: &mut graphics::Graphics) -> FixedBackdrop {
+	pub fn new(path: String, graphics: &mut graphics::Graphics) -> FixedBackdrop {
 		let asset = graphics.load_image(path, false);
 		FixedBackdrop { surface: asset }
 	}
@@ -33,7 +33,7 @@ impl FixedBackdrop {
 				let src  = Rect::new(0, 0, tile_size, tile_size);
 				let dest = Rect::new(x, y, tile_size, tile_size);
 
-				graphics.blit_surface(*self.surface, &src, &dest);
+				graphics.blit_surface(&*self.surface, &src, &dest);
 				y+= tile_size;
 			}
 

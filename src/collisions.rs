@@ -1,4 +1,4 @@
-use game::units;
+use units;
 
 pub struct Info {
 	pub collided:  bool,
