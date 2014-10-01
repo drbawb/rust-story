@@ -1,5 +1,6 @@
 use std::cmp;
 use std::io::Timer;
+use std::time::Duration;
 
 use enemies;
 use graphics;
@@ -148,7 +149,7 @@ impl Game {
 				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
 				(fd - it) as u64
 			} else { 0 as u64 };
-			timer.sleep(next_frame_time);
+			timer.sleep(Duration::milliseconds(next_frame_time as i64));
 
 			
 			/* Print current FPS to stdout
