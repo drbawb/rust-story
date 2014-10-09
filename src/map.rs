@@ -61,8 +61,8 @@ impl Map {
 	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
 	/// * A 3-tile high chain is placed on the left-side of this obstacle course.
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		static rows: uint = 15; // 480
-		static cols: uint = 20; // 640
+		static ROWS: uint = 15; // 480
+		static COLS: uint = 20; // 640
 
 		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
 		let sprite   =  Rc::new(
@@ -111,36 +111,36 @@ impl Map {
 			background: backdrop::FixedBackdrop::new(
 				format!("assets/base/bkBlue.bmp"), graphics
 			),
-			sprites: Vec::from_elem(rows,
-				 Vec::from_elem(cols, blank_tile.clone())),
-			tiles: Vec::from_elem(rows,
-			       Vec::from_elem(cols, blank_tile.clone()))
+			sprites: Vec::from_elem(ROWS,
+				 Vec::from_elem(COLS, blank_tile.clone())),
+			tiles: Vec::from_elem(ROWS,
+			       Vec::from_elem(COLS, blank_tile.clone()))
 		};
 	
 		// init `floor`
-		for i in range(0, cols) {
+		for i in range(0, COLS) {
 			*(map.tiles
-			     .get_mut(rows - 1)
+			     .get_mut(ROWS - 1)
 			     .get_mut(i)) = wall_tile.clone(); // store a reference
 		}
 
 		// "safety wall"
-		for i in range (0, rows) {
+		for i in range (0, ROWS) {
 			*(map.tiles.get_mut(i).get_mut(0))        = wall_tile.clone();
-			*(map.tiles.get_mut(i).get_mut(cols - 1)) = wall_tile.clone();
+			*(map.tiles.get_mut(i).get_mut(COLS - 1)) = wall_tile.clone();
 		}
 
 
-		*(map.tiles.get_mut(rows - 2).get_mut(3)) = wall_tile.clone();
-		*(map.tiles.get_mut(rows - 2).get_mut(5)) = wall_tile.clone();
+		*(map.tiles.get_mut(ROWS - 2).get_mut(3)) = wall_tile.clone();
+		*(map.tiles.get_mut(ROWS - 2).get_mut(5)) = wall_tile.clone();
 
-		*(map.tiles.get_mut(rows - 3).get_mut(4)) = wall_tile.clone();
-		*(map.tiles.get_mut(rows - 4).get_mut(3)) = wall_tile.clone();
-		*(map.tiles.get_mut(rows - 5).get_mut(2)) = wall_tile.clone();
+		*(map.tiles.get_mut(ROWS - 3).get_mut(4)) = wall_tile.clone();
+		*(map.tiles.get_mut(ROWS - 4).get_mut(3)) = wall_tile.clone();
+		*(map.tiles.get_mut(ROWS - 5).get_mut(2)) = wall_tile.clone();
 
-		*(map.sprites.get_mut(rows - 4).get_mut(2)) = ct_tile.clone();
-		*(map.sprites.get_mut(rows - 3).get_mut(2)) = cm_tile.clone();
-		*(map.sprites.get_mut(rows - 2).get_mut(2)) = cb_tile.clone();
+		*(map.sprites.get_mut(ROWS - 4).get_mut(2)) = ct_tile.clone();
+		*(map.sprites.get_mut(ROWS - 3).get_mut(2)) = cm_tile.clone();
+		*(map.sprites.get_mut(ROWS - 2).get_mut(2)) = cb_tile.clone();
 	
 		map
 	}
