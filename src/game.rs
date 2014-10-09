@@ -38,7 +38,7 @@ impl Game {
 		
 		// initialize all major subsystems
 		// hide the mouse cursor in our drawing context
-		sdl::init(sdl::InitEverything);
+		sdl::init(sdl::INIT_EVERYTHING);
 		let mut display = graphics::Graphics::new();
 		let controller  = input::Input::new();
 

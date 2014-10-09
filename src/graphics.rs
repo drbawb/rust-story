@@ -29,7 +29,7 @@ impl Graphics {
 			"rust-story v0.0",                       // title
 			video::PosCentered, video::PosCentered,  // position (x,y)
 			w as int, h as int,
-			video::InputGrabbed
+			video::INPUT_GRABBED
 		);
 
 		let window_context = match current_mode {
@@ -40,7 +40,7 @@ impl Graphics {
 		let render_context = render::Renderer::from_window(
 			window_context,
 			render::DriverAuto,
-			render::Software,
+			render::SOFTWARE,
 		);
 
 		let graphics: Graphics = match render_context {
