@@ -1,16 +1,16 @@
 use std::collections::hash_map::{HashMap, Entry};
 
 use graphics;
-use sprite;
+use sprite::{self, Facing, Looking, Motion};
 
 
 use collisions::{Info,Rectangle};
-use map;
+use map::{self, TileType};
 
 use units;
 use units::AsGame;
 
-type MotionTup = (sprite::Motion, sprite::Facing, sprite::Looking);
+type MotionTup = (Motion, Facing, Looking);
 
 // physics
 static FRICTION: units::Acceleration   = units::Acceleration(0.00049804687);
@@ -148,7 +148,7 @@ impl Player {
 
 			x: x,
 			y: y,
-			movement: (sprite::Standing, sprite::East, sprite::Horizontal),
+			movement: (Motion::Standing, Facing::East, Looking::Horizontal),
 			on_ground: false,
 			
 			velocity_x: units::Velocity(0.0),
@@ -357,7 +357,7 @@ impl Player {
 
 		let mut info = Info { collided: false, row: units::Tile(0), col: units::Tile(0) };
 		for tile in tiles.iter() {
-			if tile.tile_type == map::Wall {
+			if tile.tile_type == TileType::Wall {
 				info = Info {collided: true, row: tile.row, col: tile.col};
 				break;
 			}
@@ -395,23 +395,23 @@ impl Player {
 				let file_path = format!("assets/base/MyChar.bmp");
 				let (motion, facing, _) = movement;
 				let motion_frame = match motion {
-					sprite::Standing | sprite::Walking => STAND_FRAME,
-					sprite::Interacting => STAND_DOWN_FRAME,
-					sprite::Jumping => JUMP_FRAME,
-					sprite::Falling => FALL_FRAME
+					Motion::Standing | Motion::Walking => STAND_FRAME,
+					Motion::Interacting => STAND_DOWN_FRAME,
+					Motion::Jumping => JUMP_FRAME,
+					Motion::Falling => FALL_FRAME
 				};
 
 				let facing_frame = match facing {
-					sprite::West => FACING_WEST,
-					sprite::East => FACING_EAST
+					Facing::West => FACING_WEST,
+					Facing::East => FACING_EAST
 				};
 
 				let loaded_sprite = match movement {
 					// static: standing in place
-					  (sprite::Standing, _, looking)
-					| (sprite::Interacting, _, looking) => {
+					  (Motion::Standing, _, looking)
+					| (Motion::Interacting, _, looking) => {
 						let looking_frame = match looking {
-							sprite::Up => WALK_UP_OFFSET,
+							Looking::Up => WALK_UP_OFFSET,
 							_ => units::Tile(0)
 						};
 					
@@ -425,11 +425,11 @@ impl Player {
 
 					// static: jumping or falling
 					// (overrides 'STAND_DOWN_FRAME')
-					(sprite::Jumping, _, looking)
-					| (sprite::Falling, _, looking) => {
+					(Motion::Jumping, _, looking)
+					| (Motion::Falling, _, looking) => {
 						let looking_frame = match looking { // ignored while jumping / falling for now
-							sprite::Down => JUMP_DOWN_FRAME,
-							sprite::Up => WALK_UP_OFFSET,
+							Looking::Down => JUMP_DOWN_FRAME,
+							Looking::Up => WALK_UP_OFFSET,
 							_ => motion_frame
 						};
 						
@@ -442,9 +442,9 @@ impl Player {
 					}
 
 					// dynamic: 
-					(sprite::Walking, _, looking) => {
+					(Motion::Walking, _, looking) => {
 						let looking_frame = match looking {
-							sprite::Up => WALK_UP_OFFSET,
+							Looking::Up => WALK_UP_OFFSET,
 							_ => units::Tile(0)
 						};
 		
@@ -468,7 +468,7 @@ impl Player {
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_left(&mut self) {
 		self.is_interacting = false;
-		self.set_facing(sprite::West);
+		self.set_facing(Facing::West);
 		self.accel_x = -1;
 	}
 
@@ -476,7 +476,7 @@ impl Player {
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_right(&mut self) {
 		self.is_interacting = false;
-		self.set_facing(sprite::East);
+		self.set_facing(Facing::East);
 		self.accel_x = 1;
 	}
 
@@ -488,20 +488,20 @@ impl Player {
 
 	pub fn look_up(&mut self) {
 		self.is_interacting = false;
-		self.set_looking(sprite::Up);
+		self.set_looking(Looking::Up);
 	}
 
 	pub fn look_down(&mut self) {
 		let(motion,_,looking) = self.movement;
-		if looking == sprite::Down {return;}
-		if motion == sprite::Walking {return;}
+		if looking == Looking::Down {return;}
+		if motion == Motion::Walking {return;}
 		
 		self.is_interacting = self.on_ground();
-		self.set_looking(sprite::Down);
+		self.set_looking(Looking::Down);
 	}
 
 	pub fn look_horizontal(&mut self) {
-		self.set_looking(sprite::Horizontal);
+		self.set_looking(Looking::Horizontal);
 	}
 
 	/// Resets the player's jump timer if they are currently on the ground.
@@ -542,17 +542,17 @@ impl Player {
 
 		self.movement = if self.on_ground() {
 			if self.is_interacting {
-				(sprite::Interacting, last_facing, last_looking)
+				(Motion::Interacting, last_facing, last_looking)
 			} else if self.accel_x == 0 {
-				(sprite::Standing, last_facing, last_looking)
+				(Motion::Standing, last_facing, last_looking)
 			} else {
-				(sprite::Walking, last_facing, last_looking)
+				(Motion::Walking, last_facing, last_looking)
 			}	
 		} else {
 			if self.velocity_y < units::Velocity(0.0) {
-				(sprite::Jumping, last_facing, last_looking)
+				(Motion::Jumping, last_facing, last_looking)
 			} else {
-				(sprite::Falling, last_facing, last_looking)
+				(Motion::Falling, last_facing, last_looking)
 			}
 		};
 	}
