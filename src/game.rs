@@ -11,8 +11,8 @@ use units;
 use units::{AsGame};
 
 use sdl2::sdl;
-use sdl2::event;
-use sdl2::keycode;
+use sdl2::event::{self, EventType};
+use sdl2::keycode::{self, KeyCode};
 
 static TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
@@ -84,50 +84,50 @@ impl Game {
 			// drain event queue once per frame
 			// ideally should do in separate task
 			match event::poll_event() {
-				event::KeyDownEvent(_,_,key_cap,_,_) => {
+				EventType::KeyDown(_,_,key_cap,_,_) => {
 					self.controller.key_down_event(key_cap);
 				},
-				event::KeyUpEvent(_,_,key_cap,_,_) => {
+				EventType::KeyUp(_,_,key_cap,_,_) => {
 					self.controller.key_up_event(key_cap);
 				},
 				_ => {},
 			}
 
 			// Handle exit game
-			if self.controller.was_key_released(keycode::EscapeKey) {
+			if self.controller.was_key_released(KeyCode::Escape) {
 				running = false;
 			}
 
 			// Handle player movement
-			if self.controller.is_key_held(keycode::LeftKey)
-				&& self.controller.is_key_held(keycode::RightKey) {
+			if self.controller.is_key_held(KeyCode::Left)
+				&& self.controller.is_key_held(KeyCode::Right) {
 
 				self.quote.stop_moving();
-			} else if self.controller.is_key_held(keycode::LeftKey) {
+			} else if self.controller.is_key_held(KeyCode::Left) {
 				self.quote.start_moving_left();
-			} else if self.controller.is_key_held(keycode::RightKey) {
+			} else if self.controller.is_key_held(KeyCode::Right) {
 				self.quote.start_moving_right();
 			} else {
 				self.quote.stop_moving();
 			}
 
 			// Handle player looking
-			if self.controller.is_key_held(keycode::UpKey)
-				&& self.controller.is_key_held(keycode::DownKey) {
+			if self.controller.is_key_held(KeyCode::Up)
+				&& self.controller.is_key_held(KeyCode::Down) {
 
 				self.quote.look_horizontal();
-			} else if self.controller.is_key_held(keycode::UpKey) {
+			} else if self.controller.is_key_held(KeyCode::Up) {
 				self.quote.look_up();
-			} else if self.controller.is_key_held(keycode::DownKey) {
+			} else if self.controller.is_key_held(KeyCode::Down) {
 				self.quote.look_down();
 			} else {
 				self.quote.look_horizontal();
 			}
 
 			// Handle player jump
-			if self.controller.was_key_pressed(keycode::ZKey) {
+			if self.controller.was_key_pressed(KeyCode::Z) {
 				self.quote.start_jump();
-			} else if self.controller.was_key_released(keycode::ZKey) {
+			} else if self.controller.was_key_released(KeyCode::Z) {
 				self.quote.stop_jump();
 			}
 
