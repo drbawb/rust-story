@@ -1,8 +1,8 @@
 use std::collections::hash_map::{HashMap, Entry};
+use std::num::Float;
 
 use graphics;
-use sprite::{self, Facing, Looking, Motion};
-
+use sprite::{self, Facing, Looking, Motion, Updatable};
 
 use collisions::{Info,Rectangle};
 use map::{self, TileType};
@@ -211,7 +211,7 @@ impl Player {
 		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
-		self.sprites.get_mut(&self.movement).update(elapsed_time);
+		self.sprites[self.movement].update(elapsed_time);
 
 		if self.is_invincible {
 			self.invincible_time =
@@ -457,7 +457,7 @@ impl Player {
 					}
 				};
 
-				entry.set(loaded_sprite);
+				entry.insert(loaded_sprite);
 			},
 
 			_ => {},

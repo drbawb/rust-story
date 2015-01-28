@@ -11,7 +11,7 @@ use units;
 use units::{AsGame};
 
 use sdl2::sdl;
-use sdl2::event::{self, EventType};
+use sdl2::event::{self, Event};
 use sdl2::keycode::{self, KeyCode};
 
 static TARGET_FRAMERATE: units::Fps  =  60;
@@ -84,10 +84,10 @@ impl Game {
 			// drain event queue once per frame
 			// ideally should do in separate task
 			match event::poll_event() {
-				EventType::KeyDown(_,_,key_cap,_,_) => {
+				Event::KeyDown(_,_,key_cap,_,_,_) => {
 					self.controller.key_down_event(key_cap);
 				},
-				EventType::KeyUp(_,_,key_cap,_,_) => {
+				Event::KeyUp(_,_,key_cap,_,_,_) => {
 					self.controller.key_up_event(key_cap);
 				},
 				_ => {},

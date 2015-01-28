@@ -16,15 +16,18 @@ pub enum Motion {
 	Jumping,
 	Falling
 }
-pub static MOTIONS: [Motion; 5] = [Walking, Standing, Interacting, Jumping, Falling];
-
+pub static MOTIONS: [Motion; 5] = [Motion::Walking,
+                                   Motion::Standing,
+                                   Motion::Interacting,
+                                   Motion::Jumping,
+                                   Motion::Falling];
 
 #[derive(Hash,PartialEq,Eq)]
 pub enum Facing {
 	West,
 	East
 }
-pub static FACINGS: [Facing; 2] = [West, East];
+pub static FACINGS: [Facing; 2] = [Facing::West, Facing::East];
 
 #[derive(Hash,PartialEq,Eq)]
 pub enum Looking {

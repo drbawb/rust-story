@@ -108,39 +108,38 @@ impl Map {
 		let cm_tile = Tile::from_sprite(chain_middle, TileType::Air);
 		let cb_tile = Tile::from_sprite(chain_bottom, TileType::Air);
 
+		let blank_row = repeat(blank_tile).take(COLS).collect();
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
 				format!("assets/base/bkBlue.bmp"), graphics
 			),
-			sprites: repeat( repeat(blank_tile).take(COLS) ).take(ROWS),
-			tiles: repeat( repeat(blank_tile).take(COLS) ).take(ROWS),
+			sprites: repeat(blank_row).take(ROWS).collect(),
+			tiles: repeat(blank_row).take(ROWS).collect(),
 		};
 
 	
 		// init `floor`
 		for i in range(0, COLS) {
-			*(map.tiles
-			     .get_mut(ROWS - 1)
-			     .get_mut(i)) = wall_tile.clone(); // store a reference
+			map.tiles[ROWS - 1][i] = wall_tile.clone();
 		}
 
 		// "safety wall"
 		for i in range (0, ROWS) {
-			*(map.tiles.get_mut(i).get_mut(0))        = wall_tile.clone();
-			*(map.tiles.get_mut(i).get_mut(COLS - 1)) = wall_tile.clone();
+			map.tiles[i][0]        = wall_tile.clone();
+			map.tiles[i][COLS - 1] = wall_tile.clone();
 		}
 
 
-		*(map.tiles.get_mut(ROWS - 2).get_mut(3)) = wall_tile.clone();
-		*(map.tiles.get_mut(ROWS - 2).get_mut(5)) = wall_tile.clone();
+		map.tiles[ROWS - 2][3] = wall_tile.clone();
+		map.tiles[ROWS - 2][5] = wall_tile.clone();
 
-		*(map.tiles.get_mut(ROWS - 3).get_mut(4)) = wall_tile.clone();
-		*(map.tiles.get_mut(ROWS - 4).get_mut(3)) = wall_tile.clone();
-		*(map.tiles.get_mut(ROWS - 5).get_mut(2)) = wall_tile.clone();
+		map.tiles[ROWS - 3][4] = wall_tile.clone();
+		map.tiles[ROWS - 4][3] = wall_tile.clone();
+		map.tiles[ROWS - 5][2] = wall_tile.clone();
 
-		*(map.sprites.get_mut(ROWS - 4).get_mut(2)) = ct_tile.clone();
-		*(map.sprites.get_mut(ROWS - 3).get_mut(2)) = cm_tile.clone();
-		*(map.sprites.get_mut(ROWS - 2).get_mut(2)) = cb_tile.clone();
+		map.sprites[ROWS - 4][2] = ct_tile.clone();
+		map.sprites[ROWS - 3][2] = cm_tile.clone();
+		map.sprites[ROWS - 2][2] = cb_tile.clone();
 	
 		map
 	}

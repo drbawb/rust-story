@@ -1,4 +1,5 @@
 use std::collections::hash_map::{HashMap, Entry};
+use std::num::Float;
 
 use collisions::Rectangle;
 use sprite::{self, Facing};
@@ -68,7 +69,7 @@ impl CaveBat {
 					Facing::East => Y_OFFSET + EAST_OFFSET,
 				};
 
-				entry.set(box sprite::AnimatedSprite::new(
+				entry.insert(box sprite::AnimatedSprite::new(
 						display, asset_path, 
 						(sprite_x, sprite_y), 
 						(units::Tile(1), units::Tile(1)),
@@ -108,7 +109,7 @@ impl CaveBat {
 			{ Facing::West } else { Facing::East };
 		
 
-		let sprite_ref = self.sprites.get_mut(&self.facing);
+		let sprite_ref = self.sprites[self.facing];
 		sprite_ref.update(elapsed_time);
 	}
 

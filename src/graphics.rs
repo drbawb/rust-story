@@ -28,7 +28,7 @@ impl Graphics {
 		let current_mode = video::Window::new(
 			"rust-story v0.0",                       // title
 			WindowPos::PosCentered, WindowPos::PosCentered,  // position (x,y)
-			w as int, h as int,
+			w, h,
 			video::INPUT_GRABBED
 		);
 
@@ -87,7 +87,7 @@ impl Graphics {
 				}
 
 				match borrowed_display.create_texture_from_surface(&sprite_surface) {
-					Ok(texture) => entry.set(Rc::new(texture)),
+					Ok(texture) => entry.insert(Rc::new(texture)),
 					Err(msg) => panic!("sprite could not be rendered: {}", msg)
 				}
 			},
@@ -102,19 +102,19 @@ impl Graphics {
 		self.sprite_cache.remove(&file_path);
 	}
 	
-	pub fn blit_surface(&self,
-	                    src: &render::Texture,
+	pub fn blit_surface(&mut self,
+	                    src: &mut render::Texture,
 	                    src_rect:  &rect::Rect,
 	                    dest_rect: &rect::Rect) {
 		
-		let _ = self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
+		let _ = self.screen.drawer().copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
 	pub fn switch_buffers(&self) {
-		self.screen.present();
+		self.screen.drawer().present();
 	}
 
 	pub fn clear_buffer(&self) {
-		let _ = self.screen.clear();
+		let _ = self.screen.drawer().clear();
 	}
 }
