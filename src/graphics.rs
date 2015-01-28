@@ -34,7 +34,7 @@ impl Graphics {
 
 		let window_context = match current_mode {
 			Ok(ctx)  => ctx,
-			Err(msg) => fail!(msg),
+			Err(msg) => panic!(msg),
 		};
 
 		let render_context = render::Renderer::from_window(
@@ -50,7 +50,7 @@ impl Graphics {
 					sprite_cache:  HashMap::<String, Rc<render::Texture>>::new(),
 				}
 			},
-			Err(msg) => {fail!(msg)},
+			Err(msg) => {panic!(msg)},
 		};
 		
 		mouse::show_cursor(false);
@@ -75,20 +75,20 @@ impl Graphics {
 				// Store sprite
 				let sprite_surface = match sprite_window {
 					Ok(surface) => surface,
-					Err(msg) => fail!("sprite could not be loaded to a surface: {}", msg),
+					Err(msg) => panic!("sprite could not be loaded to a surface: {}", msg),
 				};
 
 				// wrap surface in texture and store it
 				if transparent_black {
 					match sprite_surface.set_color_key(true, pixels::RGB(0,0,0)) {
 						Ok(_) => {},
-						Err(msg) => fail!("Failed to key sprite: {}", msg),
+						Err(msg) => panic!("Failed to key sprite: {}", msg),
 					}
 				}
 
 				match borrowed_display.create_texture_from_surface(&sprite_surface) {
 					Ok(texture) => entry.set(Rc::new(texture)),
-					Err(msg) => fail!("sprite could not be rendered: {}", msg)
+					Err(msg) => panic!("sprite could not be rendered: {}", msg)
 				}
 			},
 			Occupied(entry) => { entry.into_mut() },
