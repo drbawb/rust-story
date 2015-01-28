@@ -1,4 +1,4 @@
-use std::collections::hashmap::{HashMap,Vacant};
+use std::collections::hash_map::{HashMap, Entry};
 
 use graphics;
 use sprite;
@@ -391,7 +391,7 @@ impl Player {
 		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
 	) {
 		match self.sprites.entry(movement) {
-			Vacant(entry) => {
+			Entry::Vacant(entry) => {
 				let file_path = format!("assets/base/MyChar.bmp");
 				let (motion, facing, _) = movement;
 				let motion_frame = match motion {

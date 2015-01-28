@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use std::collections::hashmap::{HashMap, Occupied, Vacant};
+use std::collections::hash_map::{HashMap, Entry};
 
 use game;
 use units;
@@ -67,7 +67,7 @@ impl Graphics {
 		// Retrieve a handle or generate a new one if it exists already.
 		let borrowed_display = &self.screen;
 		let handle = match self.sprite_cache.entry(file_path.clone()) {
-			Vacant(entry) => {
+			Entry::Vacant(entry) => {
 				// Load sprite
 				let sprite_path = Path::new(file_path);
 				let sprite_window = surface::Surface::from_bmp(&sprite_path);
@@ -91,7 +91,8 @@ impl Graphics {
 					Err(msg) => panic!("sprite could not be rendered: {}", msg)
 				}
 			},
-			Occupied(entry) => { entry.into_mut() },
+
+			Entry::Occupied(entry) => { entry.into_mut() },
 		};
 
 		handle.clone()

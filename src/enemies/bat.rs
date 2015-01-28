@@ -1,4 +1,4 @@
-use std::collections::hashmap::{HashMap, Vacant};
+use std::collections::hash_map::{HashMap, Entry};
 
 use collisions::Rectangle;
 use sprite;
@@ -60,7 +60,7 @@ impl CaveBat {
 	               facing: sprite::Facing) {
 
 		match self.sprites.entry(facing) {
-			Vacant(entry) => {
+			Entry::Vacant(entry) => {
 				let asset_path = format!("assets/base/Npc/NpcCemet.bmp");
 				let sprite_x = X_OFFSET;
 				let sprite_y = match facing {

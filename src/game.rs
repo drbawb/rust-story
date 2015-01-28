@@ -1,5 +1,5 @@
 use std::cmp;
-use std::io::Timer;
+use std::old_io::Timer;
 use std::time::Duration;
 
 use enemies;
