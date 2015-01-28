@@ -7,7 +7,7 @@ use super::drawing::{Game};
 #[derive(PartialEq,Eq,PartialOrd,Ord)]
 pub struct Millis(pub int);
 
-impl Add<Millis,Millis> for Millis {
+impl Add<Millis> for Millis {
 	#[inline]
 	fn add(&self, rhs: &Millis) -> Millis {
 		let (Millis(t0), Millis(t1)) = (*self, *rhs);
@@ -15,7 +15,7 @@ impl Add<Millis,Millis> for Millis {
 	}
 }
 
-impl Sub<Millis,Millis> for Millis {
+impl Sub<Millis> for Millis {
 	#[inline]
 	fn sub(&self, rhs: &Millis) -> Millis {
 		let (Millis(t0), Millis(t1)) = (*self, *rhs);
@@ -33,11 +33,11 @@ impl Sub<Millis,Millis> for Millis {
 pub struct Velocity(pub f64);
 
 /// Allows dereferencing `Velocity(f64)` to the direct value
-impl Deref<f64> for Velocity {
+impl Deref for Velocity {
 	fn deref<'a>(&'a self) -> &'a f64 { let Velocity(ref inner_val) = *self; inner_val }
 }
 
-impl Neg<Velocity> for Velocity {
+impl Neg for Velocity {
 	#[inline]
 	fn neg(&self) -> Velocity {
 		let Velocity(v0) = *self;
@@ -45,7 +45,7 @@ impl Neg<Velocity> for Velocity {
 	}
 }
 
-impl Add<Velocity, Velocity> for Velocity {
+impl Add<Velocity> for Velocity {
 	#[inline]
 	fn add(&self, rhs: &Velocity) -> Velocity {
 		let (Velocity(v0), Velocity(v1)) = (*self, *rhs);
@@ -53,7 +53,7 @@ impl Add<Velocity, Velocity> for Velocity {
 	}
 }
 
-impl Sub<Velocity, Velocity> for Velocity {
+impl Sub<Velocity> for Velocity {
 	#[inline]
 	fn sub(&self, rhs: &Velocity) -> Velocity {
 		let (Velocity(v0), Velocity(v1)) = (*self, *rhs);
@@ -63,7 +63,7 @@ impl Sub<Velocity, Velocity> for Velocity {
 
 /// Any velocity multiplied by some length in time `t`
 /// results in a distance measured in `Games`
-impl Mul<Millis,Game> for Velocity {
+impl Mul<Millis> for Velocity {
 	#[inline]
 	fn mul(&self, rhs: &Millis) -> Game {
 		let (Velocity(v0), Millis(t)) = (*self, *rhs);
@@ -77,7 +77,7 @@ pub struct Acceleration(pub f64);
 
 /// Acceleration `a` multipled by some time `t` results
 /// in `Velocity(a * t)`
-impl Mul<Millis, Velocity> for Acceleration {
+impl Mul<Millis> for Acceleration {
 	#[inline]
 	fn mul(&self, rhs: &Millis) -> Velocity {
 		let (Acceleration(a), Millis(t)) = (*self, *rhs);
@@ -85,7 +85,7 @@ impl Mul<Millis, Velocity> for Acceleration {
 	}
 }
 
-impl Neg<Acceleration> for Acceleration {
+impl Neg for Acceleration {
 	#[inline]
 	fn neg(&self) -> Acceleration {
 		let Acceleration(a) = *self;
@@ -96,11 +96,11 @@ impl Neg<Acceleration> for Acceleration {
 #[derive(PartialEq,PartialOrd)]
 pub struct Degrees(pub f64);
 
-impl Deref<f64> for Degrees {
+impl Deref for Degrees {
 	fn deref<'a>(&'a self) -> &'a f64 { let Degrees(ref inner_val) = *self; inner_val }
 }
 
-impl Add<Degrees,Degrees> for Degrees {
+impl Add<Degrees> for Degrees {
 	#[inline]
 	fn add(&self, rhs: &Degrees) -> Degrees {
 		let (Degrees(d0), Degrees(d1)) = (*self, *rhs);
@@ -110,7 +110,7 @@ impl Add<Degrees,Degrees> for Degrees {
 
 /// Some number of Degrees `d` divided by some time `t` yields
 /// an AngularVelocity `av`
-impl Div<Millis,AngularVelocity> for Degrees {
+impl Div<Millis> for Degrees {
 	#[inline]
 	fn div(&self, rhs: &Millis) -> AngularVelocity {
 		let (Degrees(d), Millis(t)) = (*self, *rhs);
@@ -124,7 +124,7 @@ pub struct AngularVelocity(pub f64);
 
 /// Some AngularVelocity `av` multiplied by some time `t` yields
 /// a number of degrees `d`.
-impl Mul<Millis, Degrees> for AngularVelocity {
+impl Mul<Millis> for AngularVelocity {
 	#[inline]
 	fn mul(&self, rhs: &Millis) -> Degrees {
 		let (AngularVelocity(av), Millis(t)) = (*self, *rhs);

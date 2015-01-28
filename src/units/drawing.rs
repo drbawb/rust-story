@@ -32,7 +32,7 @@ impl AsPixel for Game {
 }
 
 // Allow `+` operator for anything which can be converted `#to_game()` 
-impl<T: AsGame>  Add<T, Game> for Game {
+impl<T: AsGame>  Add<T> for Game {
 	#[inline]
 	fn add(&self, rhs: &T) -> Game {
 		let (Game(a), Game(b)) = (*self, rhs.to_game());
@@ -41,7 +41,7 @@ impl<T: AsGame>  Add<T, Game> for Game {
 }
 
 // Allow `-` operator for anything which can be converted `#to_game()`
-impl <T: AsGame> Sub<T, Game> for Game {
+impl <T: AsGame> Sub<T> for Game {
 	#[inline]
 	fn sub(&self, rhs: &T) -> Game {
 		let (Game(a), Game(b)) = (*self, rhs.to_game());
@@ -50,7 +50,7 @@ impl <T: AsGame> Sub<T, Game> for Game {
 }
 
 // Allow `*` operator for anything which can be converted `#to_game()`
-impl <T: AsGame> Mul<T, Game> for Game {
+impl <T: AsGame> Mul<T> for Game {
 	#[inline]
 	fn mul(&self, rhs: &T) -> Game {
 		let (Game(a), Game(b)) = (*self, rhs.to_game());
@@ -59,7 +59,7 @@ impl <T: AsGame> Mul<T, Game> for Game {
 }
 
 // Allow `/` operator for anything which can be converted `#to_game()`
-impl <T: AsGame> Div<T, Game> for Game {
+impl <T: AsGame> Div<T> for Game {
 	#[inline]
 	fn div(&self, rhs: &T) -> Game {
 		let (Game(a), Game(b)) = (*self, rhs.to_game());
@@ -77,7 +77,7 @@ impl AsPixel for Pixel {
 }
 
 // Allow `+` operator for anything which can be converted `#to_pixel()`
-impl<T: AsPixel> Add<T, Pixel> for Pixel {
+impl<T: AsPixel> Add<T> for Pixel {
 	#[inline]
 	fn add(&self, rhs: &T) -> Pixel {
 		let (Pixel(a), Pixel(b)) = (*self, rhs.to_pixel());
@@ -126,7 +126,7 @@ impl AsPixel for Tile {
 }
 
 // Allow `+` operator for anything which can be converted `#to_tile()`
-impl<T: AsTile> Add<T, Tile> for Tile {
+impl<T: AsTile> Add<T> for Tile {
 	#[inline]
 	fn add(&self, rhs: &T) -> Tile {
 		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
@@ -135,7 +135,7 @@ impl<T: AsTile> Add<T, Tile> for Tile {
 }
 
 // Allow `-` operator for anything which can be converted to `#to_tile()`
-impl<T: AsTile> Sub<T, Tile> for Tile {
+impl<T: AsTile> Sub<T> for Tile {
 	#[inline]
 	fn sub(&self, rhs: &T) -> Tile {
 		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
@@ -144,7 +144,7 @@ impl<T: AsTile> Sub<T, Tile> for Tile {
 }
 
 // Allow `*` operator for anything which can be converted `#to_tile()`
-impl<T: AsTile> Mul<T, Tile> for Tile {
+impl<T: AsTile> Mul<T> for Tile {
 	#[inline]
 	fn mul(&self, rhs: &T) -> Tile {
 		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
@@ -153,7 +153,7 @@ impl<T: AsTile> Mul<T, Tile> for Tile {
 }
 
 // Allow `/` operator for anything which can be converted `#to_tile()`
-impl<T: AsTile> Div<T, Tile> for Tile {
+impl<T: AsTile> Div<T> for Tile {
 	#[inline]
 	fn div(&self, rhs: &T) -> Tile {
 		let (Tile(a), Tile(b)) = (*self, rhs.to_tile());
