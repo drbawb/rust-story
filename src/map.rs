@@ -1,3 +1,4 @@
+use std::iter::repeat;
 use std::rc::Rc;
 
 use backdrop;
@@ -37,7 +38,7 @@ struct Tile {
 impl Tile {
 	/// Creates n air tile w/ no sprite.
 	fn new() -> Tile {
-		Tile { tile_type: Air, sprite: None }
+		Tile { tile_type: TileType::Air, sprite: None }
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
@@ -102,20 +103,19 @@ impl Map {
 		);
 
 		let blank_tile = Tile::new();
-		let wall_tile = Tile::from_sprite(sprite, Wall);
-		let ct_tile = Tile::from_sprite(chain_top, Air);
-		let cm_tile = Tile::from_sprite(chain_middle, Air);
-		let cb_tile = Tile::from_sprite(chain_bottom, Air);
+		let wall_tile = Tile::from_sprite(sprite, TileType::Wall);
+		let ct_tile = Tile::from_sprite(chain_top, TileType::Air);
+		let cm_tile = Tile::from_sprite(chain_middle, TileType::Air);
+		let cb_tile = Tile::from_sprite(chain_bottom, TileType::Air);
 
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
 				format!("assets/base/bkBlue.bmp"), graphics
 			),
-			sprites: Vec::from_elem(ROWS,
-				 Vec::from_elem(COLS, blank_tile.clone())),
-			tiles: Vec::from_elem(ROWS,
-			       Vec::from_elem(COLS, blank_tile.clone()))
+			sprites: repeat( repeat(blank_tile).take(COLS) ).take(ROWS),
+			tiles: repeat( repeat(blank_tile).take(COLS) ).take(ROWS),
 		};
+
 	
 		// init `floor`
 		for i in range(0, COLS) {
