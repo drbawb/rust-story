@@ -7,10 +7,10 @@ use units;
 use units::{AsPixel};
 
 use sdl2::rect;
-use sdl2::pixels;
+use sdl2::pixels::{self, Color};
 use sdl2::surface;
-use sdl2::render;
-use sdl2::video;
+use sdl2::render::{self, RenderDriverIndex};
+use sdl2::video::{self, WindowPos};
 use sdl2::mouse;
 
 /// Acts as a buffer to the underlying display
@@ -27,7 +27,7 @@ impl Graphics {
 		
 		let current_mode = video::Window::new(
 			"rust-story v0.0",                       // title
-			video::PosCentered, video::PosCentered,  // position (x,y)
+			WindowPos::PosCentered, WindowPos::PosCentered,  // position (x,y)
 			w as int, h as int,
 			video::INPUT_GRABBED
 		);
@@ -39,7 +39,7 @@ impl Graphics {
 
 		let render_context = render::Renderer::from_window(
 			window_context,
-			render::DriverAuto,
+			RenderDriverIndex::Auto,
 			render::SOFTWARE,
 		);
 
@@ -80,7 +80,7 @@ impl Graphics {
 
 				// wrap surface in texture and store it
 				if transparent_black {
-					match sprite_surface.set_color_key(true, pixels::RGB(0,0,0)) {
+					match sprite_surface.set_color_key(true, Color::RGB(0,0,0)) {
 						Ok(_) => {},
 						Err(msg) => panic!("Failed to key sprite: {}", msg),
 					}
