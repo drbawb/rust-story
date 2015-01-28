@@ -1,3 +1,5 @@
+use std::ops::{Deref, Neg, Add, Sub, Mul, Div};
+
 use super::drawing::{Game}; 
 
 /// Millis represents a length of time in milliseconds as a signed integer.

@@ -1,3 +1,5 @@
+use std::ops::{Add, Sub, Mul, Div};
+
 static TILE_SIZE: i32          =  32;
 static SCALE: f64              = 1.0;
 
