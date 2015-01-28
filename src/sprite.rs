@@ -16,7 +16,7 @@ pub enum Motion {
 	Jumping,
 	Falling
 }
-pub static MOTIONS: [Motion, ..5] = [Walking, Standing, Interacting, Jumping, Falling];
+pub static MOTIONS: [Motion; 5] = [Walking, Standing, Interacting, Jumping, Falling];
 
 
 #[deriving(Hash,PartialEq,Eq)]
@@ -24,7 +24,7 @@ pub enum Facing {
 	West,
 	East
 }
-pub static FACINGS: [Facing, ..2] = [West, East];
+pub static FACINGS: [Facing; 2] = [West, East];
 
 #[deriving(Hash,PartialEq,Eq)]
 pub enum Looking {
@@ -32,7 +32,7 @@ pub enum Looking {
 	Down,
 	Horizontal
 }
-pub static LOOKINGS: [Looking, ..3] = [Up, Down, Horizontal];
+pub static LOOKINGS: [Looking; 3] = [Up, Down, Horizontal];
 
 /// Any object which can be represented in 2D space
 /// Coord represents the unit which describes this object's
