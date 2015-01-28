@@ -8,7 +8,7 @@ use graphics;
 use units;
 use units::{AsGame,AsPixel};
 
-#[deriving(Hash,PartialEq,Eq)]
+#[derive(Hash,PartialEq,Eq)]
 pub enum Motion {
 	Walking,
 	Standing,
@@ -19,14 +19,14 @@ pub enum Motion {
 pub static MOTIONS: [Motion; 5] = [Walking, Standing, Interacting, Jumping, Falling];
 
 
-#[deriving(Hash,PartialEq,Eq)]
+#[derive(Hash,PartialEq,Eq)]
 pub enum Facing {
 	West,
 	East
 }
 pub static FACINGS: [Facing; 2] = [West, East];
 
-#[deriving(Hash,PartialEq,Eq)]
+#[derive(Hash,PartialEq,Eq)]
 pub enum Looking {
 	Up,
 	Down,

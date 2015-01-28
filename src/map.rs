@@ -8,7 +8,7 @@ use units;
 use collisions::Rectangle;
 use units::{AsGame,AsTile};
 
-#[deriving(PartialEq,Eq,Clone)]
+#[derive(PartialEq,Eq,Clone)]
 pub enum TileType {
 	Air,
 	Wall
@@ -28,7 +28,7 @@ impl CollisionTile {
 }
 
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
-#[deriving(Clone)]
+#[derive(Clone)]
 struct Tile {
 	tile_type:  TileType,
 	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>>>>
