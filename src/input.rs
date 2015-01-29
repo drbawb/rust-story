@@ -45,8 +45,8 @@ impl Input {
 	/// Responds false otherwise.
 	pub fn was_key_pressed(&self, key: keycode::KeyCode) -> bool {
 		let key_cap = &(key as u32);
-		match self.pressed_keys.find_copy(key_cap) {
-			Some(is_pressed) => {is_pressed},
+		match self.pressed_keys.get(key_cap) {
+			Some(is_pressed) => *is_pressed,
 			None             => false,
 		}
 	}
@@ -55,8 +55,8 @@ impl Input {
 	/// Responds false otherwise.
 	pub fn was_key_released(&self, key: keycode::KeyCode) -> bool {
 		let key_cap = &(key as u32);
-		match self.released_keys.find_copy(key_cap) {
-			Some(is_pressed) => {is_pressed},
+		match self.released_keys.get(key_cap) {
+			Some(is_pressed) => *is_pressed,
 			None             => false,
 		}
 	}
@@ -67,8 +67,8 @@ impl Input {
 	/// Responds false otherwise.
 	pub fn is_key_held(&self, key: keycode::KeyCode) -> bool {
 		let key_cap = &(key as u32);
-		match self.held_keys.find_copy(key_cap) {
-			Some(is_pressed) => {is_pressed},
+		match self.held_keys.get(key_cap) {
+			Some(is_pressed) => *is_pressed,
 			None             => false,
 		}
 	}
