@@ -9,12 +9,13 @@ use units;
 use collisions::Rectangle;
 use units::{AsGame,AsTile};
 
-#[derive(PartialEq,Eq,Clone)]
+#[derive(Copy,PartialEq,Eq,Clone)]
 pub enum TileType {
 	Air,
 	Wall
 }
 
+#[derive(Copy)]
 pub struct CollisionTile {
 	pub tile_type:  TileType,
 	pub row:        units::Tile,

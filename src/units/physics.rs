@@ -141,7 +141,7 @@ impl Div<Millis> for Degrees {
 }
 
 /// AngularVelocity is defined as `Degrees/Millis` and is stored in a float.
-#[derive(PartialEq,PartialOrd)]
+#[derive(Copy,PartialEq,PartialOrd)]
 pub struct AngularVelocity(pub f64);
 
 /// Some AngularVelocity `av` multiplied by some time `t` yields
