@@ -14,7 +14,7 @@ use sdl2::sdl;
 use sdl2::event::{self, Event};
 use sdl2::keycode::{self, KeyCode};
 
-static TARGET_FRAMERATE: units::Fps  =  60;
+const TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
 
 pub static SCREEN_WIDTH:  units::Tile = units::Tile(20);

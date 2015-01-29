@@ -26,7 +26,7 @@ static JUMP_SPEED:       units::Velocity      = units::Velocity(0.25);
 static SHORT_JUMP_SPEED: units::Velocity      = units::Velocity(0.25 / 1.5);
 
 // player sprite animation
-static CHAR_OFFSET:        uint          = 12;
+const  CHAR_OFFSET:        uint          = 12;
 static SPRITE_NUM_FRAMES:  units::Frame  = 3;
 static SPRITE_FPS:         units::Fps    = 20;
 
