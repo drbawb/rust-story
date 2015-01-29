@@ -58,6 +58,7 @@ pub struct Sprite {
 	size:    (units::Game, units::Game),
 }
 
+#[old_impl_check]
 impl<O:AsGame, S:AsGame> Sprite {
 	/// A new sprite which will draw itself at `coords`
 	/// `sprite_at` is the index (row) where the sprite starts in `file_name`
