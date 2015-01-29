@@ -32,7 +32,7 @@ pub enum Looking {
 	Down,
 	Horizontal
 }
-pub static LOOKINGS: [Looking; 3] = [Up, Down, Horizontal];
+pub static LOOKINGS: [Looking; 3] = [Looking::Up, Looking::Down, Looking::Horizontal];
 
 /// Any object which can be represented in 2D space
 /// Coord represents the unit which describes this object's
