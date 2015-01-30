@@ -112,7 +112,9 @@ impl Player {
 	/// The player will spawn at `x` and `y`, though it will immediately be subject to gravity.
 	/// The player is initailized `standing` facing `east`.
 	/// The player will continue to fall until some collision is detected.
-	pub fn new(graphics: &mut graphics::Graphics, x: units::Game, y: units::Game) -> Player {
+	pub fn new(graphics: &mut graphics::Graphics, 
+	               x: units::Game, 
+	               y: units::Game) -> Player {
 		// insert sprites into map
 		let sprite_map = 
 			HashMap::<MotionTup, Box<sprite::Updatable<_>>>::new();
@@ -175,7 +177,7 @@ impl Player {
 	}
 
 	/// Draws player to screen
-	pub fn draw(&mut self, display: &graphics::Graphics) {
+	pub fn draw(&mut self, display: &mut graphics::Graphics) {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {
@@ -184,7 +186,7 @@ impl Player {
 	}
 
 	/// Draws player's HUD if available
-	pub fn draw_hud(&mut self, display: &graphics::Graphics) {
+	pub fn draw_hud(&mut self, display: &mut graphics::Graphics) {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {

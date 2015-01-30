@@ -35,7 +35,7 @@ pub struct CaveBat {
 
 impl CaveBat {
 	pub fn new(display: &mut graphics::Graphics,
-	           x: units::Game, y: units::Game) -> CaveBat {
+	               x: units::Game, y: units::Game) -> CaveBat {
 		
 		let sprite_map = HashMap::<sprite::Facing, Box<sprite::Updatable<_>>>::new();
 
@@ -57,8 +57,8 @@ impl CaveBat {
 	}
 
 	fn load_sprite(&mut self, 
-	               display: &mut graphics::Graphics,
-	               facing: sprite::Facing) {
+	                   display: &mut graphics::Graphics,
+	                   facing: sprite::Facing) {
 
 		match self.sprites.entry(facing) {
 			Entry::Vacant(entry) => {
@@ -112,7 +112,7 @@ impl CaveBat {
 		self.sprites[self.facing].update(elapsed_time);
 	}
 
-	pub fn draw(&mut self, display: &graphics::Graphics) {
+	pub fn draw(&mut self, display: &mut graphics::Graphics) {
 		self.sprites[self.facing].draw(display, (self.x, self.y));
 	}
 }

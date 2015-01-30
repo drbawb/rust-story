@@ -2,6 +2,8 @@
 
 extern crate sdl2;
 
+use sdl2::sdl;
+
 pub mod backdrop;
 pub mod collisions;
 pub mod enemies;
@@ -14,6 +16,13 @@ pub mod sprite;
 pub mod units;
 
 pub fn main() {
-	let mut story = ::game::Game::new();
+	println!("initalizing sdl ...");
+	sdl::init(sdl::INIT_EVERYTHING);
+
+	println!("initializing rendering context ...");
+	let renderer = graphics::Graphics::init_renderer();
+
+	println!("let me tell you a story ...");
+	let mut story = ::game::Game::new(&renderer);
 	story.start();
 }

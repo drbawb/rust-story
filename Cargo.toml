@@ -1,12 +1,9 @@
 [package]
 name = "rust-story"
-version = "0.23.2"
+version = "0.23.3"
 authors = [ "drbawb@fatalsyntax.com" ]
 
 [dependencies]
+sdl2 = "*"
 sdl2_ttf = "*"
-
-[dependencies.sdl2]
-git = "https://github.com/drbawb/rust-sdl2"
-rev = "fork/rust-story"
 
