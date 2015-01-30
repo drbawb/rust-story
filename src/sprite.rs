@@ -173,7 +173,7 @@ impl AnimatedSprite {
 impl<C: AsGame> Updatable<C> for AnimatedSprite {
 	/// Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self, elapsed_time: units::Millis) {
-		let frame_time = units::Millis(1000 / self.fps as int);
+		let frame_time = units::Millis(1000 / self.fps as i64);
 		self.last_update = self.last_update + elapsed_time;
 
 		// if we have missed drawing a frame

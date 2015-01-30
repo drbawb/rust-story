@@ -15,7 +15,7 @@ use sdl2::event::{self, Event};
 use sdl2::keycode::{self, KeyCode};
 
 const TARGET_FRAMERATE: units::Fps  =  60;
-static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
+static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE as i64));
 
 pub static SCREEN_WIDTH:  units::Tile = units::Tile(20);
 pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
@@ -71,14 +71,14 @@ impl Game {
 	/// until its next frame deadline.
 	fn event_loop(&mut self) {
 		// event loop control
-		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as int);
-		let mut last_update_time = units::Millis(sdl::get_ticks() as int);
+		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as i64);
+		let mut last_update_time = units::Millis(sdl::get_ticks() as i64);
 		
 		let mut running = true;
 		let mut timer   = Timer::new().unwrap();
 		
 		while running {
-			let start_time_ms = units::Millis(sdl::get_ticks() as int);
+			let start_time_ms = units::Millis(sdl::get_ticks() as i64);
 			self.controller.begin_new_frame();
 
 			// drain event queue once per frame
@@ -132,7 +132,7 @@ impl Game {
 			}
 
 			// inform actors of how much time has passed since last frame
-			let current_time_ms = units::Millis(sdl::get_ticks() as int);
+			let current_time_ms = units::Millis(sdl::get_ticks() as i64);
 			let elapsed_time    = current_time_ms - last_update_time;
 			
 			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
@@ -144,7 +144,7 @@ impl Game {
 			self.display.switch_buffers();
 
 			// throttle event-loop based on iteration time vs frame deadline
-			let iter_time = units::Millis(sdl::get_ticks() as int) - start_time_ms;
+			let iter_time = units::Millis(sdl::get_ticks() as i64) - start_time_ms;
 			let next_frame_time: u64 = if frame_delay > iter_time { 
 				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
 				(fd - it) as u64

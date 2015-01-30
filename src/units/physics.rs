@@ -5,7 +5,7 @@ use super::drawing::{Game};
 /// Millis represents a length of time in milliseconds as a signed integer.
 /// (NOTE: As `Millis` supports basic arithmetic: "negative time" is possible.)
 #[derive(Copy, PartialEq,Eq,PartialOrd,Ord)]
-pub struct Millis(pub int);
+pub struct Millis(pub i64);
 
 impl Add<Millis> for Millis {
 	type Output = Millis;
@@ -156,5 +156,5 @@ impl Mul<Millis> for AngularVelocity {
 	}
 }
 
-pub type Frame = uint;
-pub type Fps = uint;
+pub type Frame = u64;
+pub type Fps = u64;

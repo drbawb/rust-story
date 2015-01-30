@@ -23,7 +23,7 @@ impl AsTile for Game {
 	#[inline]
 	fn to_tile(&self) -> Tile {
 		let Game(a) = *self;
-		Tile((a / TILE_SIZE as f64) as uint)
+		Tile((a / TILE_SIZE as f64) as usize)
 	}
 }
 
@@ -101,13 +101,13 @@ impl<T: AsPixel> Add<T> for Pixel {
 /// (This will ultimately be 16 Games, or some scaled number of
 /// pixels.)
 #[derive(Copy, PartialEq,Eq,PartialOrd,Ord)]
-pub struct HalfTile(pub uint);
+pub struct HalfTile(pub u64);
 
 impl AsGame for HalfTile {
 	#[inline]
 	fn to_game(&self) -> Game {
 		let HalfTile(a) = *self;
-		Game((a * (TILE_SIZE as uint / 2)) as f64)
+		Game((a * (TILE_SIZE as u64 / 2)) as f64)
 	}
 }
 
@@ -116,13 +116,13 @@ impl AsGame for HalfTile {
 ///
 /// This may ultimately be scaled if converted to `Games` or `Pixels`
 #[derive(Copy, PartialEq,Eq,PartialOrd,Ord)]
-pub struct Tile(pub uint);
+pub struct Tile(pub usize);
 
 impl AsGame for Tile {
 	#[inline]
 	fn to_game(&self) -> Game {
 		let Tile(a) = *self;
-		Game((a * (TILE_SIZE as uint)) as f64)
+		Game((a * (TILE_SIZE as usize)) as f64)
 	}
 }
 

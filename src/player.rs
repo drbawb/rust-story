@@ -26,7 +26,7 @@ static JUMP_SPEED:       units::Velocity      = units::Velocity(0.25);
 static SHORT_JUMP_SPEED: units::Velocity      = units::Velocity(0.25 / 1.5);
 
 // player sprite animation
-const  CHAR_OFFSET:        uint          = 12;
+const  CHAR_OFFSET:        usize         = 12;
 static SPRITE_NUM_FRAMES:  units::Frame  = 3;
 static SPRITE_FPS:         units::Fps    = 20;
 
@@ -93,7 +93,7 @@ pub struct Player {
 	elapsed_time:  units::Millis,
 	velocity_x:    units::Velocity,
 	velocity_y:    units::Velocity,
-	accel_x:       int,
+	accel_x:       i64,
 
 	// state
 	is_interacting:  bool,

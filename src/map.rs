@@ -66,8 +66,8 @@ impl Map {
 	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
 	/// * A 3-tile high chain is placed on the left-side of this obstacle course.
 	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		static ROWS: uint = 15; // 480
-		static COLS: uint = 20; // 640
+		static ROWS: usize = 15; // 480
+		static COLS: usize = 20; // 640
 
 		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
 		let sprite   =  Rc::new(RefCell::new(
