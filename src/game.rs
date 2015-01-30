@@ -3,7 +3,7 @@ use std::old_io::Timer;
 use std::time::Duration;
 
 use enemies;
-use graphics;
+use graphics::{self, Graphics};
 use input;
 use map;
 use player;
@@ -13,6 +13,7 @@ use units::{AsGame};
 use sdl2::sdl;
 use sdl2::event::{self, Event};
 use sdl2::keycode::KeyCode;
+use sdl2::render;
 
 const TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE as i64));
@@ -21,26 +22,22 @@ pub static SCREEN_WIDTH:  units::Tile = units::Tile(20);
 pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
 
 /// An instance of the `rust-story` game with its own event loop.
-pub struct Game {
+pub struct Game<'engine> {
 	quote:  player::Player,
 	yatty:  enemies::CaveBat,
 	map:    map::Map,
 
-	display:     graphics::Graphics,
 	controller:  input::Input,
+	display: graphics::Graphics<'engine>,
 }
 
-impl Game {
+impl<'e> Game<'e> {
 	/// Starts running this games event loop, note that this will block indefinitely.
 	/// This function will return to the caller when the escape key is pressed.
-	pub fn new() -> Game {
-		println!("initalizing sdl ...");
-		
+	pub fn new(renderer: &'e render::Renderer) -> Game<'e> {
 		// initialize all major subsystems
-		// hide the mouse cursor in our drawing context
-		sdl::init(sdl::INIT_EVERYTHING);
-		let mut display = graphics::Graphics::new();
-		let controller  = input::Input::new();
+		let controller   = input::Input::new();
+		let mut display  = graphics::Graphics::new(renderer);
 
 		Game {
 			map: map::Map::create_test_map(&mut display),
@@ -167,16 +164,16 @@ impl Game {
 	/// Instructs our actors to draw their current state to the screen.
 	fn draw(&mut self) {
 		// background
-		self.map.draw_background(&self.display);
-		self.map.draw_sprites(&self.display);
+		self.map.draw_background(&mut self.display);
+		self.map.draw_sprites(&mut self.display);
 
 		// foreground
-		self.quote.draw(&self.display);
-		self.yatty.draw(&self.display);
-		self.map.draw(&self.display);
+		self.quote.draw(&mut self.display);
+		self.yatty.draw(&mut self.display);
+		self.map.draw(&mut self.display);
 
 		// ui
-		self.quote.draw_hud(&self.display);
+		self.quote.draw_hud(&mut self.display);
 	}
 
 	/// Passes the current time in milliseconds to our underlying actors.
