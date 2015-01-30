@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::iter::repeat;
 use std::rc::Rc;
 
@@ -29,11 +30,13 @@ impl CollisionTile {
 	}
 }
 
+type TileSprite = Rc<RefCell<Box<sprite::Updatable<units::Game>>>>;
+
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[derive(Clone)]
 struct Tile {
 	tile_type:  TileType,
-	sprite:     Option<Rc<Box<sprite::Updatable<units::Game>>>>
+	sprite:     Option<TileSprite>
 }
 
 impl Tile {
@@ -43,7 +46,7 @@ impl Tile {
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
-	fn from_sprite(sprite: Rc<Box<sprite::Updatable<units::Game>>>,
+	fn from_sprite(sprite: TileSprite,
 	               tile_type: TileType) -> Tile {
 		Tile { tile_type: tile_type, sprite: Some(sprite.clone()) }
 	}
@@ -67,41 +70,41 @@ impl Map {
 		static COLS: uint = 20; // 640
 
 		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
-		let sprite   =  Rc::new(
+		let sprite   =  Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as Box<sprite::Updatable<_>>
-		);
+		));
 
-		let chain_top = Rc::new(
+		let chain_top = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as Box<sprite::Updatable<_>>
-		);
+		));
 
-		let chain_middle = Rc::new(
+		let chain_middle = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				graphics,
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as Box<sprite::Updatable<_>>
-		);
+		));
 
-		let chain_bottom = Rc::new(
+		let chain_bottom = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				graphics, 
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
 			) as Box<sprite::Updatable<_>>
-		);
+		));
 
 		let blank_tile = Tile::new();
 		let wall_tile  = Tile::from_sprite(sprite, TileType::Wall);
@@ -146,16 +149,17 @@ impl Map {
 		map
 	}
 
-	pub fn draw_background(&self, graphics: &graphics::Graphics) {
+	pub fn draw_background(&mut self, graphics: &graphics::Graphics) {
 		self.background.draw(graphics);
 	}
 
-	pub fn draw_sprites(&self, graphics: &graphics::Graphics) {
+	pub fn draw_sprites(&mut self, graphics: &graphics::Graphics) {
 		for a in range(0, self.sprites.len()) {
 			for b in range(0, self.sprites[a].len()) {
 				match self.sprites[a][b].sprite {
 					Some(ref sprite) => {
-						sprite.draw(graphics, 
+						sprite.borrow_mut()
+						      .draw(graphics, 
 						            (units::Tile(b).to_game(),
 						             units::Tile(a).to_game()));
 					}
@@ -166,12 +170,13 @@ impl Map {
 	}
 
 	/// Draws current state to `display`
-	pub fn draw(&self, graphics: &graphics::Graphics) {
+	pub fn draw(&mut self, graphics: &graphics::Graphics) {
 		for a in range(0, self.tiles.len()) {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].sprite {
 					Some(ref sprite) => {
-						sprite.draw(graphics,
+						sprite.borrow_mut()
+						      .draw(graphics,
 						            (units::Tile(b).to_game(),
 						             units::Tile(a).to_game()));
 ;

@@ -175,7 +175,7 @@ impl Player {
 	}
 
 	/// Draws player to screen
-	pub fn draw(&self, display: &graphics::Graphics) {
+	pub fn draw(&mut self, display: &graphics::Graphics) {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {
@@ -184,7 +184,7 @@ impl Player {
 	}
 
 	/// Draws player's HUD if available
-	pub fn draw_hud(&self, display: &graphics::Graphics) {
+	pub fn draw_hud(&mut self, display: &graphics::Graphics) {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {

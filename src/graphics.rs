@@ -1,7 +1,3 @@
-use std::rc::Rc;
-
-use std::collections::hash_map::{HashMap, Entry};
-
 use game;
 use units;
 use units::{AsPixel};
@@ -15,8 +11,7 @@ use sdl2::mouse;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics {
-	screen:            render::Renderer,
-	pub sprite_cache:  HashMap<String, Rc<render::Texture>>,
+	screen: render::Renderer,
 }
 
 impl Graphics {
@@ -45,10 +40,7 @@ impl Graphics {
 
 		let graphics: Graphics = match render_context {
 			Ok(renderer) => {
-				Graphics{
-					screen:        renderer,
-					sprite_cache:  HashMap::<String, Rc<render::Texture>>::new(),
-				}
+				Graphics{ screen: renderer, }
 			},
 			Err(msg) => {panic!(msg)},
 		};
@@ -62,59 +54,46 @@ impl Graphics {
 	/// contexts.
 	pub fn load_image(&mut self, 
 	                  file_path: String, 
-	                  transparent_black: bool) -> Rc<render::Texture> {
+	                  transparent_black: bool) -> render::Texture {
 		
 		// Retrieve a handle or generate a new one if it exists already.
-		let borrowed_display = &self.screen;
-		let handle = match self.sprite_cache.entry(file_path.clone()) {
-			Entry::Vacant(entry) => {
-				// Load sprite
-				let sprite_path = Path::new(file_path);
-				let sprite_window = surface::Surface::from_bmp(&sprite_path);
+		// Load sprite
+		let sprite_path = Path::new(file_path);
+		let sprite_window = surface::Surface::from_bmp(&sprite_path);
 
-				// Store sprite
-				let sprite_surface = match sprite_window {
-					Ok(surface) => surface,
-					Err(msg) => panic!("sprite could not be loaded to a surface: {}", msg),
-				};
-
-				// wrap surface in texture and store it
-				if transparent_black {
-					match sprite_surface.set_color_key(true, Color::RGB(0,0,0)) {
-						Ok(_) => {},
-						Err(msg) => panic!("Failed to key sprite: {}", msg),
-					}
-				}
-
-				match borrowed_display.create_texture_from_surface(&sprite_surface) {
-					Ok(texture) => entry.insert(Rc::new(texture)),
-					Err(msg) => panic!("sprite could not be rendered: {}", msg)
-				}
-			},
-
-			Entry::Occupied(entry) => { entry.into_mut() },
+		// Store sprite
+		let sprite_surface = match sprite_window {
+			Ok(surface) => surface,
+			Err(msg) => panic!("sprite could not be loaded to a surface: {}", msg),
 		};
 
-		handle.clone()
+		// wrap surface in texture and store it
+		if transparent_black {
+			match sprite_surface.set_color_key(true, Color::RGB(0,0,0)) {
+				Ok(_) => {},
+				Err(msg) => panic!("Failed to key sprite: {}", msg),
+			}
+		}
+
+		match self.screen.create_texture_from_surface(&sprite_surface) {
+			Ok(texture) => texture,
+			Err(msg) => panic!("sprite could not be rendered: {}", msg)
+		}
 	}
 
-	pub fn remove_image(&mut self, file_path: String) {
-		self.sprite_cache.remove(&file_path);
-	}
-	
-	pub fn blit_surface(&mut self,
+	pub fn blit_surface(&self,
 	                    src: &mut render::Texture,
 	                    src_rect:  &rect::Rect,
 	                    dest_rect: &rect::Rect) {
 		
-		let _ = self.screen.drawer().copy(src, Some(*src_rect), Some(*dest_rect));
+		let _ = self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
 	pub fn switch_buffers(&self) {
-		self.screen.drawer().present();
+		self.screen.present();
 	}
 
 	pub fn clear_buffer(&self) {
-		let _ = self.screen.drawer().clear();
+		let _ = self.screen.clear();
 	}
 }

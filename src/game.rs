@@ -165,7 +165,7 @@ impl Game {
 	}
 
 	/// Instructs our actors to draw their current state to the screen.
-	fn draw(&self) {
+	fn draw(&mut self) {
 		// background
 		self.map.draw_background(&self.display);
 		self.map.draw_sprites(&self.display);

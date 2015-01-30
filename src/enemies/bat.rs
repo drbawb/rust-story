@@ -109,11 +109,10 @@ impl CaveBat {
 			{ Facing::West } else { Facing::East };
 		
 
-		let sprite_ref = self.sprites[self.facing];
-		sprite_ref.update(elapsed_time);
+		self.sprites[self.facing].update(elapsed_time);
 	}
 
-	pub fn draw(&self, display: &graphics::Graphics) {
+	pub fn draw(&mut self, display: &graphics::Graphics) {
 		self.sprites[self.facing].draw(display, (self.x, self.y));
 	}
 }

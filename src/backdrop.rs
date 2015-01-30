@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use game;
 use graphics;
 use units;
@@ -12,7 +10,7 @@ use sdl2::render::Texture;
 static BACKGROUND_SIZE: units::Tile = units::Tile(4);
 
 pub struct FixedBackdrop {
-	surface: Rc<Texture>
+	surface: Texture
 }
 
 impl FixedBackdrop {
@@ -24,7 +22,7 @@ impl FixedBackdrop {
 	/// Repeatedly paints the asset across the entire screen.
 	/// Moving the destination rectangle `BACKGROUND_SIZE` pixels
 	/// in either direction as it progresses.
-	pub fn draw(&self, graphics: &graphics::Graphics) {
+	pub fn draw(&mut self, graphics: &graphics::Graphics) {
 		let (mut x, mut y) = (0i32,0i32);
 		let units::Pixel(tile_size) = BACKGROUND_SIZE.to_pixel();
 
@@ -33,7 +31,7 @@ impl FixedBackdrop {
 				let src  = Rect::new(0, 0, tile_size, tile_size);
 				let dest = Rect::new(x, y, tile_size, tile_size);
 
-				graphics.blit_surface(&*self.surface, &src, &dest);
+				graphics.blit_surface(&mut self.surface, &src, &dest);
 				y+= tile_size;
 			}
 

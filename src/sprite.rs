@@ -1,8 +1,6 @@
 use sdl2::rect;
 use sdl2::render;
 
-use std::rc::Rc;
-
 use graphics;
 
 use units;
@@ -43,7 +41,7 @@ pub static LOOKINGS: [Looking; 3] = [Looking::Up, Looking::Down, Looking::Horizo
 ///
 /// Said unit must be expressible in terms of `Game` units.
 pub trait Drawable<Coord> : 'static { 
-	fn draw(&self, display: &graphics::Graphics, coords: (Coord,Coord));
+	fn draw(&mut self, display: &graphics::Graphics, coords: (Coord,Coord));
 }
 
 /// Any object which understands time and placement in 2D space.
@@ -53,7 +51,7 @@ pub trait Updatable<T> : Drawable<T> {
 
 /// Represents a static 32x32 2D character
 pub struct Sprite {
-	sprite_sheet:  Rc<render::Texture>,
+	sprite_sheet:  render::Texture,
 	source_rect:   rect::Rect,
 	size:    (units::Game, units::Game),
 }
@@ -93,7 +91,7 @@ impl<O:AsGame, S:AsGame> Sprite {
 
 impl<C: AsGame> Drawable<C> for Sprite {
 	/// Draws selfs @ coordinates provided by 
-	fn draw (&self, display: &graphics::Graphics, coords: (C,C)) {
+	fn draw (&mut self, display: &graphics::Graphics, coords: (C,C)) {
 		let (w,h) = self.size;
 		let (x,y) = coords;
 		
@@ -103,7 +101,7 @@ impl<C: AsGame> Drawable<C> for Sprite {
 	
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
 
-		display.blit_surface(&*self.sprite_sheet, &self.source_rect, &dest_rect);
+		display.blit_surface(&mut self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }
 
@@ -118,7 +116,7 @@ impl<C: AsGame> Updatable<C> for Sprite {
 /// Frames will be selected based on time-deltas supplied through update
 pub struct AnimatedSprite {
 	pub source_rect:   rect::Rect,
-	pub sprite_sheet:  Rc<render::Texture>,
+	pub sprite_sheet:  render::Texture,
 
 	offset:  (units::Tile, units::Tile),
 	size:    (units::Tile, units::Tile),
@@ -195,7 +193,7 @@ impl<C: AsGame> Updatable<C> for AnimatedSprite {
 
 impl<C: AsGame> Drawable<C> for AnimatedSprite {
 	/// Draws selfs @ coordinates provided by `Updatable` trait
-	fn draw(&self, display: &graphics::Graphics, coords: (C,C)) {
+	fn draw(&mut self, display: &graphics::Graphics, coords: (C,C)) {
 		let (w,h) = self.size;
 		let (x,y) = coords;
 		
@@ -204,6 +202,6 @@ impl<C: AsGame> Drawable<C> for AnimatedSprite {
 			(x.to_game().to_pixel(), y.to_game().to_pixel());
 
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
-		display.blit_surface(&*self.sprite_sheet, &self.source_rect, &dest_rect);
+		display.blit_surface(&mut self.sprite_sheet, &self.source_rect, &dest_rect);
 	}
 }
