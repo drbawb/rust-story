@@ -104,18 +104,19 @@ impl Map {
 		);
 
 		let blank_tile = Tile::new();
-		let wall_tile = Tile::from_sprite(sprite, TileType::Wall);
-		let ct_tile = Tile::from_sprite(chain_top, TileType::Air);
-		let cm_tile = Tile::from_sprite(chain_middle, TileType::Air);
-		let cb_tile = Tile::from_sprite(chain_bottom, TileType::Air);
+		let wall_tile  = Tile::from_sprite(sprite, TileType::Wall);
+		let ct_tile    = Tile::from_sprite(chain_top, TileType::Air);
+		let cm_tile    = Tile::from_sprite(chain_middle, TileType::Air);
+		let cb_tile    = Tile::from_sprite(chain_bottom, TileType::Air);
 
-		let blank_row = repeat(blank_tile).take(COLS).collect();
+		let blank_row: Vec<Tile> = repeat(blank_tile).take(COLS).collect();
+
 		let mut map = Map {
 			background: backdrop::FixedBackdrop::new(
 				format!("assets/base/bkBlue.bmp"), graphics
 			),
-			sprites: repeat(blank_row).take(ROWS).collect(),
-			tiles: repeat(blank_row).take(ROWS).collect(),
+			sprites: repeat(blank_row.clone()).take(ROWS).collect(),
+			tiles: repeat(blank_row.clone()).take(ROWS).collect(),
 		};
 
 	
