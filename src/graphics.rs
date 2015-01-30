@@ -3,7 +3,7 @@ use units;
 use units::{AsPixel};
 
 use sdl2::rect;
-use sdl2::pixels::{self, Color};
+use sdl2::pixels::Color;
 use sdl2::surface;
 use sdl2::render::{self, RenderDriverIndex};
 use sdl2::video::{self, WindowPos};

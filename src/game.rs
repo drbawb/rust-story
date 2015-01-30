@@ -12,7 +12,7 @@ use units::{AsGame};
 
 use sdl2::sdl;
 use sdl2::event::{self, Event};
-use sdl2::keycode::{self, KeyCode};
+use sdl2::keycode::KeyCode;
 
 const TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE as i64));
