@@ -189,8 +189,7 @@ impl Map {
 
 
 	/// no-op for demo map
-	#[allow(unused_variable)]
-	pub fn update(&mut self, elapsed_time: units::Millis) {
+	pub fn update(&mut self, _elapsed_time: units::Millis) {
 		/* 
 		 * This was effectively unused and IMHO does not warrant the
 		 * complexity introduced by using dynamic borrow-ck'ing.

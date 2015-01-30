@@ -105,9 +105,8 @@ impl<C: AsGame> Drawable<C> for Sprite {
 	}
 }
 
-#[allow(unused_variable)]
 impl<C: AsGame> Updatable<C> for Sprite {
-	fn update(&mut self, elapsed_time: units::Millis) {
+	fn update(&mut self, _elapsed_time: units::Millis) {
 		// no-op for static sprite.
 	}
 }
