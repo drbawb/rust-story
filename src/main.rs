@@ -1,3 +1,5 @@
+#![feature(box_syntax, core, hash, io, path, std_misc)]
+
 extern crate sdl2;
 
 pub mod backdrop;

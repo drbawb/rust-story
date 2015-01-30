@@ -1,5 +1,5 @@
 use std::cmp;
-use std::io::Timer;
+use std::old_io::Timer;
 use std::time::Duration;
 
 use enemies;
@@ -11,11 +11,11 @@ use units;
 use units::{AsGame};
 
 use sdl2::sdl;
-use sdl2::event;
-use sdl2::keycode;
+use sdl2::event::{self, Event};
+use sdl2::keycode::KeyCode;
 
-static TARGET_FRAMERATE: units::Fps  =  60;
-static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE) as int);
+const TARGET_FRAMERATE: units::Fps  =  60;
+static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE as i64));
 
 pub static SCREEN_WIDTH:  units::Tile = units::Tile(20);
 pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
@@ -71,68 +71,68 @@ impl Game {
 	/// until its next frame deadline.
 	fn event_loop(&mut self) {
 		// event loop control
-		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as int);
-		let mut last_update_time = units::Millis(sdl::get_ticks() as int);
+		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as i64);
+		let mut last_update_time = units::Millis(sdl::get_ticks() as i64);
 		
 		let mut running = true;
 		let mut timer   = Timer::new().unwrap();
 		
 		while running {
-			let start_time_ms = units::Millis(sdl::get_ticks() as int);
+			let start_time_ms = units::Millis(sdl::get_ticks() as i64);
 			self.controller.begin_new_frame();
 
 			// drain event queue once per frame
 			// ideally should do in separate task
 			match event::poll_event() {
-				event::KeyDownEvent(_,_,key_cap,_,_) => {
+				Event::KeyDown(_,_,key_cap,_,_,_) => {
 					self.controller.key_down_event(key_cap);
 				},
-				event::KeyUpEvent(_,_,key_cap,_,_) => {
+				Event::KeyUp(_,_,key_cap,_,_,_) => {
 					self.controller.key_up_event(key_cap);
 				},
 				_ => {},
 			}
 
 			// Handle exit game
-			if self.controller.was_key_released(keycode::EscapeKey) {
+			if self.controller.was_key_released(KeyCode::Escape) {
 				running = false;
 			}
 
 			// Handle player movement
-			if self.controller.is_key_held(keycode::LeftKey)
-				&& self.controller.is_key_held(keycode::RightKey) {
+			if self.controller.is_key_held(KeyCode::Left)
+				&& self.controller.is_key_held(KeyCode::Right) {
 
 				self.quote.stop_moving();
-			} else if self.controller.is_key_held(keycode::LeftKey) {
+			} else if self.controller.is_key_held(KeyCode::Left) {
 				self.quote.start_moving_left();
-			} else if self.controller.is_key_held(keycode::RightKey) {
+			} else if self.controller.is_key_held(KeyCode::Right) {
 				self.quote.start_moving_right();
 			} else {
 				self.quote.stop_moving();
 			}
 
 			// Handle player looking
-			if self.controller.is_key_held(keycode::UpKey)
-				&& self.controller.is_key_held(keycode::DownKey) {
+			if self.controller.is_key_held(KeyCode::Up)
+				&& self.controller.is_key_held(KeyCode::Down) {
 
 				self.quote.look_horizontal();
-			} else if self.controller.is_key_held(keycode::UpKey) {
+			} else if self.controller.is_key_held(KeyCode::Up) {
 				self.quote.look_up();
-			} else if self.controller.is_key_held(keycode::DownKey) {
+			} else if self.controller.is_key_held(KeyCode::Down) {
 				self.quote.look_down();
 			} else {
 				self.quote.look_horizontal();
 			}
 
 			// Handle player jump
-			if self.controller.was_key_pressed(keycode::ZKey) {
+			if self.controller.was_key_pressed(KeyCode::Z) {
 				self.quote.start_jump();
-			} else if self.controller.was_key_released(keycode::ZKey) {
+			} else if self.controller.was_key_released(KeyCode::Z) {
 				self.quote.stop_jump();
 			}
 
 			// inform actors of how much time has passed since last frame
-			let current_time_ms = units::Millis(sdl::get_ticks() as int);
+			let current_time_ms = units::Millis(sdl::get_ticks() as i64);
 			let elapsed_time    = current_time_ms - last_update_time;
 			
 			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
@@ -144,7 +144,7 @@ impl Game {
 			self.display.switch_buffers();
 
 			// throttle event-loop based on iteration time vs frame deadline
-			let iter_time = units::Millis(sdl::get_ticks() as int) - start_time_ms;
+			let iter_time = units::Millis(sdl::get_ticks() as i64) - start_time_ms;
 			let next_frame_time: u64 = if frame_delay > iter_time { 
 				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
 				(fd - it) as u64
@@ -165,7 +165,7 @@ impl Game {
 	}
 
 	/// Instructs our actors to draw their current state to the screen.
-	fn draw(&self) {
+	fn draw(&mut self) {
 		// background
 		self.map.draw_background(&self.display);
 		self.map.draw_sprites(&self.display);

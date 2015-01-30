@@ -1,7 +1,8 @@
-use std::collections::hashmap::{HashMap, Vacant};
+use std::collections::hash_map::{HashMap, Entry};
+use std::num::Float;
 
 use collisions::Rectangle;
-use sprite;
+use sprite::{self, Facing};
 use graphics;
 
 use units;
@@ -28,7 +29,7 @@ pub struct CaveBat {
 
 	flight_angle: units::Degrees,
 
-	facing:   sprite::Facing,
+	facing:   Facing,
 	sprites:  HashMap<sprite::Facing, Box<sprite::Updatable<units::Game>>>,
 }
 
@@ -42,7 +43,7 @@ impl CaveBat {
 			x: x, y: y,
 			origin: (x,y),
 
-			facing:        sprite::West,
+			facing:        Facing::West,
 			flight_angle:  units::Degrees(0.0), 
 
 			sprites: sprite_map,
@@ -60,15 +61,15 @@ impl CaveBat {
 	               facing: sprite::Facing) {
 
 		match self.sprites.entry(facing) {
-			Vacant(entry) => {
+			Entry::Vacant(entry) => {
 				let asset_path = format!("assets/base/Npc/NpcCemet.bmp");
 				let sprite_x = X_OFFSET;
 				let sprite_y = match facing {
-					sprite::West => Y_OFFSET + WEST_OFFSET,
-					sprite::East => Y_OFFSET + EAST_OFFSET,
+					Facing::West => Y_OFFSET + WEST_OFFSET,
+					Facing::East => Y_OFFSET + EAST_OFFSET,
 				};
 
-				entry.set(box sprite::AnimatedSprite::new(
+				entry.insert(box sprite::AnimatedSprite::new(
 						display, asset_path, 
 						(sprite_x, sprite_y), 
 						(units::Tile(1), units::Tile(1)),
@@ -105,14 +106,13 @@ impl CaveBat {
 		self.y = y0 + (amp * wave);
 
 		self.facing = if self.center_x() > player_x 
-			{ sprite::West } else { sprite::East };
+			{ Facing::West } else { Facing::East };
 		
 
-		let sprite_ref = self.sprites.get_mut(&self.facing);
-		sprite_ref.update(elapsed_time);
+		self.sprites[self.facing].update(elapsed_time);
 	}
 
-	pub fn draw(&self, display: &graphics::Graphics) {
+	pub fn draw(&mut self, display: &graphics::Graphics) {
 		self.sprites[self.facing].draw(display, (self.x, self.y));
 	}
 }
