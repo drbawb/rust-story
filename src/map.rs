@@ -149,11 +149,11 @@ impl Map {
 		map
 	}
 
-	pub fn draw_background(&mut self, graphics: &graphics::Graphics) {
+	pub fn draw_background(&mut self, graphics: &mut graphics::Graphics) {
 		self.background.draw(graphics);
 	}
 
-	pub fn draw_sprites(&mut self, graphics: &graphics::Graphics) {
+	pub fn draw_sprites(&mut self, graphics: &mut graphics::Graphics) {
 		for a in range(0, self.sprites.len()) {
 			for b in range(0, self.sprites[a].len()) {
 				match self.sprites[a][b].sprite {
@@ -170,7 +170,7 @@ impl Map {
 	}
 
 	/// Draws current state to `display`
-	pub fn draw(&mut self, graphics: &graphics::Graphics) {
+	pub fn draw(&mut self, graphics: &mut graphics::Graphics) {
 		for a in range(0, self.tiles.len()) {
 			for b in range(0, self.tiles[a].len()) {
 				match self.tiles[a][b].sprite {
