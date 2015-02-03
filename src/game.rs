@@ -81,11 +81,11 @@ impl<'e> Game<'e> {
 			// drain event queue once per frame
 			// ideally should do in separate task
 			match event::poll_event() {
-				Event::KeyDown(_,_,key_cap,_,_,_) => {
-					self.controller.key_down_event(key_cap);
+				Event::KeyDown { keycode, .. } => {
+					self.controller.key_down_event(keycode);
 				},
-				Event::KeyUp(_,_,key_cap,_,_,_) => {
-					self.controller.key_up_event(key_cap);
+				Event::KeyUp { keycode, .. } => {
+					self.controller.key_up_event(keycode);
 				},
 				_ => {},
 			}
