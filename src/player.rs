@@ -2,6 +2,7 @@ use std::collections::hash_map::{HashMap, Entry};
 use std::num::Float;
 
 use graphics;
+use number_sprite::NumberSprite;
 use sprite::{self, Facing, Looking, Motion, Updatable};
 
 use collisions::{Info,Rectangle};
@@ -79,7 +80,7 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 pub struct Player {
 	// assets
 	sprites:   HashMap<MotionTup, Box<sprite::Updatable<units::Game>>>,
-	three:     Box<sprite::Updatable<units::Tile>>,
+	three:     Box<sprite::Drawable<units::Tile>>,
 	hud:       Box<sprite::Updatable<units::Tile>>,
 	hud_fill:  Box<sprite::Updatable<units::HalfTile>>,
 
@@ -133,12 +134,7 @@ impl Player {
 			format!("assets/base/TextBox.bmp"),
 		) as Box<sprite::Updatable<_>>;
 
-		let digit_3 = box sprite::Sprite::new(
-			graphics,
-			(units::HalfTile(3), units::HalfTile(7)),
-			(units::HalfTile(1), units::HalfTile(1)),
-			format!("assets/base/TextBox.bmp"),
-		);
+		let digit_3 = box NumberSprite::new(graphics, 3);
 
 		// construct new player
 		let mut new_player = Player{
