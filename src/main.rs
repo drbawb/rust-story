@@ -11,6 +11,7 @@ pub mod game;
 pub mod graphics;
 pub mod input;
 pub mod map;
+pub mod number_sprite;
 pub mod player;
 pub mod sprite;
 pub mod units;
