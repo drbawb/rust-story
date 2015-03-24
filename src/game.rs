@@ -11,7 +11,7 @@ use units;
 use units::{AsGame};
 
 use sdl2::{self, sdl};
-use sdl2::event::{self, Event};
+use sdl2::event::Event;
 use sdl2::keycode::KeyCode;
 use sdl2::render;
 
