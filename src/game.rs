@@ -10,7 +10,7 @@ use player;
 use units;
 use units::{AsGame};
 
-use sdl2::sdl;
+use sdl2::{self, sdl};
 use sdl2::event::{self, Event};
 use sdl2::keycode::KeyCode;
 use sdl2::render;
@@ -27,14 +27,17 @@ pub struct Game<'engine> {
 	yatty:  enemies::CaveBat,
 	map:    map::Map,
 
+	context:     &'engine sdl2::Sdl,
 	controller:  input::Input,
-	display: graphics::Graphics<'engine>,
+	display:     graphics::Graphics<'engine>,
 }
 
 impl<'e> Game<'e> {
 	/// Starts running this games event loop, note that this will block indefinitely.
 	/// This function will return to the caller when the escape key is pressed.
-	pub fn new(renderer: &'e render::Renderer) -> Game<'e> {
+	pub fn new(renderer: &'e render::Renderer,
+	           context:  &'e sdl2::Sdl) -> Game<'e> {
+
 		// initialize all major subsystems
 		let controller   = input::Input::new();
 		let mut display  = graphics::Graphics::new(renderer);
@@ -53,13 +56,13 @@ impl<'e> Game<'e> {
 			),
 
 			display:     display,
-			controller:  controller
+			controller:  controller,
+			context:     context,
 		}
 	}
 
 	pub fn start(&mut self) {
 		self.event_loop();
-		sdl::quit();
 	}
 
 	/// Polls current input events & dispatches them to the engine.
@@ -70,9 +73,10 @@ impl<'e> Game<'e> {
 		// event loop control
 		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as i64);
 		let mut last_update_time = units::Millis(sdl::get_ticks() as i64);
-		
-		let mut running = true;
-		let mut timer   = Timer::new().unwrap();
+	
+		let mut event_pump = self.context.event_pump();
+		let mut running    = true;
+		let mut timer      = Timer::new().unwrap();
 		
 		while running {
 			let start_time_ms = units::Millis(sdl::get_ticks() as i64);
@@ -80,14 +84,17 @@ impl<'e> Game<'e> {
 
 			// drain event queue once per frame
 			// ideally should do in separate task
-			match event::poll_event() {
-				Event::KeyDown { keycode, .. } => {
-					self.controller.key_down_event(keycode);
-				},
-				Event::KeyUp { keycode, .. } => {
-					self.controller.key_up_event(keycode);
-				},
-				_ => {},
+
+			for event in event_pump.poll_iter() {
+				match event {
+					Event::KeyDown { keycode, .. } => {
+						self.controller.key_down_event(keycode);
+					},
+					Event::KeyUp { keycode, .. } => {
+						self.controller.key_up_event(keycode);
+					},
+					_ => {},
+				}
 			}
 
 			// Handle exit game
