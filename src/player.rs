@@ -80,7 +80,7 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 pub struct Player {
 	// assets
 	sprites:   HashMap<MotionTup, Box<sprite::Updatable<units::Game>>>,
-	three:     Box<sprite::Drawable<units::Tile>>,
+	hp_sprite: Box<sprite::Drawable<units::Tile>>,
 	hud:       Box<sprite::Updatable<units::Tile>>,
 	hud_fill:  Box<sprite::Updatable<units::HalfTile>>,
 
@@ -142,7 +142,7 @@ impl Player {
 			sprites:   sprite_map,
 			hud:       health_bar_sprite,
 			hud_fill:  health_fill_sprite,
-			three:     digit_3,
+			hp_sprite: digit_3,
 
 			x: x,
 			y: y,
@@ -194,9 +194,9 @@ impl Player {
 			                   (HEALTH_FILL_X,
 			                    HEALTH_FILL_Y));
 			
-			self.three.draw(display, 
-			                (units::Tile(3),
-			                 units::Tile(2)));
+			self.hp_sprite.draw(display,
+			                    (units::Tile(3),
+			                     units::Tile(2)));
 		}
 	}
 
