@@ -124,12 +124,12 @@ impl Map {
 
 	
 		// init `floor`
-		for i in range(0, COLS) {
+		for i in (0..COLS) {
 			map.tiles[ROWS - 1][i] = wall_tile.clone();
 		}
 
 		// "safety wall"
-		for i in range (0, ROWS) {
+		for i in (0..ROWS) {
 			map.tiles[i][0]        = wall_tile.clone();
 			map.tiles[i][COLS - 1] = wall_tile.clone();
 		}
@@ -154,8 +154,8 @@ impl Map {
 	}
 
 	pub fn draw_sprites(&mut self, graphics: &mut graphics::Graphics) {
-		for a in range(0, self.sprites.len()) {
-			for b in range(0, self.sprites[a].len()) {
+		for a in (0..self.sprites.len()) {
+			for b in (0..self.sprites[a].len()) {
 				match self.sprites[a][b].sprite {
 					Some(ref sprite) => {
 						sprite.borrow_mut()
@@ -171,8 +171,8 @@ impl Map {
 
 	/// Draws current state to `display`
 	pub fn draw(&mut self, graphics: &mut graphics::Graphics) {
-		for a in range(0, self.tiles.len()) {
-			for b in range(0, self.tiles[a].len()) {
+		for a in (0..self.tiles.len()) {
+			for b in (0..self.tiles[a].len()) {
 				match self.tiles[a][b].sprite {
 					Some(ref sprite) => {
 						sprite.borrow_mut()
@@ -216,8 +216,8 @@ impl Map {
 		let units::Tile(first_col) =  rectangle.left().to_tile();
 		let units::Tile(last_col)  =  rectangle.right().to_tile();
 
-		for row in range(first_row, last_row + 1) {
-			for col in range(first_col, last_col + 1) {
+		for row in (first_row..(last_row + 1)) {
+			for col in (first_col..(last_col + 1)) {
 				collision_tiles.push( 
 					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].tile_type)
 				);

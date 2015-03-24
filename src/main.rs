@@ -1,4 +1,4 @@
-#![feature(box_syntax, core, hash, io, path, std_misc)]
+#![feature(box_syntax, std_misc, thread_sleep)]
 
 extern crate sdl2;
 
@@ -17,12 +17,12 @@ pub mod units;
 
 pub fn main() {
 	println!("initalizing sdl ...");
-	sdl::init(sdl::INIT_EVERYTHING);
+	let sdl_context = sdl::init(sdl::INIT_EVERYTHING).unwrap();
 
 	println!("initializing rendering context ...");
 	let renderer = graphics::Graphics::init_renderer();
 
 	println!("let me tell you a story ...");
-	let mut story = ::game::Game::new(&renderer);
+	let mut story = ::game::Game::new(&renderer, &sdl_context);
 	story.start();
 }
