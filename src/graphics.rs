@@ -10,6 +10,7 @@ use sdl2::video::{self, WindowPos};
 use sdl2::mouse;
 
 use std::collections::hash_map::{HashMap, Entry};
+use std::path::Path;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics<'g> {
@@ -63,7 +64,7 @@ impl<'g> Graphics<'g> {
 		
 		// Retrieve a handle or generate a new one if it exists already.
 		// Load sprite
-		let sprite_path = Path::new(file_path.clone());
+		let sprite_path = Path::new(&file_path[..]);
 		let sprite_window = surface::Surface::from_bmp(&sprite_path);
 
 		// Store sprite
@@ -80,7 +81,7 @@ impl<'g> Graphics<'g> {
 			}
 		}
 
-		match self.cache.entry(file_path) {
+		match self.cache.entry(file_path.clone()) {
 			Entry::Vacant(entry) => {
 				match self.screen.create_texture_from_surface(&sprite_surface) {
 					Ok(texture) => { entry.insert(texture); },
