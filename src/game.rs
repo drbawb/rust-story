@@ -1,5 +1,5 @@
 use std::cmp;
-use std::old_io::Timer;
+use std::thread;
 use std::time::Duration;
 
 use enemies;
@@ -76,7 +76,6 @@ impl<'e> Game<'e> {
 	
 		let mut event_pump = self.context.event_pump();
 		let mut running    = true;
-		let mut timer      = Timer::new().unwrap();
 		
 		while running {
 			let start_time_ms = units::Millis(sdl::get_ticks() as i64);
@@ -153,8 +152,8 @@ impl<'e> Game<'e> {
 				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
 				(fd - it) as u64
 			} else { 0 as u64 };
-			timer.sleep(Duration::milliseconds(next_frame_time as i64));
 
+			thread::sleep(Duration::milliseconds(next_frame_time as i64));
 			
 			/* Print current FPS to stdout
 			let units::Millis(start_time) = start_time_ms;

@@ -1,4 +1,4 @@
-#![feature(box_syntax, core, hash, io, path, std_misc)]
+#![feature(box_syntax, std_misc, thread_sleep)]
 
 extern crate sdl2;
 
