@@ -24,8 +24,8 @@ impl Iterator for DigitIter {
 		if self.remainder <= 0 { return None; }
 
 		let digit = self.remainder % 10; // grab last digit
-		self.remainder /= 10;       // truncate power of 10
-		Some(digit)                 // yield the truncated digit
+		self.remainder /= 10;            // truncate power of 10
+		Some(digit)                      // yield the truncated digit
 	}
 }
 
