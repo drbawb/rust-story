@@ -30,25 +30,37 @@ impl Iterator for DigitIter {
 }
 
 pub struct NumberSprite {
-	sprite: Sprite,
+	digit_sprites: Vec<Sprite>,
 }
 
 impl NumberSprite {
 	pub fn new(graphics: &mut Graphics, number: i32) -> NumberSprite {
-		let digit = Sprite::new(
-			graphics,
-			(units::HalfTile(4), units::HalfTile(7)),
-			(units::HalfTile(1), units::HalfTile(1)),
-			format!("assets/base/TextBox.bmp"),
-		);
+		// map digits into sprite
+		let digits  = DigitIter::new(number);
+		let sprites = digits.map(|digit| {
+			Sprite::new(
+				graphics,
+				(units::HalfTile(digit as u64), units::HalfTile(7)),
+				(units::HalfTile(1), units::HalfTile(1)),
+				format!("assets/base/TextBox.bmp"),
+			)
+		}).collect();
 
-		NumberSprite { sprite: digit }
+		NumberSprite { digit_sprites: sprites }
 	}
 }
 
 impl<C: AsGame> Drawable<C> for NumberSprite {
 	fn draw(&mut self, display: &mut Graphics, coords: (C, C)) {
-		self.sprite.draw(display, coords);
+		let (x, y) = coords;
+		let (x, y) = (x.to_game(), y.to_game());
+
+		for (idx, digit) in self.digit_sprites.iter_mut()
+		                                      .enumerate() {
+			// shift left by 1 half tile for digit pos
+			let d_x = x - (units::HalfTile(1 * idx as u64));
+			digit.draw(display, (d_x, y));
+		}
 	}
 }
 

@@ -134,7 +134,7 @@ impl Player {
 			format!("assets/base/TextBox.bmp"),
 		) as Box<sprite::Updatable<_>>;
 
-		let digit_3 = box NumberSprite::new(graphics, 3);
+		let digit_3 = box NumberSprite::new(graphics, 42);
 
 		// construct new player
 		let mut new_player = Player{
