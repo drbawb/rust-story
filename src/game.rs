@@ -12,7 +12,6 @@ use units::{AsGame};
 use sdl2::{self, sdl};
 use sdl2::event::Event;
 use sdl2::keycode::KeyCode;
-use sdl2::render;
 
 const TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE as i64));
@@ -34,12 +33,11 @@ pub struct Game<'engine> {
 impl<'e> Game<'e> {
 	/// Starts running this games event loop, note that this will block indefinitely.
 	/// This function will return to the caller when the escape key is pressed.
-	pub fn new(renderer: &'e render::Renderer,
-	           context:  &'e sdl2::Sdl) -> Game<'e> {
+	pub fn new(context: &'e sdl2::Sdl) -> Game<'e> {
 
 		// initialize all major subsystems
 		let controller   = input::Input::new();
-		let mut display  = graphics::Graphics::new(renderer);
+		let mut display  = graphics::Graphics::new(context);
 
 		Game {
 			map: map::Map::create_test_map(&mut display),

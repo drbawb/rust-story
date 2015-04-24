@@ -2,40 +2,30 @@ use game;
 use units;
 use units::{AsPixel};
 
-use sdl2::rect;
+use sdl2::{self, mouse, rect, surface};
 use sdl2::pixels::Color;
-use sdl2::surface;
 use sdl2::render::{self, Renderer, RenderDriverIndex, Texture};
 use sdl2::video::{self, WindowPos};
-use sdl2::mouse;
 
 use std::collections::hash_map::{HashMap, Entry};
 use std::path::Path;
 
 /// Acts as a buffer to the underlying display
 pub struct Graphics<'g> {
-	cache:  HashMap<String, Texture<'g>>,
-	screen: &'g Renderer,
+	cache:  HashMap<String, Texture>,
+	screen: Renderer<'g>,
 }
 
 impl<'g> Graphics<'g> {
 	/// Prepare the display for rendering
-	pub fn new(renderer: &Renderer) -> Graphics {
-		let graphics = Graphics {
-			cache:  HashMap::new(),
-			screen: renderer,
-		};
-
-		mouse::show_cursor(true);
-		return graphics;
-	}
-
-	pub fn init_renderer() -> Renderer {
+	pub fn new(context: &sdl2::Sdl) -> Graphics<'g> {
+		// boot the renderer
 		let (units::Pixel(w), units::Pixel(h)) = 
 			(game::SCREEN_WIDTH.to_pixel(), game::SCREEN_HEIGHT.to_pixel());
 		
 		let current_mode = video::Window::new(
-			"rust-story v0.0",                       // title
+			context,
+			"rust-story v0.0",                               // title
 			WindowPos::PosCentered, WindowPos::PosCentered,  // position (x,y)
 			w, h,
 			video::INPUT_GRABBED
@@ -46,12 +36,22 @@ impl<'g> Graphics<'g> {
 			Err(msg) => panic!(msg),
 		};
 
-		 Renderer::from_window(
+		 let renderer = Renderer::from_window(
 			window_context,
 			RenderDriverIndex::Auto,
 			render::SOFTWARE,
-		).unwrap()
+		).unwrap();
+
+		// strap it to graphics subsystem
+		let graphics = Graphics {
+			cache:  HashMap::new(),
+			screen: renderer,
+		};
+
+		mouse::show_cursor(true);
+		return graphics;
 	}
+
 
 	/// Caches the bitmap found at `file_path` ...
 	/// The filename can then be used to fetch a handle to the loaded

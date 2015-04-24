@@ -21,10 +21,7 @@ pub fn main() {
 	println!("initalizing sdl ...");
 	let sdl_context = sdl::init(sdl::INIT_EVERYTHING).unwrap();
 
-	println!("initializing rendering context ...");
-	let renderer = graphics::Graphics::init_renderer();
-
 	println!("let me tell you a story ...");
-	let mut story = ::game::Game::new(&renderer, &sdl_context);
+	let mut story = ::game::Game::new(&sdl_context);
 	story.start();
 }
