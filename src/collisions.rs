@@ -1,13 +1,13 @@
 use units;
 
-#[derive(Copy)]
+#[derive(Copy,Clone)]
 pub struct Info {
 	pub collided:  bool,
 	pub row:       units::Tile,
 	pub col:       units::Tile,
 }
 
-#[derive(Copy)]
+#[derive(Copy,Clone)]
 pub struct Rectangle {
 	pub x:      units::Game,
 	pub y:      units::Game,

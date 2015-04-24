@@ -4,7 +4,7 @@ use graphics;
 use units;
 use units::{AsGame,AsPixel};
 
-#[derive(Copy,Hash,PartialEq,Eq)]
+#[derive(Clone,Copy,Hash,PartialEq,Eq)]
 pub enum Motion {
 	Walking,
 	Standing,
@@ -18,14 +18,14 @@ pub static MOTIONS: [Motion; 5] = [Motion::Walking,
                                    Motion::Jumping,
                                    Motion::Falling];
 
-#[derive(Copy,Hash,PartialEq,Eq)]
+#[derive(Clone,Copy,Hash,PartialEq,Eq)]
 pub enum Facing {
 	West,
 	East
 }
 pub static FACINGS: [Facing; 2] = [Facing::West, Facing::East];
 
-#[derive(Copy,Hash,PartialEq,Eq)]
+#[derive(Clone,Copy,Hash,PartialEq,Eq)]
 pub enum Looking {
 	Up,
 	Down,

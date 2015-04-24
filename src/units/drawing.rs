@@ -11,7 +11,7 @@ pub trait AsPixel { fn to_pixel(&self) -> Pixel; }
 /// A `Game` unit represents a density-independent distance in pixels.
 /// Converting a `Game` to pixels will round it to the nearest coordinate,
 /// scaled based on the desired tile size & resolution.
-#[derive(Copy, PartialEq,PartialOrd)]
+#[derive(Clone, Copy, PartialEq,PartialOrd)]
 pub struct Game(pub f64);
 
 impl AsGame for Game {
@@ -77,7 +77,7 @@ impl <T: AsGame> Div<T> for Game {
 }
 
 /// A `Pixel` represents an absolute coordinate on a surface.
-#[derive(Copy, PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Clone, Copy, PartialEq,Eq,PartialOrd,Ord)]
 pub struct Pixel(pub i32);
 
 impl AsPixel for Pixel {
@@ -100,7 +100,7 @@ impl<T: AsPixel> Add<T> for Pixel {
 /// 
 /// (This will ultimately be 16 Games, or some scaled number of
 /// pixels.)
-#[derive(Copy, PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Clone, Copy, PartialEq,Eq,PartialOrd,Ord)]
 pub struct HalfTile(pub u64);
 
 impl AsGame for HalfTile {
@@ -115,7 +115,7 @@ impl AsGame for HalfTile {
 /// _base tile-size_ (32 pixels).
 ///
 /// This may ultimately be scaled if converted to `Games` or `Pixels`
-#[derive(Copy, PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Clone, Copy, PartialEq,Eq,PartialOrd,Ord)]
 pub struct Tile(pub usize);
 
 impl AsGame for Tile {

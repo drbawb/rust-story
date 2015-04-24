@@ -4,7 +4,7 @@ use super::drawing::{Game};
 
 /// Millis represents a length of time in milliseconds as a signed integer.
 /// (NOTE: As `Millis` supports basic arithmetic: "negative time" is possible.)
-#[derive(Copy, PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Clone,Copy, PartialEq,Eq,PartialOrd,Ord)]
 pub struct Millis(pub i64);
 
 impl Add<Millis> for Millis {
@@ -33,7 +33,7 @@ impl Sub<Millis> for Millis {
 /// (Note: this is actually `Pixels/ms`, but `Games` are used as
 /// they are higher precision types, they will also automatically
 /// scale the render distance when converted to pixels.)
-#[derive(Copy, PartialEq,PartialOrd)]
+#[derive(Clone,Copy, PartialEq,PartialOrd)]
 pub struct Velocity(pub f64);
 
 /// Allows dereferencing `Velocity(f64)` to the direct value
@@ -85,7 +85,7 @@ impl Mul<Millis> for Velocity {
 }
 
 /// Acceleration is defined as `(Games/ms)/ms`
-#[derive(Copy, PartialEq,PartialOrd)]
+#[derive(Clone,Copy, PartialEq,PartialOrd)]
 pub struct Acceleration(pub f64);
 
 /// Acceleration `a` multipled by some time `t` results
@@ -110,7 +110,7 @@ impl Neg for Acceleration {
 	}
 }
 
-#[derive(Copy, PartialEq,PartialOrd)]
+#[derive(Clone,Copy, PartialEq,PartialOrd)]
 pub struct Degrees(pub f64);
 
 impl Deref for Degrees {
@@ -141,7 +141,7 @@ impl Div<Millis> for Degrees {
 }
 
 /// AngularVelocity is defined as `Degrees/Millis` and is stored in a float.
-#[derive(Copy,PartialEq,PartialOrd)]
+#[derive(Clone,Copy,PartialEq,PartialOrd)]
 pub struct AngularVelocity(pub f64);
 
 /// Some AngularVelocity `av` multiplied by some time `t` yields
