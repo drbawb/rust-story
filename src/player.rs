@@ -177,7 +177,7 @@ impl Player {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {
-			self.sprites[self.movement].draw(display, (self.x, self.y));
+			self.sprites.get_mut(&self.movement).unwrap().draw(display, (self.x, self.y));
 		}
 	}
 
@@ -209,7 +209,7 @@ impl Player {
 		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
-		self.sprites[self.movement].update(elapsed_time);
+		self.sprites.get_mut(&self.movement).unwrap().update(elapsed_time);
 
 		if self.is_invincible {
 			self.invincible_time =

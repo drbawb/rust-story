@@ -108,11 +108,10 @@ impl CaveBat {
 		self.facing = if self.center_x() > player_x 
 			{ Facing::West } else { Facing::East };
 		
-
-		self.sprites[self.facing].update(elapsed_time);
+		self.sprites.get_mut(&self.facing).unwrap().update(elapsed_time);
 	}
 
 	pub fn draw(&mut self, display: &mut graphics::Graphics) {
-		self.sprites[self.facing].draw(display, (self.x, self.y));
+		self.sprites.get_mut(&self.facing).unwrap().draw(display, (self.x, self.y));
 	}
 }

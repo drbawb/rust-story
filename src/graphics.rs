@@ -93,8 +93,8 @@ impl<'g> Graphics<'g> {
 		};
 	}
 
-	pub fn borrow_res(&mut self, file_path: String) -> &mut Texture<'g> {
-		&mut self.cache[file_path]
+	pub fn borrow_res(&mut self, file_path: String) -> &mut Texture {
+		self.cache.get_mut(&file_path).unwrap()
 	}
 
 	pub fn blit_surface(&mut self,
@@ -102,15 +102,15 @@ impl<'g> Graphics<'g> {
 	                    src_rect:  &rect::Rect,
 	                    dest_rect: &rect::Rect) {
 	
-		let src = &mut self.cache[*src_id];
+		let src = &mut self.cache.get_mut(src_id).unwrap();
 		let _ = self.screen.drawer().copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
-	pub fn switch_buffers(&self) {
+	pub fn switch_buffers(&mut self) {
 		self.screen.drawer().present();
 	}
 
-	pub fn clear_buffer(&self) {
+	pub fn clear_buffer(&mut self) {
 		let _ = self.screen.drawer().clear();
 	}
 }
