@@ -1,5 +1,5 @@
 use std::collections::hash_map::{HashMap, Entry};
-use std::num::Float;
+use num::Float;
 
 use collisions::Rectangle;
 use sprite::{self, Facing};

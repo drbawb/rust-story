@@ -1,4 +1,4 @@
-use std::num::Float;
+use num::Float;
 use std::ops::{Add, Sub, Mul, Div};
 
 static TILE_SIZE: i32          =  32;

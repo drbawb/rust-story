@@ -1,5 +1,6 @@
-#![feature(box_syntax, std_misc, thread_sleep)]
+#![feature(box_syntax)]
 
+extern crate num;
 extern crate sdl2;
 
 use sdl2::sdl;
