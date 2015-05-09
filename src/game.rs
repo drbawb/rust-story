@@ -1,6 +1,6 @@
 use std::cmp;
 use std::thread::sleep_ms;
-use std::sync::mpsc::{channel, Receiver, TryRecvError};
+use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 
 use enemies;
 use graphics::{self, Graphics};
@@ -9,12 +9,13 @@ use map;
 use player;
 use units;
 use units::{AsGame};
+use sprite::{self, Drawable};
 
 use sdl2::{self, sdl};
 use sdl2::event::Event;
 use sdl2::keycode::KeyCode;
 
-const TARGET_FRAMERATE: units::Fps  =  60;
+const  TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE as i64));
 
 pub static SCREEN_WIDTH:  units::Tile = units::Tile(20);
@@ -22,6 +23,11 @@ pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
 
 pub enum GameEvent {
 	Panic,
+}
+
+enum GameMode {
+	Running,
+	GameOver,
 }
 
 /// An instance of the `rust-story` game with its own event loop.
@@ -34,7 +40,8 @@ pub struct Game<'engine> {
 	controller:  input::Input,
 	display:     graphics::Graphics<'engine>,
 
-	events: Receiver<GameEvent>,
+	events_tx: Sender<GameEvent>,
+	events_rx: Receiver<GameEvent>,
 }
 
 impl<'e> Game<'e> {
@@ -65,7 +72,8 @@ impl<'e> Game<'e> {
 			controller:  controller,
 			context:     context,
 
-			events: gevent_rx,
+			events_tx: gevent_tx,
+			events_rx: gevent_rx,
 		}
 	}
 
@@ -82,8 +90,9 @@ impl<'e> Game<'e> {
 		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as i64);
 		let mut last_update_time = units::Millis(sdl::get_ticks() as i64);
 	
-		let mut event_pump = self.context.event_pump();
-		let mut running    = true;
+		let mut event_pump   = self.context.event_pump();
+		let mut game_state   = GameMode::Running;
+		let mut running      = true;
 		
 		while running {
 			let start_time_ms = units::Millis(sdl::get_ticks() as i64);
@@ -105,60 +114,51 @@ impl<'e> Game<'e> {
 
 			// drain our event queue
 			'drain: loop {
-				match self.events.try_recv() {
-					Ok(GameEvent::Panic) => { panic!("the game cannot continue. :(") },
-					Err(_)               => { break 'drain; },
+				match self.events_rx.try_recv() {
+					Ok(GameEvent::Panic) => { game_state = GameMode::GameOver },
+					_ => {},
 				}
+
+				break 'drain;
 			}
 
 			// Handle exit game
 			if self.controller.was_key_released(KeyCode::Escape) {
 				running = false;
 			}
-
-			// Handle player movement
-			if self.controller.is_key_held(KeyCode::Left)
-				&& self.controller.is_key_held(KeyCode::Right) {
-
-				self.quote.stop_moving();
-			} else if self.controller.is_key_held(KeyCode::Left) {
-				self.quote.start_moving_left();
-			} else if self.controller.is_key_held(KeyCode::Right) {
-				self.quote.start_moving_right();
-			} else {
-				self.quote.stop_moving();
-			}
-
-			// Handle player looking
-			if self.controller.is_key_held(KeyCode::Up)
-				&& self.controller.is_key_held(KeyCode::Down) {
-
-				self.quote.look_horizontal();
-			} else if self.controller.is_key_held(KeyCode::Up) {
-				self.quote.look_up();
-			} else if self.controller.is_key_held(KeyCode::Down) {
-				self.quote.look_down();
-			} else {
-				self.quote.look_horizontal();
-			}
-
-			// Handle player jump
-			if self.controller.was_key_pressed(KeyCode::Z) {
-				self.quote.start_jump();
-			} else if self.controller.was_key_released(KeyCode::Z) {
-				self.quote.stop_jump();
-			}
-
-			// inform actors of how much time has passed since last frame
-			let current_time_ms = units::Millis(sdl::get_ticks() as i64);
-			let elapsed_time    = current_time_ms - last_update_time;
 			
-			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
-			last_update_time = current_time_ms;
-
-			// draw
 			self.display.clear_buffer(); // clear back-buffer
-			self.draw();
+			match game_state {
+				GameMode::Running => {
+					// handle player input
+					self.tick_player();
+
+					// inform actors of how much time has passed since last frame
+					let current_time_ms = units::Millis(sdl::get_ticks() as i64);
+					let elapsed_time    = current_time_ms - last_update_time;
+					
+					self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
+					last_update_time = current_time_ms;
+
+					// draw
+					self.draw();
+				},
+
+				GameMode::GameOver => {
+					self.tick_menu(&mut game_state);
+
+					let sprite_oxy  = (units::Tile(0), units::Tile(0));
+					let sprite_owh  = (units::Tile(15), units::Tile(20));
+					let sprite_path = "assets/chase/game-over.bmp".to_string();
+					let mut sprite  = sprite::Sprite::new(&mut self.display, 
+					                                      sprite_oxy, 
+					                                      sprite_owh, 
+					                                      sprite_path);
+
+					// draw
+					sprite.draw(&mut self.display, sprite_oxy);
+				},
+			}
 			self.display.switch_buffers();
 
 			// throttle event-loop based on iteration time vs frame deadline
@@ -209,6 +209,62 @@ impl<'e> Game<'e> {
 
 		if collided {
 			self.quote.take_damage();
+		}
+	}
+
+
+	fn tick_menu(&mut self, next_state: &mut GameMode) {
+		if self.controller.was_key_pressed(KeyCode::R) {
+			// reload level
+			self.map = map::Map::create_test_map(&mut self.display, self.events_tx.clone());
+			
+			self.quote = player::Player::new(
+				&mut self.display,
+				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
+				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
+			);
+
+			self.yatty = enemies::CaveBat::new(&mut self.display,
+				(SCREEN_WIDTH / units::Tile(3)).to_game(),
+				(units::Tile(10)).to_game(),
+			);
+
+			*next_state = GameMode::Running;
+		}
+	}
+
+	fn tick_player(&mut self) {
+		// Handle player movement
+		if self.controller.is_key_held(KeyCode::Left)
+			&& self.controller.is_key_held(KeyCode::Right) {
+
+			self.quote.stop_moving();
+		} else if self.controller.is_key_held(KeyCode::Left) {
+			self.quote.start_moving_left();
+		} else if self.controller.is_key_held(KeyCode::Right) {
+			self.quote.start_moving_right();
+		} else {
+			self.quote.stop_moving();
+		}
+
+		// Handle player looking
+		if self.controller.is_key_held(KeyCode::Up)
+			&& self.controller.is_key_held(KeyCode::Down) {
+
+			self.quote.look_horizontal();
+		} else if self.controller.is_key_held(KeyCode::Up) {
+			self.quote.look_up();
+		} else if self.controller.is_key_held(KeyCode::Down) {
+			self.quote.look_down();
+		} else {
+			self.quote.look_horizontal();
+		}
+
+		// Handle player jump
+		if self.controller.was_key_pressed(KeyCode::Z) {
+			self.quote.start_jump();
+		} else if self.controller.was_key_released(KeyCode::Z) {
+			self.quote.stop_jump();
 		}
 	}
 }
