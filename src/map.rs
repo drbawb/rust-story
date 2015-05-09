@@ -141,8 +141,9 @@ impl Map {
 		};
 
 	
-		// init `floor`
+		// init `safety floors`
 		for i in (0..COLS) {
+			map.tiles[0][i]        = wall_tile.clone();
 			map.tiles[ROWS - 1][i] = wall_tile.clone();
 		}
 

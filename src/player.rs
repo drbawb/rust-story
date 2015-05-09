@@ -75,6 +75,11 @@ static FILL_SHIFT: units::Game         = units::Game(2.0);
 static HEALTH_FILL_W: units::HalfTile  = units::HalfTile(5);
 static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 
+enum Gravity {
+	Up,
+	Down,
+}
+
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
@@ -89,6 +94,7 @@ pub struct Player {
 	y: units::Game,
 	movement:  MotionTup,
 	on_ground: bool,
+	g_dir:     Gravity,
 
 	// physics
 	elapsed_time:  units::Millis,
@@ -156,6 +162,7 @@ impl Player {
 			is_interacting: false,
 			is_jump_active: false,
 			is_invincible:  false,
+			g_dir:          Gravity::Down,
 
 			invincible_time: units::Millis(0),
 		};
@@ -219,7 +226,11 @@ impl Player {
 
 		// run physics sim
 		self.update_x(map);
-		self.update_y(map);
+
+		match self.g_dir {
+			Gravity::Up   => self.update_yu(map),
+			Gravity::Down => self.update_yd(map),
+		}
 	}
 
 	fn update_x(&mut self, map: &map::Map) {
@@ -291,7 +302,65 @@ impl Player {
 		}
 	}
 
-	fn update_y (&mut self, map: &map::Map) {
+	fn update_yu (&mut self, map: &map::Map) {
+		// update velocity
+		let gravity: units::Acceleration = 
+			if self.is_jump_active 
+			&& self.velocity_y < units::Velocity(0.0) {
+				-JUMP_GRAVITY
+			} else {
+				-GRAVITY
+			};
+
+		let v_gravity = self.velocity_y + (gravity * self.elapsed_time);
+		self.velocity_y = units::Velocity((*v_gravity).min(*MAX_VELOCITY_Y));
+
+		// calculate delta
+		let delta = self.velocity_y * self.elapsed_time;
+
+		// check collision in direction of delta
+		if delta > units::Game(0.0) {
+			// react to collision
+			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
+			self.y = if info.collided {
+				self.velocity_y = units::Velocity(0.0);
+				self.on_ground = true;
+
+				(info.row.to_game() - Y_BOX.bottom())
+			} else {
+				self.on_ground = false;
+				(self.y + delta)
+			};
+
+			info = self.get_collision_info(&self.top_collision(units::Game(0.0)), map);
+			self.y = if info.collided {
+				(info.row.to_game() + Y_BOX.height())
+			} else {
+				self.y
+			};
+
+		} else {
+			// react to collision
+			let mut info = self.get_collision_info(&self.top_collision(delta), map);
+			self.y = if info.collided {
+				self.velocity_y = units::Velocity(0.0);
+				(info.row.to_game() + Y_BOX.height())
+			} else {
+				self.on_ground = false;
+				(self.y + delta)
+			};
+
+			info = self.get_collision_info(&self.bottom_collision(units::Game(0.0)), map);
+			self.y = if info.collided {
+				self.on_ground = true;
+				(info.row.to_game() - Y_BOX.bottom())
+			} else {
+				self.y
+			};
+		}
+	}
+
+	fn update_yd (&mut self, map: &map::Map) {
 		// update velocity
 		let gravity: units::Acceleration = 
 			if self.is_jump_active 
@@ -644,5 +713,12 @@ impl Player {
 	/// Gravity cannot pull them below this floor.
 	fn on_ground(&self) -> bool {
 		self.on_ground
+	}
+
+	pub fn swap_gravity(&mut self) {
+		self.g_dir = match self.g_dir {
+			Gravity::Up => Gravity::Down,
+			Gravity::Down => Gravity::Up,
+		};
 	}
 }

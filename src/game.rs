@@ -272,6 +272,8 @@ impl<'e> Game<'e> {
 			self.state.quote.start_jump();
 		} else if self.controller.was_key_released(KeyCode::Z) {
 			self.state.quote.stop_jump();
+		} else if self.controller.was_key_pressed(KeyCode::X) {
+			self.state.quote.swap_gravity();
 		}
 	}
 }
