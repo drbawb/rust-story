@@ -306,7 +306,7 @@ impl Player {
 		// update velocity
 		let gravity: units::Acceleration = 
 			if self.is_jump_active 
-			&& self.velocity_y < units::Velocity(0.0) {
+			&& self.velocity_y > units::Velocity(0.0) {
 				-JUMP_GRAVITY
 			} else {
 				-GRAVITY
@@ -324,18 +324,17 @@ impl Player {
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
 			self.y = if info.collided {
 				self.velocity_y = units::Velocity(0.0);
-				self.on_ground = false;
-
 				(info.row.to_game() - Y_BOX.bottom())
 			} else {
-				self.on_ground = true;
 				(self.y + delta)
 			};
 
 			info = self.get_collision_info(&self.top_collision(units::Game(0.0)), map);
 			self.y = if info.collided {
+				self.on_ground = true;
 				(info.row.to_game() + Y_BOX.height())
 			} else {
+				self.on_ground = false;
 				self.y
 			};
 
@@ -343,10 +342,11 @@ impl Player {
 			// react to collision
 			let mut info = self.get_collision_info(&self.top_collision(delta), map);
 			self.y = if info.collided {
+				self.on_ground = true;
 				self.velocity_y = units::Velocity(0.0);
 				(info.row.to_game() + Y_BOX.height())
 			} else {
-				self.on_ground = true;
+				self.on_ground = false;
 				(self.y + delta)
 			};
 
@@ -582,7 +582,10 @@ impl Player {
 		self.is_interacting = false;
 
 		if self.on_ground() {
-			self.velocity_y = -JUMP_SPEED;
+			self.velocity_y = match self.g_dir {
+				Gravity::Up   =>  JUMP_SPEED,
+				Gravity::Down => -JUMP_SPEED,
+			}
 		}
 	}
 
