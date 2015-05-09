@@ -53,8 +53,43 @@ impl GameState {
 	pub fn initial(display: &mut graphics::Graphics, 
                    gevent_tx: Sender<GameEvent>) -> GameState {
 
+let level_0_fg = 
+"wwwwwwwwwwwwwwwwwwww
+ w..............ww..w
+ w.............w.w..w
+ w............w..w..w
+ w...........w...w..w
+ w..........w.......w
+ w..................w
+ w........w......wwww
+ w........w......w..w
+ w........w......w..w
+ wwwww...wwwwwwwww..w
+ w..................w
+ w..................w
+ w..................w
+ wwwwwwwwwwwwwwwwwwww";
+
+let level_0_bg = 
+"assets/base/bkBlue.bmp
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................";
+		
 		GameState {
-			map: map::Map::create_test_map(display, gevent_tx),
+			map: map::Map::new(display, gevent_tx, level_0_bg, level_0_fg),
 
 			quote: player::Player::new(
 				display,
@@ -228,7 +263,6 @@ impl<'e> Game<'e> {
 			self.state.quote.take_damage();
 		}
 	}
-
 
 	fn tick_menu(&mut self, next_state: &mut GameMode) {
 		if self.controller.was_key_pressed(KeyCode::R) {

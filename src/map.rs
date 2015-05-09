@@ -76,6 +76,68 @@ pub struct Map {
 }
 
 impl Map {
+	pub fn new(display: &mut graphics::Graphics,
+	           events:   Sender<GameEvent>,
+	           level_bg: &str,
+	           level_fg: &str) -> Map {
+
+		let header = level_bg.lines()
+		                     .take(1)
+		                     .next()
+		                     .expect("map background path missing");
+
+      	// loader assets
+      	let sheet = format!("assets/base/Stage/PrtCave.bmp");
+		let wall = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(1) , units::Tile(0)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let mut tile_rows = vec![];
+		for line in level_fg.lines() {
+			let line = line.trim();
+			let mut col = vec![];
+
+			for tile_ty in line.chars() {
+				col.push(match tile_ty {
+					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
+					'.' => { Tile::new() },
+					any   => { panic!("unknown tile type in map fg {}", any); },
+				});
+			}
+
+			tile_rows.push(col);
+		}
+
+		let mut sprite_rows = vec![];
+		for line in level_bg.lines().skip(1) {
+			let line = line.trim();
+			let mut col = vec![];
+
+			for tile_ty in line.chars() {
+				col.push(match tile_ty {
+					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
+					'.' => { Tile::new() },
+					_   => { panic!("unknown tile type in map bg"); },
+				});
+			}
+
+			sprite_rows.push(col);
+		}
+
+		Map {
+			background: backdrop::FixedBackdrop::new(header.to_string(), display),
+			sprites: sprite_rows,
+			tiles:   tile_rows,
+
+			event_chan: events,
+		}
+
+	}
 	/// Will initialize a map (20 * 15) tiles:
 	///
 	/// * Most of these tiles will be `Air` tiles.
@@ -207,7 +269,7 @@ impl Map {
 	}
 
 	pub fn update(&mut self, elapsed_time: units::Millis) {
-		let floor_velocity = units::Velocity(0.05);
+		let floor_velocity = units::Velocity(0.0);
 		let delta_x = floor_velocity * elapsed_time;
 
 		// shift last row of tiles by delta_x
