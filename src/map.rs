@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::iter::repeat;
 use std::rc::Rc;
+use std::sync::mpsc::Sender;
 
 use backdrop;
 use graphics;
@@ -8,7 +9,11 @@ use sprite;
 use units;
 
 use collisions::Rectangle;
+use game::GameEvent;
 use units::{AsGame,AsTile};
+
+static ROWS: usize = 15; // 480
+static COLS: usize = 20; // 640
 
 #[derive(Clone,Copy,PartialEq,Eq)]
 pub enum TileType {
@@ -66,6 +71,8 @@ pub struct Map {
 	background:  backdrop::FixedBackdrop,
 	sprites:     Vec<Vec<Tile>>,
 	tiles:       Vec<Vec<Tile>>,
+
+	event_chan: Sender<GameEvent>,
 }
 
 impl Map {
@@ -75,9 +82,8 @@ impl Map {
 	/// * There are 15-tile high walls in the first and last columns. 
 	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
 	/// * A 3-tile high chain is placed on the left-side of this obstacle course.
-	pub fn create_test_map(graphics: &mut graphics::Graphics) -> Map {
-		static ROWS: usize = 15; // 480
-		static COLS: usize = 20; // 640
+	pub fn create_test_map(graphics: &mut graphics::Graphics, 
+	                       events: Sender<GameEvent>) -> Map {
 
 		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
 		let sprite   =  Rc::new(RefCell::new(
@@ -130,6 +136,8 @@ impl Map {
 			),
 			sprites: repeat(blank_row.clone()).take(ROWS).collect(),
 			tiles: repeat(blank_row.clone()).take(ROWS).collect(),
+
+			event_chan: events,
 		};
 
 	
@@ -225,8 +233,16 @@ impl Map {
 		let units::Tile(first_col) =  rectangle.left().to_tile();
 		let units::Tile(last_col)  =  rectangle.right().to_tile();
 
+		// bounds check for soft panic
+		if    (first_row > ROWS) || (last_row+1 > ROWS)
+		   || (first_col > COLS) || (last_col   > COLS) {
+
+		   	self.event_chan.send(GameEvent::Panic);
+		   	return vec![];
+	    }
+
 		// check tiles at delta position
-		for row_no in (first_row..(last_row + 1)) {
+		for row_no in (first_row..(last_row+1)) {
 			for col_no in (0..self.tiles[row_no].len()) {
 
 				// compute tile's real position
