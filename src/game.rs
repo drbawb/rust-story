@@ -32,9 +32,7 @@ enum GameMode {
 
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game<'engine> {
-	quote:  player::Player,
-	yatty:  enemies::CaveBat,
-	map:    map::Map,
+	state: GameState,
 
 	context:     &'engine sdl2::Sdl,
 	controller:  input::Input,
@@ -42,6 +40,35 @@ pub struct Game<'engine> {
 
 	events_tx: Sender<GameEvent>,
 	events_rx: Receiver<GameEvent>,
+}
+
+struct GameState {
+	quote:  player::Player,
+	yatty:  enemies::CaveBat,
+	map:    map::Map,
+}
+
+impl GameState {
+	/// Set initial game-state for level 1
+	pub fn initial(display: &mut graphics::Graphics, 
+                   gevent_tx: Sender<GameEvent>) -> GameState {
+
+		GameState {
+			map: map::Map::create_test_map(display, gevent_tx),
+
+			quote: player::Player::new(
+				display,
+				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
+				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
+			),
+
+			yatty: enemies::CaveBat::new(
+				display,
+				(SCREEN_WIDTH / units::Tile(3)).to_game(),
+				(units::Tile(10)).to_game(),
+			),
+		}
+	}
 }
 
 impl<'e> Game<'e> {
@@ -56,17 +83,7 @@ impl<'e> Game<'e> {
 		let (gevent_tx, gevent_rx) = channel();
 
 		Game {
-			map: map::Map::create_test_map(&mut display, gevent_tx.clone()),
-			quote: player::Player::new(
-				&mut display,
-				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
-				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
-			),
-
-			yatty: enemies::CaveBat::new( &mut display,
-				(SCREEN_WIDTH / units::Tile(3)).to_game(),
-				(units::Tile(10)).to_game(),
-			),
+			state: GameState::initial(&mut display, gevent_tx.clone()),
 
 			display:     display,
 			controller:  controller,
@@ -185,30 +202,30 @@ impl<'e> Game<'e> {
 	/// Instructs our actors to draw their current state to the screen.
 	fn draw(&mut self) {
 		// background
-		self.map.draw_background(&mut self.display);
-		self.map.draw_sprites(&mut self.display);
+		self.state.map.draw_background(&mut self.display);
+		self.state.map.draw_sprites(&mut self.display);
 
 		// foreground
-		self.quote.draw(&mut self.display);
-		self.yatty.draw(&mut self.display);
-		self.map.draw(&mut self.display);
+		self.state.quote.draw(&mut self.display);
+		self.state.yatty.draw(&mut self.display);
+		self.state.map.draw(&mut self.display);
 
 		// ui
-		self.quote.draw_hud(&mut self.display);
+		self.state.quote.draw_hud(&mut self.display);
 	}
 
 	/// Passes the current time in milliseconds to our underlying actors.
 	fn update(&mut self, elapsed_time: units::Millis) {
-		self.map.update(elapsed_time);
-		self.quote.update(elapsed_time, &self.map);
-		self.yatty.update(elapsed_time, self.quote.center_x());
+		self.state.map.update(elapsed_time);
+		self.state.quote.update(elapsed_time, &self.state.map);
+		self.state.yatty.update(elapsed_time, self.state.quote.center_x());
 
 		let collided =
-			self.yatty.damage_rectangle()
-			    .collides_with(&self.quote.damage_rectangle());
+			self.state.yatty.damage_rectangle()
+			    .collides_with(&self.state.quote.damage_rectangle());
 
 		if collided {
-			self.quote.take_damage();
+			self.state.quote.take_damage();
 		}
 	}
 
@@ -216,18 +233,8 @@ impl<'e> Game<'e> {
 	fn tick_menu(&mut self, next_state: &mut GameMode) {
 		if self.controller.was_key_pressed(KeyCode::R) {
 			// reload level
-			self.map = map::Map::create_test_map(&mut self.display, self.events_tx.clone());
-			
-			self.quote = player::Player::new(
-				&mut self.display,
-				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
-				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
-			);
-
-			self.yatty = enemies::CaveBat::new(&mut self.display,
-				(SCREEN_WIDTH / units::Tile(3)).to_game(),
-				(units::Tile(10)).to_game(),
-			);
+			self.state = GameState::initial(&mut self.display, 
+			                                self.events_tx.clone());
 
 			*next_state = GameMode::Running;
 		}
@@ -238,33 +245,33 @@ impl<'e> Game<'e> {
 		if self.controller.is_key_held(KeyCode::Left)
 			&& self.controller.is_key_held(KeyCode::Right) {
 
-			self.quote.stop_moving();
+			self.state.quote.stop_moving();
 		} else if self.controller.is_key_held(KeyCode::Left) {
-			self.quote.start_moving_left();
+			self.state.quote.start_moving_left();
 		} else if self.controller.is_key_held(KeyCode::Right) {
-			self.quote.start_moving_right();
+			self.state.quote.start_moving_right();
 		} else {
-			self.quote.stop_moving();
+			self.state.quote.stop_moving();
 		}
 
 		// Handle player looking
 		if self.controller.is_key_held(KeyCode::Up)
 			&& self.controller.is_key_held(KeyCode::Down) {
 
-			self.quote.look_horizontal();
+			self.state.quote.look_horizontal();
 		} else if self.controller.is_key_held(KeyCode::Up) {
-			self.quote.look_up();
+			self.state.quote.look_up();
 		} else if self.controller.is_key_held(KeyCode::Down) {
-			self.quote.look_down();
+			self.state.quote.look_down();
 		} else {
-			self.quote.look_horizontal();
+			self.state.quote.look_horizontal();
 		}
 
 		// Handle player jump
 		if self.controller.was_key_pressed(KeyCode::Z) {
-			self.quote.start_jump();
+			self.state.quote.start_jump();
 		} else if self.controller.was_key_released(KeyCode::Z) {
-			self.quote.stop_jump();
+			self.state.quote.stop_jump();
 		}
 	}
 }
