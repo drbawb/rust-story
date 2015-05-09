@@ -1,5 +1,6 @@
 use std::cmp;
 use std::thread::sleep_ms;
+use std::sync::mpsc::{channel, Receiver, TryRecvError};
 
 use enemies;
 use graphics::{self, Graphics};
@@ -19,6 +20,10 @@ static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERA
 pub static SCREEN_WIDTH:  units::Tile = units::Tile(20);
 pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
 
+pub enum GameEvent {
+	Panic,
+}
+
 /// An instance of the `rust-story` game with its own event loop.
 pub struct Game<'engine> {
 	quote:  player::Player,
@@ -28,6 +33,8 @@ pub struct Game<'engine> {
 	context:     &'engine sdl2::Sdl,
 	controller:  input::Input,
 	display:     graphics::Graphics<'engine>,
+
+	events: Receiver<GameEvent>,
 }
 
 impl<'e> Game<'e> {
@@ -39,8 +46,10 @@ impl<'e> Game<'e> {
 		let controller   = input::Input::new();
 		let mut display  = graphics::Graphics::new(context);
 
+		let (gevent_tx, gevent_rx) = channel();
+
 		Game {
-			map: map::Map::create_test_map(&mut display),
+			map: map::Map::create_test_map(&mut display, gevent_tx.clone()),
 			quote: player::Player::new(
 				&mut display,
 				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
@@ -55,6 +64,8 @@ impl<'e> Game<'e> {
 			display:     display,
 			controller:  controller,
 			context:     context,
+
+			events: gevent_rx,
 		}
 	}
 
@@ -78,9 +89,8 @@ impl<'e> Game<'e> {
 			let start_time_ms = units::Millis(sdl::get_ticks() as i64);
 			self.controller.begin_new_frame();
 
-			// drain event queue once per frame
+			// drain sdl event queue once per frame
 			// ideally should do in separate task
-
 			for event in event_pump.poll_iter() {
 				match event {
 					Event::KeyDown { keycode, .. } => {
@@ -90,6 +100,14 @@ impl<'e> Game<'e> {
 						self.controller.key_up_event(keycode);
 					},
 					_ => {},
+				}
+			}
+
+			// drain our event queue
+			'drain: loop {
+				match self.events.try_recv() {
+					Ok(GameEvent::Panic) => { panic!("the game cannot continue. :(") },
+					Err(_)               => { break 'drain; },
 				}
 			}
 
