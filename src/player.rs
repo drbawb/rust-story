@@ -354,9 +354,9 @@ impl Player {
 			tile_map.get_colliding_tiles(hitbox);
 
 		let mut info = Info { collided: false, row: units::Tile(0), col: units::Tile(0) };
-		for tile in tiles.iter() {
-			if tile.tile_type == TileType::Wall {
-				info = Info {collided: true, row: tile.row, col: tile.col};
+		for collision in tiles.iter() {
+			if collision.tile.tile_type == TileType::Wall {
+				info = Info {collided: true, row: collision.row, col: collision.col};
 				break;
 			}
 		}

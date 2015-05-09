@@ -17,16 +17,17 @@ pub enum TileType {
 }
 
 #[derive(Clone,Copy)]
-pub struct CollisionTile {
-	pub tile_type:  TileType,
+pub struct CollisionTile<'c> {
+	pub tile: 		&'c Tile,
 	pub row:        units::Tile,
 	pub col:        units::Tile
 }
 
-impl CollisionTile {
-	pub fn new(row: units::Tile, col: units::Tile, 
-	           tile_type: TileType) -> CollisionTile {
-		CollisionTile { tile_type: tile_type, row: row, col: col }
+impl<'c> CollisionTile<'c> {
+	pub fn new(row:  units::Tile, 
+	           col:  units::Tile, 
+	           tile: &'c Tile) -> CollisionTile<'c> {
+		CollisionTile { tile: tile, row: row, col: col }
 	}
 }
 
