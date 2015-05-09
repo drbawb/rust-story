@@ -324,11 +324,11 @@ impl Player {
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
 			self.y = if info.collided {
 				self.velocity_y = units::Velocity(0.0);
-				self.on_ground = true;
+				self.on_ground = false;
 
 				(info.row.to_game() - Y_BOX.bottom())
 			} else {
-				self.on_ground = false;
+				self.on_ground = true;
 				(self.y + delta)
 			};
 
@@ -346,13 +346,13 @@ impl Player {
 				self.velocity_y = units::Velocity(0.0);
 				(info.row.to_game() + Y_BOX.height())
 			} else {
-				self.on_ground = false;
+				self.on_ground = true;
 				(self.y + delta)
 			};
 
 			info = self.get_collision_info(&self.bottom_collision(units::Game(0.0)), map);
 			self.y = if info.collided {
-				self.on_ground = true;
+				self.on_ground = false;
 				(info.row.to_game() - Y_BOX.bottom())
 			} else {
 				self.y
