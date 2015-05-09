@@ -35,21 +35,30 @@ type TileSprite = Rc<RefCell<Box<sprite::Updatable<units::Game>>>>;
 
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[derive(Clone)]
-struct Tile {
-	tile_type:  TileType,
-	sprite:     Option<TileSprite>
+pub struct Tile {
+	pub tile_type:  TileType,
+	pub ofs_x:      units::Game,
+	sprite:         Option<TileSprite>,	
 }
 
 impl Tile {
 	/// Creates n air tile w/ no sprite.
 	fn new() -> Tile {
-		Tile { tile_type: TileType::Air, sprite: None }
+		Tile {
+			tile_type: TileType::Air,
+			sprite:    None,
+			ofs_x:     units::Game(0.0),
+		}
 	}
 
 	/// Creates a tile of `tile_type` initialized w/ its optional sprite.
 	fn from_sprite(sprite: TileSprite,
 	               tile_type: TileType) -> Tile {
-		Tile { tile_type: tile_type, sprite: Some(sprite.clone()) }
+		Tile {
+			tile_type: tile_type,
+			sprite:    Some(sprite.clone()),
+			ofs_x:     units::Game(0.0),
+		}
 	}
 }
 
@@ -178,7 +187,7 @@ impl Map {
 					Some(ref sprite) => {
 						sprite.borrow_mut()
 						      .draw(graphics,
-						            (units::Tile(b).to_game(),
+						            (units::Tile(b).to_game() + self.tiles[a][b].ofs_x,
 						             units::Tile(a).to_game()));
 ;
 					}
@@ -188,17 +197,15 @@ impl Map {
 		}
 	}
 
+	pub fn update(&mut self, elapsed_time: units::Millis) {
+		let floor_velocity = units::Velocity(0.05);
+		let delta_x = floor_velocity * elapsed_time;
 
-	/// no-op for demo map
-	pub fn update(&mut self, _elapsed_time: units::Millis) {
-		/* 
-		 * This was effectively unused and IMHO does not warrant the
-		 * complexity introduced by using dynamic borrow-ck'ing.
-		 * 
-		 * As most background sprites are shared [in this demo map] any
-		 * animations would look really goofy as all tiles would
-		 * advance their frames in perfect sync.
-		 */
+		// shift last row of tiles by delta_x
+		let last_row = self.tiles.len() - 1;
+		for tile in (self.tiles[last_row].iter_mut()) {
+			tile.ofs_x = tile.ofs_x + delta_x;
+		}
 	}
 
 	/// Checks if `Rectangle` is colliding with any tiles in the foreground.
@@ -212,16 +219,33 @@ impl Map {
 	pub fn get_colliding_tiles(&self, rectangle: &Rectangle) -> Vec<CollisionTile> {
 		let mut collision_tiles: Vec<CollisionTile> = Vec::new();
 		
+		// define player hitbox as tiles
 		let units::Tile(first_row) =  rectangle.top().to_tile();
 		let units::Tile(last_row)  =  rectangle.bottom().to_tile();
 		let units::Tile(first_col) =  rectangle.left().to_tile();
 		let units::Tile(last_col)  =  rectangle.right().to_tile();
 
-		for row in (first_row..(last_row + 1)) {
-			for col in (first_col..(last_col + 1)) {
-				collision_tiles.push( 
-					CollisionTile::new(units::Tile(row), units::Tile(col), self.tiles[row][col].tile_type)
+		// check tiles at delta position
+		for row_no in (first_row..(last_row + 1)) {
+			for col_no in (0..self.tiles[row_no].len()) {
+
+				// compute tile's real position
+				let tile = &self.tiles[row_no][col_no];
+				let mut d_rect = Rectangle::new(
+					units::Tile(1).to_game(), 
+					units::Tile(1).to_game()
 				);
+
+				d_rect.x = tile.ofs_x + units::Tile(col_no);
+				d_rect.y = units::Tile(row_no).to_game();
+
+				if rectangle.collides_with(&d_rect) {
+					collision_tiles.push( 
+						CollisionTile::new(units::Tile(row_no), 
+						                   units::Tile(col_no), 
+						                   tile)
+					);
+				}
 			}
 		}
 
