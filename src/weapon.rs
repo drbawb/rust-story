@@ -5,6 +5,10 @@ use sprite::{Motion, Facing, Looking};
 use sprite::{self, Sprite, Drawable, Updatable};
 use units::{self, AsGame};
 
+// empty weapon for interacting and shit
+static NULL_OFS_X: units::Tile = units::Tile(0);
+static NULL_OFS_Y: units::Tile = units::Tile(0);
+
 // start of weapon sprite-sheet column
 static WEAPON_OFS_X: units::Tile = units::Tile(0);
 static WEAPON_OFS_Y: units::Tile = units::Tile(6);
@@ -56,6 +60,9 @@ impl Weapon {
 
 	fn load_sprite(&mut self, display: &mut Graphics, movement: MotionTup) {
 		let offset_coords = match movement {
+			(Motion::Interacting, Facing::West, _) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_WEST_OFS) },
+			(Motion::Interacting, Facing::East, _) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_EAST_OFS) },
+
 			(_, Facing::West, Looking::Horizontal) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_WEST_OFS) },
 			(_, Facing::East, Looking::Horizontal) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_EAST_OFS) },
 			
