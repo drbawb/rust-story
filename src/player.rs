@@ -7,7 +7,7 @@ use sprite::{self, Facing, Looking, Motion, Updatable};
 
 use collisions::{Info,Rectangle};
 use map::{self, TileType};
-use weapon::Weapon;
+use weapon::{Bullet, Weapon};
 
 use units;
 use units::AsGame;
@@ -60,6 +60,8 @@ static Y_BOX: Rectangle = Rectangle {
 static DAMAGE_INVINCIBILITY: units::Millis  = units::Millis(3000);
 static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 
+static BULLET_DELAY_MS: units::Millis = units::Millis(100);
+
 static HEALTH_BAR_X: units::Tile           = units::Tile(2);
 static HEALTH_BAR_Y: units::Tile           = units::Tile(2);
 static HEALTH_BAR_OFS_X: units::HalfTile   = units::HalfTile(0);
@@ -87,8 +89,12 @@ type PlayerSprite = Box<sprite::Updatable<units::Game>>;
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
 	// assets
-	sprites:   HashMap<MotionTup, PlayerSprite>,
-	weapon:    Weapon,
+	sprites: HashMap<MotionTup, PlayerSprite>,
+	weapon:  Weapon,
+
+	// projectiles list
+	proto_bullet:   Bullet,
+	bullets:        Vec<Bullet>,
 
 	hp_sprite: Box<sprite::Drawable<units::Tile>>,
 	hud:       Box<sprite::Updatable<units::Tile>>,
@@ -114,6 +120,7 @@ pub struct Player {
 
 	// timers
 	invincible_time: units::Millis,
+	next_fire_time:  units::Millis,
 }
 
 
@@ -150,8 +157,11 @@ impl Player {
 		// construct new player
 		let mut new_player = Player{
 			elapsed_time: units::Millis(0),
-			sprites:   sprite_map,
-			weapon:    Weapon::new(graphics),
+			sprites:      sprite_map,
+			weapon:       Weapon::new(graphics),
+			
+			bullets:      vec![],
+			proto_bullet: Bullet::new(graphics),
 
 			hud:       health_bar_sprite,
 			hud_fill:  health_fill_sprite,
@@ -172,6 +182,7 @@ impl Player {
 			g_dir:          Gravity::Down,
 
 			invincible_time: units::Millis(0),
+			next_fire_time:  units::Millis(0),
 		};
 
 		// load sprites for every possible movement tuple.
@@ -209,6 +220,12 @@ impl Player {
 				},
 			}			
 		}
+
+		// draw all player's projectiles
+		for bullet in self.bullets.iter_mut() {
+			println!("drawing bullet");
+			bullet.draw(display);
+		}
 	}
 
 	/// Draws player's HUD if available
@@ -236,6 +253,9 @@ impl Player {
 	pub fn update(&mut self, elapsed_time: units::Millis, map: &map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
+		if (self.next_fire_time > units::Millis(0)) {
+			self.next_fire_time = self.next_fire_time - self.elapsed_time;
+		}
 		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
@@ -247,6 +267,7 @@ impl Player {
 			self.is_invincible = self.invincible_time < DAMAGE_INVINCIBILITY;
 		}
 
+		// update player position
 		self.update_x(map);
 
 		// switch update dirs
@@ -254,6 +275,15 @@ impl Player {
 			Gravity::Up   => { self.update_grav(map,  true); },
 			Gravity::Down => { self.update_grav(map, false); },
 		}
+
+		// update projectile position
+		let mut remove_idx = vec![];
+		for (idx, bullet) in self.bullets.iter_mut().enumerate() {
+			bullet.update(self.elapsed_time);
+			if bullet.is_off_screen() { remove_idx.push(idx); }
+		}
+
+		for idx in remove_idx.iter() { self.bullets.remove(*idx); }
 
 		// chosen vectors
 		println!("delta (x,y): ({:?} , {:?})", self.velocity_x, self.velocity_y);
@@ -334,8 +364,6 @@ impl Player {
 	fn update_grav (&mut self, 
 	                map: &map::Map, 
 		            is_inverted: bool) {
-
-		println!("grav check inverted? {}", is_inverted);
 
 		// check if they are "falling" relative to gravity
 		let is_falling = match is_inverted {
@@ -585,6 +613,20 @@ impl Player {
 	/// temporarily suspended.
 	pub fn stop_jump(&mut self) {
 		self.is_jump_active = false;
+	}
+
+	/// Attempts to fire a projectile, unless the next_fire
+	/// timer has not yet expired ...
+	pub fn fire_gun(&mut self) {
+		if (self.next_fire_time <= units::Millis(0)) {
+			self.next_fire_time = BULLET_DELAY_MS;
+			
+			let mut projectile = self.proto_bullet.clone();
+			projectile.set_coords((self.x, self.y));
+			projectile.set_velocity((units::Velocity(0.75), units::Velocity(0.0)));
+
+			self.bullets.push(projectile);
+		}
 	}
 
 	/// This is called to update the player's `movement` based on

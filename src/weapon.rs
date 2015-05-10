@@ -1,4 +1,6 @@
 use std::collections::hash_map::{Entry, HashMap};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use graphics::Graphics;
 use sprite::{Motion, Facing, Looking};
@@ -20,6 +22,12 @@ static F_EAST_OFS: units::Tile = units::Tile(1);
 // y-ofs for Look-UP
 static F_UP_OFS:   units::Tile = units::Tile(2);
 static F_DOWN_OFS: units::Tile = units::Tile(4);
+
+// bullet offsets
+static B_OFS_RIGHT: units::Tile = units::Tile(0);
+static  B_OFS_DOWN: units::Tile = units::Tile(1);
+static  B_OFS_LEFT: units::Tile = units::Tile(2);
+static    B_OFS_UP: units::Tile = units::Tile(3);
 
 pub type MotionTup = (Motion, Facing, Looking);
 type WeaponSprite = Box<sprite::Updatable<units::Game>>;
@@ -116,5 +124,106 @@ impl Weapon {
 		let sprite = self.sprites.get_mut(&self.movement).unwrap();
 		sprite.flip(flip_h, flip_v);
 		sprite.draw(display, (fx, fy));
+	}
+}
+
+#[derive(Clone)]
+pub struct Bullet {
+	// sprite
+	sprite_up:    Rc<RefCell<Sprite>>,
+	sprite_down:  Rc<RefCell<Sprite>>,
+	sprite_left:  Rc<RefCell<Sprite>>,
+	sprite_right: Rc<RefCell<Sprite>>,
+
+	// physics & positioning
+	x: units::Game,
+	y: units::Game,
+	vx: units::Velocity,
+	vy: units::Velocity,
+}
+
+impl Bullet {
+	pub fn new(display: &mut Graphics) -> Bullet {
+		let file_path = "assets/base/Bullet.bmp";
+		
+		let ox = units::Tile(4);
+		let oy = units::Tile(1);
+		
+		let ow = units::Tile(1);
+		let oh = units::Tile(1);
+
+		// load the facings for the four ordinal directions
+		let b_right = sprite::Sprite::new(
+			display,
+			(ox + B_OFS_RIGHT, oy),
+			(ow, oh),
+			file_path.to_string()
+		);
+
+		let b_down = sprite::Sprite::new(
+			display,
+			(ox + B_OFS_DOWN, oy),
+			(ow, oh),
+			file_path.to_string()
+		);
+
+		let b_left = sprite::Sprite::new(
+			display,
+			(ox + B_OFS_LEFT, oy),
+			(ow, oh),
+			file_path.to_string()
+		);
+
+		let b_up = sprite::Sprite::new(
+			display,
+			(ox + B_OFS_UP, oy),
+			(ow, oh),
+			file_path.to_string()
+		);
+
+		Bullet {
+			// sprite
+			sprite_up:    Rc::new(RefCell::new(   b_up)),
+			sprite_down:  Rc::new(RefCell::new( b_down)),
+			sprite_left:  Rc::new(RefCell::new( b_left)),
+			sprite_right: Rc::new(RefCell::new(b_right)),
+
+			// physics & positioning
+			x:      units::Game(0.0),
+			y:      units::Game(0.0),
+			vx: units::Velocity(0.0),
+			vy: units::Velocity(0.0),
+		}
+	}
+
+	pub fn set_coords<C>(&mut self, coords: (C, C))
+	where C: AsGame {
+		let (x,y) = coords;
+		self.x = x.to_game();
+		self.y = y.to_game();
+	}
+
+	pub fn set_velocity(&mut self, velocity: (units::Velocity, units::Velocity)) {
+		let (vx,vy) = velocity;
+		self.vx = vx;
+		self.vy = vy;
+	}
+
+	pub fn is_off_screen(&self) -> bool {
+		(self.x > units::Tile(20).to_game()) || (self.y > units::Tile(15).to_game())
+	}
+
+	pub fn draw(&mut self, display: &mut Graphics) {
+		self.sprite_right.borrow_mut()
+		                 .draw(display, (self.x, self.y));
+	}
+
+	// integrate time over vx and vy to compute new positions
+	pub fn update(&mut self, elapsed_time: units::Millis) {
+		let dx = self.vx * elapsed_time;
+		let dy = self.vy * elapsed_time;
+
+		self.x = self.x + dx;
+		self.y = self.y + dy;
 	}
 }
