@@ -78,8 +78,6 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 enum Gravity {
 	Up,
 	Down,
-	Left,
-	Right,
 }
 
 /// Encapsulates the pysical motion of a player as it relates to
@@ -230,28 +228,23 @@ impl Player {
 		let (mut v_grav, mut v_move) = match self.g_dir {
 			Gravity::Up    => (self.velocity_y, self.velocity_x),
 			Gravity::Down  => (self.velocity_y, self.velocity_x),
-			Gravity::Left  => (self.velocity_x, self.velocity_y),
-			Gravity::Right => (self.velocity_x, self.velocity_y),
 		};
 
 		// swap gravity and move positions according to gravity
 		let (mut p_grav, mut p_move) = match self.g_dir {
 			Gravity::Up    => (self.y, self.x),
 			Gravity::Down  => (self.y, self.x),
-
-			Gravity::Left  => (self.y, self.x),
-			Gravity::Right => (self.y, self.x),
 		};
 
 		// switch update dirs
 		self.update_x(map);
 
 		match self.g_dir {
-			Gravity::Up   | Gravity::Left  => {
+			Gravity::Up  => {
 				self.update_grav(map, &mut v_grav, &mut p_grav,  true);
 			},
 
-			Gravity::Down | Gravity::Right => {
+			Gravity::Down => {
 				self.update_grav(map, &mut v_grav, &mut p_grav, false);
 			},
 		}
@@ -570,8 +563,6 @@ impl Player {
 			match self.g_dir {
 				Gravity::Up    => self.velocity_y =  JUMP_SPEED,
 				Gravity::Down  => self.velocity_y = -JUMP_SPEED,
-				Gravity::Left  => self.velocity_x =  JUMP_SPEED,
-				Gravity::Right => self.velocity_x = -JUMP_SPEED,
 			}
 		}
 	}
@@ -709,8 +700,6 @@ impl Player {
 		self.g_dir = match self.g_dir {
 			Gravity::Up    => Gravity::Down,
 			Gravity::Down  => Gravity::Up,
-
-			_ => Gravity::Down,
 		};
 	}
 }
