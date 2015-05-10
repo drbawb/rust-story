@@ -58,14 +58,18 @@ impl Weapon {
 		new_weapon
 	}
 
+	// make sure weapon is pulled from sprite table correctly.
 	fn load_sprite(&mut self, display: &mut Graphics, movement: MotionTup) {
 		let offset_coords = match movement {
+			// gun only points east or west when looking @ background
 			(Motion::Interacting, Facing::West, _) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_WEST_OFS) },
 			(Motion::Interacting, Facing::East, _) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_EAST_OFS) },
 
+			// gun can point east/west
 			(_, Facing::West, Looking::Horizontal) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_WEST_OFS) },
 			(_, Facing::East, Looking::Horizontal) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_EAST_OFS) },
 			
+			// or east/west both up & down
 			(_, Facing::West, Looking::Up) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_WEST_OFS+F_UP_OFS) },
 			(_, Facing::East, Looking::Up) => { (WEAPON_OFS_X, WEAPON_OFS_Y+F_EAST_OFS+F_UP_OFS) },
 
@@ -94,8 +98,13 @@ impl Weapon {
 		self.movement = movement;
 	}
 
-	pub fn draw<C>(&mut self, display: &mut Graphics, coords: (C,C))
+	pub fn draw<C>(&mut self, 
+	               display: &mut Graphics, 
+	               coords: (C,C), 
+	               flip_h: bool,
+	               flip_v: bool)
 	where C: units::AsGame {
+
 		let (x,y) = coords;
 		let (ox, oy) = match self.movement {
 			(_, Facing::West, _) => (units::HalfTile(1), units::HalfTile(0)),
@@ -105,6 +114,7 @@ impl Weapon {
 		let (fx, fy) = (x.to_game() - ox, y.to_game() - oy);
 
 		let sprite = self.sprites.get_mut(&self.movement).unwrap();
+		sprite.flip(flip_h, flip_v);
 		sprite.draw(display, (fx, fy));
 	}
 }

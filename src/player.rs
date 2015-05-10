@@ -198,16 +198,16 @@ impl Player {
 					// mirror sprite vertically
 					sprite.flip(false, true);
 					sprite.draw(display, (self.x, self.y));
+					self.weapon.draw(display, (self.x, self.y), false, true);
 				},
 
 				Gravity::Down => {
 					// draw sprite normally
 					sprite.flip(false, false);
 					sprite.draw(display, (self.x, self.y));
+					self.weapon.draw(display, (self.x, self.y), false, false);
 				},
-			}
-
-			self.weapon.draw(display, (self.x, self.y));
+			}			
 		}
 	}
 
