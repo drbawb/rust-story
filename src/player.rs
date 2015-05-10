@@ -254,6 +254,9 @@ impl Player {
 			Gravity::Up   => { self.update_grav(map,  true); },
 			Gravity::Down => { self.update_grav(map, false); },
 		}
+
+		// chosen vectors
+		println!("delta (x,y): ({:?} , {:?})", self.velocity_x, self.velocity_y);
 	}
 
 	fn update_x(&mut self, map: &map::Map) {
@@ -351,12 +354,16 @@ impl Player {
 			false => { gravity },
 		};
 
-		// integrate time
-		let v_gravity = self.velocity_y + (gravity * self.elapsed_time);
-		self.velocity_y = units::Velocity((*v_gravity).min(*MAX_VELOCITY_Y));
-		let delta = self.velocity_y * self.elapsed_time;
+		// integrate time and clamp based on direction
+		let v_delta = self.velocity_y + (gravity * self.elapsed_time);
+		self.velocity_y = if is_inverted {
+			units::Velocity((*v_delta).max(-*MAX_VELOCITY_Y))
+		} else { 
+			units::Velocity((*v_delta).min(*MAX_VELOCITY_Y))
+		};
 
 		// check collision in direction of delta
+		let delta = self.velocity_y * self.elapsed_time;
 		if delta > units::Game(0.0) {
 			// react to collision
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
