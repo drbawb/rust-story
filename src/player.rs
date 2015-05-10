@@ -7,6 +7,7 @@ use sprite::{self, Facing, Looking, Motion, Updatable};
 
 use collisions::{Info,Rectangle};
 use map::{self, TileType};
+use weapon::Weapon;
 
 use units;
 use units::AsGame;
@@ -87,7 +88,8 @@ type PlayerSprite = Box<sprite::Updatable<units::Game>>;
 pub struct Player {
 	// assets
 	sprites:   HashMap<MotionTup, PlayerSprite>,
-	weapons:   HashMap<MotionTup, PlayerSprite>,
+	weapon:    Weapon,
+
 	hp_sprite: Box<sprite::Drawable<units::Tile>>,
 	hud:       Box<sprite::Updatable<units::Tile>>,
 	hud_fill:  Box<sprite::Updatable<units::HalfTile>>,
@@ -123,13 +125,10 @@ impl Player {
 	/// The player is initailized `standing` facing `east`.
 	/// The player will continue to fall until some collision is detected.
 	pub fn new(graphics: &mut graphics::Graphics, 
-	               x: units::Game, 
-	               y: units::Game) -> Player {
+	            x: units::Game, 
+	            y: units::Game) -> Player {
 		// insert sprites into map
 		let sprite_map = 
-			HashMap::<MotionTup, Box<sprite::Updatable<_>>>::new();
-
-		let weapon_map =
 			HashMap::<MotionTup, Box<sprite::Updatable<_>>>::new();
 
 		let health_bar_sprite = box sprite::Sprite::new(
@@ -152,7 +151,8 @@ impl Player {
 		let mut new_player = Player{
 			elapsed_time: units::Millis(0),
 			sprites:   sprite_map,
-			weapons:   weapon_map,
+			weapon:    Weapon::new(graphics),
+
 			hud:       health_bar_sprite,
 			hud_fill:  health_fill_sprite,
 			hp_sprite: digit_3,
@@ -179,7 +179,6 @@ impl Player {
 			for facing in sprite::FACINGS.iter() {
 				for looking in sprite::LOOKINGS.iter() {
 					new_player.load_sprite(graphics, (*motion, *facing, *looking));
-					new_player.load_weapon(graphics, (*motion, *facing, *looking));
 				}
 			}
 		}
@@ -193,28 +192,22 @@ impl Player {
 			return;
 		} else {
 			let sprite = self.sprites.get_mut(&self.movement).unwrap();
-			let weapon = self.weapons.get_mut(&self.movement).unwrap();
+			
 			match self.g_dir {
 				Gravity::Up => {
 					// mirror sprite vertically
 					sprite.flip(false, true);
 					sprite.draw(display, (self.x, self.y));
-					
-					let weapon_ox = self.x - units::HalfTile(1).to_game();
-					let weapon_oy = self.y + units::HalfTile(1).to_game();
-					weapon.draw(display, (weapon_ox, weapon_oy));
 				},
 
 				Gravity::Down => {
 					// draw sprite normally
 					sprite.flip(false, false);
 					sprite.draw(display, (self.x, self.y));
-
-					let weapon_ox = self.x - units::HalfTile(1).to_game();
-					let weapon_oy = self.y + units::HalfTile(1).to_game();
-					weapon.draw(display, (weapon_ox, weapon_oy));
 				},
 			}
+
+			self.weapon.draw(display, (self.x, self.y));
 		}
 	}
 
@@ -520,30 +513,6 @@ impl Player {
 		};
 	}
 
-	/// Loads a sprite for the selected `movement`, stores it in the player's sprite map.
-	/// This exhaustively matches all tuples of (Motion,Facing,Looking), though certain
-	/// sprites are considered invalid states [for e.g: walking + looking down]
-	fn load_weapon(
-		&mut self, 
-		graphics: &mut graphics::Graphics, 
-		movement: (sprite::Motion, sprite::Facing, sprite::Looking)
-	) {
-		match self.weapons.entry(movement) {
-			Entry::Vacant(entry) => {
-				let file_path = format!("assets/base/Arms.bmp");
-				let loaded_sprite = box sprite::Sprite::new(
-					graphics,
-					(units::HalfTile(0), units::HalfTile(13)),
-					(units::HalfTile(3), units::HalfTile(2)),
-					file_path
-				) as Box<sprite::Updatable<_>>;
-
-				entry.insert(loaded_sprite);
-			},
-
-			_ => {},
-		};
-	}
 	/// The player will immediately face `West`
 	/// They will then accelerate at a constant rate in that direction.
 	pub fn start_moving_left(&mut self) {
@@ -638,6 +607,8 @@ impl Player {
 				(Motion::Falling, last_facing, last_looking)
 			}
 		};
+
+		self.weapon.set_motion(self.movement);
 	}
 	
 	/// A player's damage rectangle encompasses the whole player.

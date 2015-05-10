@@ -15,6 +15,7 @@ pub mod map;
 pub mod number_sprite;
 pub mod player;
 pub mod sprite;
+pub mod weapon;
 pub mod units;
 
 pub fn main() {
