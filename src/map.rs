@@ -18,8 +18,12 @@ static COLS: usize = 20; // 640
 #[derive(Clone,Copy,PartialEq,Eq)]
 pub enum TileType {
 	Air,
+	GDown,
+	GUp,
+	
 	Destructible,
 	Wall,
+	
 	Spikes,
 }
 
@@ -114,20 +118,38 @@ impl Map {
 		                     .expect("map background path missing");
 
       	// loader assets
-      	let sheet = format!("assets/base/Stage/PrtCave.bmp");
-		let wall = Rc::new(RefCell::new(
+      	let sheet = format!("assets/base/Stage/PrtJail.bmp");
+      	let wall = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				display,
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				sheet.clone()
 			) as Box<sprite::Updatable<_>>
-		));
+  		));
 
-		let spikes = Rc::new(RefCell::new(
+		let dwall = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				display,
-				(units::Tile(7) , units::Tile(4)),
+				(units::Tile(3) , units::Tile(0)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+  		));
+
+		let spikes_up = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(12) , units::Tile(4)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let spikes_down = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(12) , units::Tile(5)),
 				(units::Tile(1), units::Tile(1)),
 				sheet.clone()
 			) as Box<sprite::Updatable<_>>
@@ -141,17 +163,20 @@ impl Map {
 
 			for (col_no, tile_ty) in line.chars().enumerate() {
 				col.push(match tile_ty {
-					'w' => { Tile::from_sprite(wall.clone(),         TileType::Wall) },
-					'b' => { Tile::from_sprite(wall.clone(), TileType::Destructible) },
+					'w' => { Tile::from_sprite(wall.clone(),          TileType::Wall) },
+					'b' => { Tile::from_sprite(dwall.clone(), TileType::Destructible) },
 					
-					'^' => { Tile::from_sprite(spikes.clone(),     TileType::Spikes) },
-					'v' => { Tile::from_sprite(spikes.clone(),     TileType::Spikes) },
+					'^' => { Tile::from_sprite(spikes_up.clone(),     TileType::Spikes) },
+					'v' => { Tile::from_sprite(spikes_down.clone(),   TileType::Spikes) },
 
 					's' => {
 						spawn_pos = (units::Tile(col_no), units::Tile(row_no));
 						Tile::new()
 					}
 					
+					'd' => { Tile::from_sprite(wall.clone(), TileType::GDown) },
+					'u' => { Tile::from_sprite(wall.clone(), TileType::GUp) },
+
 					'.' => { Tile::new() },
 					_ => { Tile::new() },
 					//any   => { panic!("unknown tile type in map fg {}", any); },
@@ -241,33 +266,29 @@ impl Map {
 	pub fn spawn_pos(&self) -> (units::Tile, units::Tile) { self.spawn }
 
 	/// Does a fast-check to see if a rectangle overlaps another rectangle
-	/// Does "damage" to the block it hits
+	/// Scans the entire row.
 	pub fn hit_scan(&mut self, rectangle: &Rectangle) -> Vec<CollisionTile> {
-		let units::Tile(first_row) =  rectangle.top().to_tile();
-		let units::Tile(last_row) =  rectangle.bottom().to_tile();
+		let units::Tile(row_no) = rectangle.top().to_tile();
 
 	    // check tiles at delta position
 	    let mut collision_tiles = vec![];
-		for row_no in (first_row..last_row) {
-			for col_no in (0..self.tiles[row_no].len()) {
+		for col_no in (0..self.tiles[row_no].len()) {
+			// compute tile's real position
+			let tile = &self.tiles[row_no][col_no];				
+			let mut d_rect = Rectangle::new(
+				units::Tile(1).to_game(), 
+				units::Tile(1).to_game()
+			);
 
-				// compute tile's real position
-				let tile = &self.tiles[row_no][col_no];				
-				let mut d_rect = Rectangle::new(
-					units::Tile(1).to_game(), 
-					units::Tile(1).to_game()
+			d_rect.x = tile.ofs_x + units::Tile(col_no);
+			d_rect.y = units::Tile(row_no).to_game();
+
+			if d_rect.collides_with(rectangle) {
+				collision_tiles.push(
+					CollisionTile::new(units::Tile(row_no), 
+					                   units::Tile(col_no), 
+					                   tile)
 				);
-
-				d_rect.x = tile.ofs_x + units::Tile(col_no);
-				d_rect.y = units::Tile(row_no).to_game();
-
-				if rectangle.collides_with(&d_rect) {
-					collision_tiles.push( 
-						CollisionTile::new(units::Tile(row_no), 
-						                   units::Tile(col_no), 
-						                   tile)
-					);
-				}
 			}
 		}
 

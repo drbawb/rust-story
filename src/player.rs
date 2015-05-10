@@ -226,7 +226,7 @@ impl Player {
 
 		// draw all player's projectiles
 		for bullet in self.bullets.iter_mut() {
-			println!("drawing bullet");
+			//println!("drawing bullet");
 			bullet.draw(display);
 		}
 	}
@@ -281,16 +281,16 @@ impl Player {
 		}
 
 		// update projectile position
-		let mut remove_idx = vec![];
 		for (idx, bullet) in self.bullets.iter_mut().enumerate() {
 			bullet.update(self.elapsed_time, map);
-			if bullet.is_off_screen() { remove_idx.push(idx); }
 		}
 
-		for idx in remove_idx.iter() { self.bullets.remove(*idx); }
+		self.bullets.iter()
+		            .position(|bullet| { bullet.is_off_screen() })
+		            .map(|idx| { self.bullets.remove(idx)});
 
 		// chosen vectors
-		println!("delta (x,y): ({:?} , {:?})", self.velocity_x, self.velocity_y);
+		//println!("delta (x,y): ({:?} , {:?})", self.velocity_x, self.velocity_y);
 	}
 
 	fn update_x(&mut self, map: &map::Map) {
@@ -461,6 +461,10 @@ impl Player {
 
 					if *hp < 0 { *hp = 0 }
 				},
+
+				TileType::GUp => {
+
+				}
 				_ => {},
 			}
 		}
@@ -704,7 +708,7 @@ impl Player {
 		self.is_invincible    = true;
 		self.invincible_time  = units::Millis(0);
 
-		println!("bat has collided with me! D:");
+		*self.hitpoints.borrow_mut() -= 2;
 	}
 
 	/// Returns true if the player is currently invisible due to an

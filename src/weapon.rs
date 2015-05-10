@@ -2,6 +2,9 @@ use std::collections::hash_map::{Entry, HashMap};
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
+
 use collisions::Rectangle;
 use graphics::Graphics;
 use map::{self, TileType};
@@ -163,8 +166,8 @@ impl Bullet {
 		let ox = units::Tile(4);
 		let oy = units::Tile(1);
 		
-		let ow = units::Tile(1);
-		let oh = units::Tile(1);
+		let ow = units::HalfTile(1);
+		let oh = units::HalfTile(1);
 
 		// load the facings for the four ordinal directions
 		let b_right = sprite::Sprite::new(
@@ -235,19 +238,29 @@ impl Bullet {
 	pub fn is_off_screen(&self) -> bool {
 		let off_x = self.x > units::Tile(20).to_game();
 		let off_y = self.y > units::Tile(15).to_game();
+		let zero  = units::Tile(0).to_game();
 
-		self.collided || (off_x || off_y)
+		self.collided || (off_x || off_y) || (self.x < zero || self.y < zero)
 	}
 
 	pub fn draw(&mut self, display: &mut Graphics) {
 		let mut sprite_ref = match self.direction {
-			Direction::Up    => {    self.sprite_up.borrow_mut() },
-			Direction::Down  => {  self.sprite_down.borrow_mut() },
-			Direction::Left  => {  self.sprite_left.borrow_mut() },
+			Direction::Up    => { self.sprite_up.borrow_mut() },
+			Direction::Down  => { self.sprite_down.borrow_mut() },
+			Direction::Left  => { self.sprite_left.borrow_mut() },
 			Direction::Right => { self.sprite_right.borrow_mut() },
 		};
 
      	sprite_ref.draw(display, (self.x, self.y));
+	}
+
+	fn draw_path(&self, display: &mut Graphics, width: i32, height: i32) {
+		let (units::Game(x), units::Game(y)) = (self.x, self.y);
+
+		display.draw_rect(&Rect {
+			x: x as i32, y: y as i32,
+			w: width, h: height,
+		}, Color::RGB(255,0,0));
 	}
 
 	// integrate time over vx and vy to compute new positions
@@ -260,11 +273,13 @@ impl Bullet {
 
 		// quick check collision at new position
 		let mut hit_pos = None;
+		let qtr_tile = units::Tile(1).to_game() / units::Game(4.0);
 		let nrect = Rectangle {
-			x: nx,
-			y: ny,
-			width:  units::Tile(1).to_game(),
-			height: units::Tile(1).to_game(),
+			x: (nx + qtr_tile),
+			y: (ny + qtr_tile),
+
+			width:  units::HalfTile(1).to_game(),
+			height: units::HalfTile(1).to_game(),
 		};
 
 		{ // borrow tiles for collision checking
