@@ -239,13 +239,12 @@ impl Player {
 			Gravity::Up    => (self.y, self.x),
 			Gravity::Down  => (self.y, self.x),
 
-			Gravity::Left  => (self.y, self.x),
-			Gravity::Right => (self.y, self.x),
+			Gravity::Left  => (self.x, self.y),
+			Gravity::Right => (self.x, self.y),
 		};
 
 		// switch update dirs
-		self.update_x(map);
-
+		self.update_move(map, &mut v_move, &mut p_move, false);
 		match self.g_dir {
 			Gravity::Up   | Gravity::Left  => {
 				self.update_grav(map, &mut v_grav, &mut p_grav,  true);
@@ -258,12 +257,15 @@ impl Player {
 
 		self.velocity_y = v_grav;
 		self.y          = p_grav;
+
+		self.velocity_x = v_move;
+		self.x          = p_move;
 	}
 
 	fn update_move (&mut self, 
 	                map: &map::Map, 
-		            v_grav: &mut units::Velocity,
-		            p_grav: &mut units::Game,
+		            v_move: &mut units::Velocity,
+		            p_move: &mut units::Game,
 		            is_inverted: bool) {
 		
 		// compute next velocity
@@ -273,63 +275,66 @@ impl Player {
 			if self.on_ground() {  WALKING_ACCEL } else {  AIR_ACCELERATION }
 		} else { units::Acceleration(0.0) };
 
-		self.velocity_x = self.velocity_x + (accel_x * self.elapsed_time);
+		*v_move = *v_move + (accel_x * self.elapsed_time);
 
 		// apply maximum bounds to velocity based on situation	
 		if self.accel_x < 0 {
-			self.velocity_x = units::Velocity((*self.velocity_x).max(-*MAX_VELOCITY_X));
+			*v_move = units::Velocity((*v_move).max(-*MAX_VELOCITY_X));
 		} else if self.accel_x > 0 {
-			self.velocity_x = units::Velocity((*self.velocity_x).min( *MAX_VELOCITY_X));
+			*v_move = units::Velocity((*v_move).min( *MAX_VELOCITY_X));
 		} else if self.on_ground() {
 			let v_friction = FRICTION * self.elapsed_time;
 
-			self.velocity_x = if self.velocity_x > units::Velocity(0.0) {
+			*v_move = if *v_move > units::Velocity(0.0) {
 				units::Velocity(
-					(*units::Velocity(0.0)).max(*(self.velocity_x - v_friction))
+					(*units::Velocity(0.0)).max(*(*v_move - v_friction))
 				)
 			} else {
 				units::Velocity(
-					(*units::Velocity(0.0)).min(*(self.velocity_x + v_friction))
+					(*units::Velocity(0.0)).min(*(*v_move + v_friction))
 				)
 			};
 		}
 
 		// x-axis collision checking 
-		let delta = self.velocity_x * self.elapsed_time;
-		if delta > units::Game(0.0) { // moving right
+		let delta = *v_move * self.elapsed_time;
+		if delta > units::Game(0.0) { 
+
+			// collisions left-side
+			let mut info = self.get_collision_info(&self.left_collision(units::Game(0.0)), map);
+			*p_move = if info.collided {
+				println!("hit left");
+				(info.col.to_game() + X_BOX.right())
+			} else {
+				*p_move
+			};
+
+			// moving right
 			// collisions right-side
 			let mut info = self.get_collision_info(&self.right_collision(delta), map);
-			self.x = if info.collided {
-				self.velocity_x = units::Velocity(0.0);
+			*p_move = if info.collided {
+				println!("hit right");
+				*v_move = units::Velocity(0.0);
 				(info.col.to_game() - X_BOX.right())
 			} else {
-				(self.x + delta)
+				(*p_move + delta)
 			};
-
-			// collisions left-side
-			info = self.get_collision_info(&self.left_collision(units::Game(0.0)), map);
-			self.x = if info.collided {
-				(info.col.to_game() + X_BOX.right())
-			} else {
-				self.x
-			};
-
 		} else { // moving left
-			// collisions left-side
-			let mut info = self.get_collision_info(&self.left_collision(delta), map);
-			self.x = if info.collided {
-				self.velocity_x = units::Velocity(0.0);
-				(info.col.to_game() + X_BOX.right())
-			} else {
-				(self.x + delta) 
-			};
-
 			// collisions right-side
-			info = self.get_collision_info(&self.right_collision(units::Game(0.0)), map);
-			self.x = if info.collided {
+			let mut info = self.get_collision_info(&self.right_collision(units::Game(0.0)), map);
+			*p_move = if info.collided {
 				(info.col.to_game() - X_BOX.right()) 
 			} else {
-				self.x
+				*p_move
+			};
+
+			// collisions left-side
+			let mut info = self.get_collision_info(&self.left_collision(delta), map);
+			*p_move = if info.collided {
+				*v_move = units::Velocity(0.0);
+				(info.col.to_game() + X_BOX.right())
+			} else {
+				(*p_move + delta) 
 			};
 		}
 	}
@@ -367,18 +372,25 @@ impl Player {
 
 		// check collision in direction of delta
 		if delta > units::Game(0.0) {
+			// going down
 			// react to collision
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
 			*p_grav = if info.collided {
-				if !is_inverted { self.on_ground = true; }
+				if !is_inverted {
+					// collided with ground
+					self.on_ground = true; 
+				} else {
+					self.on_ground = false; 
+				}
+				
 				*v_grav = units::Velocity(0.0);
-				(info.row.to_game() - Y_BOX.bottom())
+				(info.row.to_game() - Y_BOX.bottom())	
 			} else {
 				if !is_inverted { self.on_ground = false; }
 				(*p_grav + delta)
 			};
 
-			info = self.get_collision_info(&self.top_collision(units::Game(0.0)), map);
+			 info = self.get_collision_info(&self.top_collision(units::Game(0.0)), map);
 			*p_grav = if info.collided {
 				if is_inverted { self.on_ground = true; }
 				(info.row.to_game() + Y_BOX.height())
@@ -390,11 +402,11 @@ impl Player {
 			// react to collision
 			let mut info = self.get_collision_info(&self.top_collision(delta), map);
 			*p_grav = if info.collided {
-				if is_inverted { 
-					self.on_ground = true; 
-					*v_grav = units::Velocity(0.0);
-					(info.row.to_game() + Y_BOX.height())
-				} else { *p_grav }
+				if is_inverted { self.on_ground = true; }
+
+				// always clip top
+				*v_grav = units::Velocity(0.0);
+				(info.row.to_game() + Y_BOX.height()) 
 			} else {
 				if is_inverted { 
 					self.on_ground = false; 
@@ -719,7 +731,6 @@ impl Player {
 		self.g_dir = match self.g_dir {
 			Gravity::Up    => Gravity::Down,
 			Gravity::Down  => Gravity::Up,
-
 			_ => Gravity::Down,
 		};
 	}
