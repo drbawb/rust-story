@@ -2,7 +2,9 @@ use std::collections::hash_map::{Entry, HashMap};
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use collisions::Rectangle;
 use graphics::Graphics;
+use map::{self, TileType};
 use sprite::{Motion, Facing, Looking};
 use sprite::{self, Sprite, Drawable, Updatable};
 use units::{self, AsGame};
@@ -140,6 +142,9 @@ pub struct Bullet {
 	y: units::Game,
 	vx: units::Velocity,
 	vy: units::Velocity,
+
+	// states
+	collided: bool,
 }
 
 impl Bullet {
@@ -193,6 +198,9 @@ impl Bullet {
 			y:      units::Game(0.0),
 			vx: units::Velocity(0.0),
 			vy: units::Velocity(0.0),
+
+			// states
+			collided: false,
 		}
 	}
 
@@ -210,7 +218,10 @@ impl Bullet {
 	}
 
 	pub fn is_off_screen(&self) -> bool {
-		(self.x > units::Tile(20).to_game()) || (self.y > units::Tile(15).to_game())
+		let off_x = self.x > units::Tile(20).to_game();
+		let off_y = self.y > units::Tile(15).to_game();
+
+		self.collided || (off_x || off_y)
 	}
 
 	pub fn draw(&mut self, display: &mut Graphics) {
@@ -219,11 +230,28 @@ impl Bullet {
 	}
 
 	// integrate time over vx and vy to compute new positions
-	pub fn update(&mut self, elapsed_time: units::Millis) {
+	pub fn update(&mut self, elapsed_time: units::Millis, tile_map: &map::Map) {
 		let dx = self.vx * elapsed_time;
 		let dy = self.vy * elapsed_time;
 
-		self.x = self.x + dx;
-		self.y = self.y + dy;
+		let nx = self.x + dx;
+		let ny = self.y + dy;
+
+		// quick check collision at new position
+		//new(width: units::Game, height: units::Game) -> Rectangle {
+		let nrect = Rectangle {
+			x: nx,
+			y: ny,
+			width:  units::Tile(1).to_game(),
+			height: units::Tile(1).to_game(),
+		};
+
+		let tiles = tile_map.hit_scan(&nrect);
+		for collision in tiles {
+			self.collided = collision.tile.tile_type == TileType::Wall;
+			if self.collided { break; }
+		}
+
+		if !self.collided { self.x = nx; self.y = ny; }
 	}
 }

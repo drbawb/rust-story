@@ -279,6 +279,41 @@ impl Map {
 		}
 	}
 
+	/// Does a fast-check to see if a rectangle overlaps another rectangle
+	pub fn hit_scan(&self, rectangle: &Rectangle) -> Vec<CollisionTile> {
+		let units::Tile(first_row) =  rectangle.top().to_tile();
+		let units::Tile(last_row) =  rectangle.bottom().to_tile();
+
+	    // check tiles at delta position
+	    let mut collision_tiles = vec![];
+		for row_no in (first_row..last_row) {
+			for col_no in (0..self.tiles[row_no].len()) {
+
+				// compute tile's real position
+				let tile = &self.tiles[row_no][col_no];
+				let mut d_rect = Rectangle::new(
+					units::Tile(1).to_game(), 
+					units::Tile(1).to_game()
+				);
+
+				d_rect.x = tile.ofs_x + units::Tile(col_no);
+				d_rect.y = units::Tile(row_no).to_game();
+
+				if rectangle.collides_with(&d_rect) {
+					collision_tiles.push( 
+						CollisionTile::new(units::Tile(row_no), 
+						                   units::Tile(col_no), 
+						                   tile)
+					);
+				}
+			}
+		}
+
+		collision_tiles
+
+
+	}
+
 	/// Checks if `Rectangle` is colliding with any tiles in the foreground.
 	/// 
 	/// NOTE: Checking a Rectangle which would be placed outside the tile-map

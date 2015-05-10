@@ -279,7 +279,7 @@ impl Player {
 		// update projectile position
 		let mut remove_idx = vec![];
 		for (idx, bullet) in self.bullets.iter_mut().enumerate() {
-			bullet.update(self.elapsed_time);
+			bullet.update(self.elapsed_time, map);
 			if bullet.is_off_screen() { remove_idx.push(idx); }
 		}
 
