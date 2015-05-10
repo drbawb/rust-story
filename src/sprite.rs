@@ -44,6 +44,7 @@ pub trait Drawable<Coord> : 'static {
 
 /// Any object which understands time and placement in 2D space.
 pub trait Updatable<T> : Drawable<T> { 
+	fn flip(&mut self, horizontal: bool, vertical: bool);
 	fn update(&mut self, elapsed_time: units::Millis);
 }
 
@@ -51,7 +52,8 @@ pub trait Updatable<T> : Drawable<T> {
 pub struct Sprite {
 	sprite_sheet:  String,
 	source_rect:   rect::Rect,
-	size:    (units::Game, units::Game),
+	size: (units::Game, units::Game),
+	flip: (bool, bool),
 }
 
 impl Sprite {
@@ -82,6 +84,7 @@ impl Sprite {
 			sprite_sheet:  file_name,
 			source_rect:   origin,
 			size:          (norm_w,norm_h),
+			flip: (false, false),
 		};
 	}
 }
@@ -97,12 +100,16 @@ impl<C: AsGame> Drawable<C> for Sprite {
 			(x.to_game().to_pixel(), y.to_game().to_pixel());
 	
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
+		display.blit_ex(&self.sprite_sheet[..], &self.source_rect, &dest_rect, self.flip);
 
-		display.blit_surface(&self.sprite_sheet[..], &self.source_rect, &dest_rect);
 	}
 }
 
 impl<C: AsGame> Updatable<C> for Sprite {
+	fn flip(&mut self, horizontal: bool, vertical: bool) {
+		self.flip = (horizontal, vertical);
+	}
+
 	fn update(&mut self, _elapsed_time: units::Millis) {
 		// no-op for static sprite.
 	}
@@ -116,6 +123,7 @@ pub struct AnimatedSprite {
 
 	offset:  (units::Tile, units::Tile),
 	size:    (units::Tile, units::Tile),
+	flip:    (bool, bool),
 
 	current_frame:  units::Frame,
 	num_frames:     units::Frame,
@@ -151,6 +159,7 @@ impl AnimatedSprite {
 		let sprite = AnimatedSprite{
 			offset:  offset,
 			size:    size,
+			flip:    (false, false),
 			
 			fps: fps,
 			current_frame: 0,
@@ -166,6 +175,11 @@ impl AnimatedSprite {
 }
 
 impl<C: AsGame> Updatable<C> for AnimatedSprite {
+	/// Set flip state
+	fn flip(&mut self, horizontal: bool, vertical: bool) {
+		self.flip = (horizontal, vertical);
+	}
+
 	/// Reads current time-deltas and mutates state accordingly.
 	fn update(&mut self, elapsed_time: units::Millis) {
 		let frame_time = units::Millis(1000 / self.fps as i64);
@@ -197,6 +211,6 @@ impl<C: AsGame> Drawable<C> for AnimatedSprite {
 			(x.to_game().to_pixel(), y.to_game().to_pixel());
 
 		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
-		display.blit_surface(&self.sprite_sheet[..], &self.source_rect, &dest_rect);
+		display.blit_ex(&self.sprite_sheet[..], &self.source_rect, &dest_rect, self.flip);
 	}
 }

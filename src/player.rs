@@ -184,7 +184,20 @@ impl Player {
 		if self.is_invincible && self.is_strobed() {
 			return;
 		} else {
-			self.sprites.get_mut(&self.movement).unwrap().draw(display, (self.x, self.y));
+			let sprite = self.sprites.get_mut(&self.movement).unwrap();
+			match self.g_dir {
+				Gravity::Up => {
+					// mirror sprite vertically
+					sprite.flip(false, true);
+					sprite.draw(display, (self.x, self.y));
+				},
+
+				Gravity::Down => {
+					// draw sprite normally
+					sprite.flip(false, false);
+					sprite.draw(display, (self.x, self.y));
+				},
+			}
 		}
 	}
 
