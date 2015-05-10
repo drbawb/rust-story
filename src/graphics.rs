@@ -106,6 +106,24 @@ impl<'g> Graphics<'g> {
 		let _ = self.screen.drawer().copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
+	pub fn blit_ex(&mut self,
+	                    src_id: &str,
+	                    src_rect:  &rect::Rect,
+	                    dest_rect: &rect::Rect,
+	                    flip: (bool, bool)) {
+	
+		let src = &mut self.cache.get_mut(src_id).unwrap();
+		let _ = self.screen.drawer().copy_ex(
+			src, 
+			Some(*src_rect), 
+			Some(*dest_rect), 
+			
+			0.0, 
+			None, 
+			flip
+		);
+	}
+
 	pub fn switch_buffers(&mut self) {
 		self.screen.drawer().present();
 	}
