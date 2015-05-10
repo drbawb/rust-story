@@ -78,6 +78,8 @@ static HEALTH_FILL_H: units::HalfTile  = units::HalfTile(1);
 enum Gravity {
 	Up,
 	Down,
+	Left,
+	Right,
 }
 
 /// Encapsulates the pysical motion of a player as it relates to
@@ -224,12 +226,34 @@ impl Player {
 			self.is_invincible = self.invincible_time < DAMAGE_INVINCIBILITY;
 		}
 
-		// run physics sim
+		// swap gravity and move axes according to gravity
+		let (mut v_grav, mut v_move) = match self.g_dir {
+			Gravity::Up    => (self.velocity_y, self.velocity_x),
+			Gravity::Down  => (self.velocity_y, self.velocity_x),
+			Gravity::Left  => (self.velocity_x, self.velocity_y),
+			Gravity::Right => (self.velocity_x, self.velocity_y),
+		};
+
+		// swap gravity and move positions according to gravity
+		let (mut p_grav, mut p_move) = match self.g_dir {
+			Gravity::Up    => (self.y, self.x),
+			Gravity::Down  => (self.y, self.x),
+
+			Gravity::Left  => (self.y, self.x),
+			Gravity::Right => (self.y, self.x),
+		};
+
+		// switch update dirs
 		self.update_x(map);
 
 		match self.g_dir {
-			Gravity::Up   => self.update_yu(map),
-			Gravity::Down => self.update_yd(map),
+			Gravity::Up   | Gravity::Left  => {
+				self.update_grav(map, &mut v_grav, &mut p_grav,  true);
+			},
+
+			Gravity::Down | Gravity::Right => {
+				self.update_grav(map, &mut v_grav, &mut p_grav, false);
+			},
 		}
 	}
 
@@ -302,20 +326,37 @@ impl Player {
 		}
 	}
 
-	fn update_yu (&mut self, map: &map::Map) {
-		// update velocity
+	/// Controls the `gravity` axis
+	/// This can be in one of two states; and gets
+	/// assigned to one of two axes.
+	fn update_grav (&mut self, 
+	                map: &map::Map, 
+		            v_grav: &mut units::Velocity,
+		            p_grav: &mut units::Game,
+		            is_inverted: bool) {
+
+		println!("grav check inverted? {}", is_inverted);
+
+		// check if they are "falling" relative to gravity
+		let is_falling = match is_inverted {
+			true  => self.velocity_y > units::Velocity(0.0),
+			false => self.velocity_y < units::Velocity(0.0),
+		};
+
 		let gravity: units::Acceleration = 
 			if self.is_jump_active 
-			&& self.velocity_y > units::Velocity(0.0) {
-				-JUMP_GRAVITY
-			} else {
-				-GRAVITY
-			};
+			&& is_falling { JUMP_GRAVITY } 
+			else          { GRAVITY };
 
+		// invert gravity if applicable
+		let gravity = match is_inverted {
+			true  => { -gravity },
+			false => { gravity },
+		};
+
+		// integrate time
 		let v_gravity = self.velocity_y + (gravity * self.elapsed_time);
 		self.velocity_y = units::Velocity((*v_gravity).min(*MAX_VELOCITY_Y));
-
-		// calculate delta
 		let delta = self.velocity_y * self.elapsed_time;
 
 		// check collision in direction of delta
@@ -323,96 +364,40 @@ impl Player {
 			// react to collision
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
 			self.y = if info.collided {
+				if !is_inverted { self.on_ground = true; }
 				self.velocity_y = units::Velocity(0.0);
 				(info.row.to_game() - Y_BOX.bottom())
 			} else {
+				if !is_inverted { self.on_ground = false; }
 				(self.y + delta)
 			};
 
 			info = self.get_collision_info(&self.top_collision(units::Game(0.0)), map);
 			self.y = if info.collided {
-				self.on_ground = true;
+				if is_inverted { self.on_ground = true; }
 				(info.row.to_game() + Y_BOX.height())
 			} else {
-				self.on_ground = false;
+				if is_inverted { self.on_ground = false; }
 				self.y
 			};
-
 		} else {
 			// react to collision
 			let mut info = self.get_collision_info(&self.top_collision(delta), map);
 			self.y = if info.collided {
-				self.on_ground = true;
+				if is_inverted { self.on_ground = true; }
 				self.velocity_y = units::Velocity(0.0);
 				(info.row.to_game() + Y_BOX.height())
 			} else {
-				self.on_ground = false;
+				if is_inverted { self.on_ground = false; }
 				(self.y + delta)
 			};
 
 			info = self.get_collision_info(&self.bottom_collision(units::Game(0.0)), map);
 			self.y = if info.collided {
-				self.on_ground = false;
+				if !is_inverted { self.on_ground = true; }
 				(info.row.to_game() - Y_BOX.bottom())
 			} else {
-				self.y
-			};
-		}
-	}
-
-	fn update_yd (&mut self, map: &map::Map) {
-		// update velocity
-		let gravity: units::Acceleration = 
-			if self.is_jump_active 
-			&& self.velocity_y < units::Velocity(0.0) {
-				JUMP_GRAVITY
-			} else {
-				GRAVITY
-			};
-
-		let v_gravity = self.velocity_y + (gravity * self.elapsed_time);
-		self.velocity_y = units::Velocity((*v_gravity).min(*MAX_VELOCITY_Y));
-
-		// calculate delta
-		let delta = self.velocity_y * self.elapsed_time;
-
-		// check collision in direction of delta
-		if delta > units::Game(0.0) {
-			// react to collision
-			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
-			self.y = if info.collided {
-				self.velocity_y = units::Velocity(0.0);
-				self.on_ground = true;
-
-				(info.row.to_game() - Y_BOX.bottom())
-			} else {
-				self.on_ground = false;
-				(self.y + delta)
-			};
-
-			info = self.get_collision_info(&self.top_collision(units::Game(0.0)), map);
-			self.y = if info.collided {
-				(info.row.to_game() + Y_BOX.height())
-			} else {
-				self.y
-			};
-
-		} else {
-			// react to collision
-			let mut info = self.get_collision_info(&self.top_collision(delta), map);
-			self.y = if info.collided {
-				self.velocity_y = units::Velocity(0.0);
-				(info.row.to_game() + Y_BOX.height())
-			} else {
-				self.on_ground = false;
-				(self.y + delta)
-			};
-
-			info = self.get_collision_info(&self.bottom_collision(units::Game(0.0)), map);
-			self.y = if info.collided {
-				self.on_ground = true;
-				(info.row.to_game() - Y_BOX.bottom())
-			} else {
+				if !is_inverted { self.on_ground = false; }
 				self.y
 			};
 		}
@@ -582,9 +567,11 @@ impl Player {
 		self.is_interacting = false;
 
 		if self.on_ground() {
-			self.velocity_y = match self.g_dir {
-				Gravity::Up   =>  JUMP_SPEED,
-				Gravity::Down => -JUMP_SPEED,
+			match self.g_dir {
+				Gravity::Up    => self.velocity_y =  JUMP_SPEED,
+				Gravity::Down  => self.velocity_y = -JUMP_SPEED,
+				Gravity::Left  => self.velocity_x =  JUMP_SPEED,
+				Gravity::Right => self.velocity_x = -JUMP_SPEED,
 			}
 		}
 	}
@@ -720,8 +707,10 @@ impl Player {
 
 	pub fn swap_gravity(&mut self) {
 		self.g_dir = match self.g_dir {
-			Gravity::Up => Gravity::Down,
-			Gravity::Down => Gravity::Up,
+			Gravity::Up    => Gravity::Down,
+			Gravity::Down  => Gravity::Up,
+
+			_ => Gravity::Down,
 		};
 	}
 }
