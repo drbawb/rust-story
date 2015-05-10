@@ -250,7 +250,7 @@ impl Player {
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
 	/// Determines which sprite-sheet should be used for thsi frame.
 	/// Forwards the elapsed time to the current sprite.
-	pub fn update(&mut self, elapsed_time: units::Millis, map: &map::Map) {
+	pub fn update(&mut self, elapsed_time: units::Millis, map: &mut map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
 		if (self.next_fire_time > units::Millis(0)) {

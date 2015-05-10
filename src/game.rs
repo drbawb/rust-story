@@ -252,7 +252,7 @@ impl<'e> Game<'e> {
 	/// Passes the current time in milliseconds to our underlying actors.
 	fn update(&mut self, elapsed_time: units::Millis) {
 		self.state.map.update(elapsed_time);
-		self.state.quote.update(elapsed_time, &self.state.map);
+		self.state.quote.update(elapsed_time, &mut self.state.map);
 		self.state.yatty.update(elapsed_time, self.state.quote.center_x());
 
 		let collided =

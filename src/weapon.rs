@@ -230,7 +230,7 @@ impl Bullet {
 	}
 
 	// integrate time over vx and vy to compute new positions
-	pub fn update(&mut self, elapsed_time: units::Millis, tile_map: &map::Map) {
+	pub fn update(&mut self, elapsed_time: units::Millis, tile_map: &mut map::Map) {
 		let dx = self.vx * elapsed_time;
 		let dy = self.vy * elapsed_time;
 
@@ -246,10 +246,23 @@ impl Bullet {
 			height: units::Tile(1).to_game(),
 		};
 
-		let tiles = tile_map.hit_scan(&nrect);
-		for collision in tiles {
-			self.collided = collision.tile.tile_type == TileType::Wall;
-			if self.collided { break; }
+		let mut hit_pos = None;
+
+		{ // borrow tiles for collision checking
+			let tiles = tile_map.hit_scan(&nrect);
+			
+			for collision in tiles {
+				self.collided = collision.tile.tile_type == TileType::Wall;
+				if self.collided { 
+					hit_pos = Some((collision.row, collision.col));
+					break;
+				}
+			}
+		}
+
+		// apply damage to the first tile we hit
+		if let Some((units::Tile(row), units::Tile(col))) = hit_pos {
+			tile_map.take_damage(row, col);
 		}
 
 		if !self.collided { self.x = nx; self.y = ny; }

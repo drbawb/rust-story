@@ -65,6 +65,11 @@ impl Tile {
 			ofs_x:     units::Game(0.0),
 		}
 	}
+
+	/// Yields damage to tile, if applicable
+	fn take_damage(&mut self) {
+		println!("tile took damage");
+	}
 }
 
 pub struct Map {
@@ -280,7 +285,8 @@ impl Map {
 	}
 
 	/// Does a fast-check to see if a rectangle overlaps another rectangle
-	pub fn hit_scan(&self, rectangle: &Rectangle) -> Vec<CollisionTile> {
+	/// Does "damage" to the block it hits
+	pub fn hit_scan(&mut self, rectangle: &Rectangle) -> Vec<CollisionTile> {
 		let units::Tile(first_row) =  rectangle.top().to_tile();
 		let units::Tile(last_row) =  rectangle.bottom().to_tile();
 
@@ -290,7 +296,7 @@ impl Map {
 			for col_no in (0..self.tiles[row_no].len()) {
 
 				// compute tile's real position
-				let tile = &self.tiles[row_no][col_no];
+				let tile = &self.tiles[row_no][col_no];				
 				let mut d_rect = Rectangle::new(
 					units::Tile(1).to_game(), 
 					units::Tile(1).to_game()
@@ -310,8 +316,11 @@ impl Map {
 		}
 
 		collision_tiles
+	}
 
-
+	/// Transfers damage to the tile at (row,col)
+	pub fn take_damage(&mut self, row: usize, col: usize) {
+		self.tiles[row][col].take_damage();
 	}
 
 	/// Checks if `Rectangle` is colliding with any tiles in the foreground.
