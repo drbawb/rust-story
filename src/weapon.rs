@@ -271,7 +271,7 @@ impl Bullet {
 			let tiles = tile_map.hit_scan(&nrect);
 			
 			for collision in tiles {
-				self.collided = collision.tile.tile_type == TileType::Wall;
+				self.collided = collision.tile.tile_type != TileType::Air;
 				if self.collided { 
 					hit_pos = Some((collision.row, collision.col));
 					break;

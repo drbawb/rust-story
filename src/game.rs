@@ -54,20 +54,20 @@ impl GameState {
                    gevent_tx: Sender<GameEvent>) -> GameState {
 
 let level_0_fg = 
-"wwwwwwwwwwwwwwwwwwww
- w..............ww..w
- w.............w.w..w
- w............w..w..w
- w...........w...w..w
- w..........w.......w
+"wwwwwwwwwwwwwwwwwxxw
+ wvvvvvvvvvvvvvvww..w
+ w...............w..w
+ w...............w..w
+ wwww.d..........w..w
+ w...............b..w
+ w.........u.....b..w
+ w...............wwww
+ w...............w..w
+ w^^^^...^^^^^^^^w..w
+ wwwwwbbbwwwwwwwww..w
  w..................w
- w........w......wwww
- w........w......w..w
- w........w......w..w
- wwwww...wwwwwwwww..w
- w..................w
- w..................w
- w..................w
+ w.....s............w
+ w..............u...w
  wwwwwwwwwwwwwwwwwwww";
 
 let level_0_bg = 
@@ -88,14 +88,18 @@ let level_0_bg =
 ....................
 ....................";
 		
-		GameState {
-			map: map::Map::new(display, gevent_tx, level_0_bg, level_0_fg),
+		let world  = map::Map::new(display, gevent_tx, level_0_bg, level_0_fg);
+		let (x,y)  = world.spawn_pos();
 
-			quote: player::Player::new(
-				display,
-				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
-				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
-			),
+		let player = player::Player::new(
+			display,
+			x.to_game(),
+			y.to_game(),
+		);
+
+		GameState {
+			map:   world,
+			quote: player,
 
 			yatty: enemies::CaveBat::new(
 				display,
@@ -239,12 +243,12 @@ impl<'e> Game<'e> {
 		// background
 		self.state.map.draw_background(&mut self.display);
 		self.state.map.draw_sprites(&mut self.display);
+		self.state.map.draw(&mut self.display);
 
 		// foreground
 		self.state.quote.draw(&mut self.display);
 		self.state.yatty.draw(&mut self.display);
-		self.state.map.draw(&mut self.display);
-
+		
 		// ui
 		self.state.quote.draw_hud(&mut self.display);
 	}
@@ -261,6 +265,10 @@ impl<'e> Game<'e> {
 
 		if collided {
 			self.state.quote.take_damage();
+		}
+
+		if self.state.quote.hitpoints() < 0 {
+			let _ = self.events_tx.send(GameEvent::Panic);
 		}
 	}
 
@@ -308,6 +316,8 @@ impl<'e> Game<'e> {
 			self.state.quote.stop_jump();
 		} else if self.controller.was_key_pressed(KeyCode::X) {
 			self.state.quote.fire_gun();
+		} else if self.controller.was_key_pressed(KeyCode::G) {
+			self.state.quote.swap_gravity();
 		}
 	}
 }

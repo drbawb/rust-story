@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::hash_map::{HashMap, Entry};
 use num::Float;
 
@@ -114,6 +115,7 @@ pub struct Player {
 	accel_x:       i64,
 
 	// state
+	hitpoints:        RefCell<i64>,
 	is_interacting:  bool,
 	is_invincible:   bool,
 	is_jump_active:  bool,
@@ -176,6 +178,7 @@ impl Player {
 			velocity_y: units::Velocity(0.0),
 			accel_x: 1,
 
+			hitpoints:      RefCell::new(10),
 			is_interacting: false,
 			is_jump_active: false,
 			is_invincible:  false,
@@ -241,6 +244,7 @@ impl Player {
 			                   (HEALTH_FILL_X,
 			                    HEALTH_FILL_Y));
 			
+			self.hp_sprite = box NumberSprite::new(display, *self.hitpoints.borrow() as i32);
 			self.hp_sprite.draw(display,
 			                    (units::Tile(3),
 			                     units::Tile(2)));
@@ -440,10 +444,24 @@ impl Player {
 			tile_map.get_colliding_tiles(hitbox);
 
 		let mut info = Info { collided: false, row: units::Tile(0), col: units::Tile(0) };
+
+		// match the first tile
 		for collision in tiles.iter() {
-			if collision.tile.tile_type == TileType::Wall {
-				info = Info {collided: true, row: collision.row, col: collision.col};
-				break;
+			// is this a solid collision?
+		 	match collision.tile.tile_type {
+				  TileType::Wall 
+				| TileType::Destructible => {
+					info = Info {collided: true, row: collision.row, col: collision.col};
+				},
+
+				TileType::Spikes => {
+					let damage_from_collision = collision.tile.do_damage();
+					let mut hp = self.hitpoints.borrow_mut();
+					*hp = (*hp - damage_from_collision);
+
+					if *hp < 0 { *hp = 0 }
+				},
+				_ => {},
 			}
 		}
 
@@ -756,6 +774,10 @@ impl Player {
 	/// Gravity cannot pull them below this floor.
 	fn on_ground(&self) -> bool {
 		self.on_ground
+	}
+
+	pub fn hitpoints(&self) -> i64 {
+		*self.hitpoints.borrow()
 	}
 
 	pub fn swap_gravity(&mut self) {

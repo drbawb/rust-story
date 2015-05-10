@@ -18,7 +18,9 @@ static COLS: usize = 20; // 640
 #[derive(Clone,Copy,PartialEq,Eq)]
 pub enum TileType {
 	Air,
-	Wall
+	Destructible,
+	Wall,
+	Spikes,
 }
 
 #[derive(Clone,Copy)]
@@ -41,9 +43,11 @@ type TileSprite = Rc<RefCell<Box<sprite::Updatable<units::Game>>>>;
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[derive(Clone)]
 pub struct Tile {
-	pub tile_type:  TileType,
-	pub ofs_x:      units::Game,
-	sprite:         Option<TileSprite>,	
+	pub tile_type: TileType,
+	pub ofs_x:     units::Game,
+
+	hp:     i64,
+	sprite: Option<TileSprite>,	
 }
 
 impl Tile {
@@ -53,6 +57,7 @@ impl Tile {
 			tile_type: TileType::Air,
 			sprite:    None,
 			ofs_x:     units::Game(0.0),
+			hp:        1,
 		}
 	}
 
@@ -63,12 +68,28 @@ impl Tile {
 			tile_type: tile_type,
 			sprite:    Some(sprite.clone()),
 			ofs_x:     units::Game(0.0),
+			hp:        1,
+		}
+	}
+
+	/// HP delta to be applied to actors on collision
+	pub fn do_damage(&self) -> i64 {
+		match self.tile_type {
+			TileType::Spikes => { 100 },
+			_ => { 0 },
 		}
 	}
 
 	/// Yields damage to tile, if applicable
 	fn take_damage(&mut self) {
-		println!("tile took damage");
+		match self.tile_type {
+			TileType::Destructible => { self.hp -= 1 },
+			_ => {},
+		};
+
+		if self.hp <= 0 {
+			println!("tile destroyed holy shit!");
+		}
 	}
 }
 
@@ -78,6 +99,7 @@ pub struct Map {
 	tiles:       Vec<Vec<Tile>>,
 
 	event_chan: Sender<GameEvent>,
+	spawn: (units::Tile, units::Tile),
 }
 
 impl Map {
@@ -102,16 +124,37 @@ impl Map {
 			) as Box<sprite::Updatable<_>>
 		));
 
+		let spikes = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(7) , units::Tile(4)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let mut spawn_pos = (units::Tile(0), units::Tile(0));
 		let mut tile_rows = vec![];
-		for line in level_fg.lines() {
+		for (row_no,line) in level_fg.lines().enumerate() {
 			let line = line.trim();
 			let mut col = vec![];
 
-			for tile_ty in line.chars() {
+			for (col_no, tile_ty) in line.chars().enumerate() {
 				col.push(match tile_ty {
-					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
+					'w' => { Tile::from_sprite(wall.clone(),         TileType::Wall) },
+					'b' => { Tile::from_sprite(wall.clone(), TileType::Destructible) },
+					
+					'^' => { Tile::from_sprite(spikes.clone(),     TileType::Spikes) },
+					'v' => { Tile::from_sprite(spikes.clone(),     TileType::Spikes) },
+
+					's' => {
+						spawn_pos = (units::Tile(col_no), units::Tile(row_no));
+						Tile::new()
+					}
+					
 					'.' => { Tile::new() },
-					any   => { panic!("unknown tile type in map fg {}", any); },
+					_ => { Tile::new() },
+					//any   => { panic!("unknown tile type in map fg {}", any); },
 				});
 			}
 
@@ -140,101 +183,11 @@ impl Map {
 			tiles:   tile_rows,
 
 			event_chan: events,
+			spawn: spawn_pos,
 		}
 
 	}
-	/// Will initialize a map (20 * 15) tiles:
-	///
-	/// * Most of these tiles will be `Air` tiles.
-	/// * There are 15-tile high walls in the first and last columns. 
-	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
-	/// * A 3-tile high chain is placed on the left-side of this obstacle course.
-	pub fn create_test_map(graphics: &mut graphics::Graphics, 
-	                       events: Sender<GameEvent>) -> Map {
-
-		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
-		let sprite   =  Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics,
-				(units::Tile(1) , units::Tile(0)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let chain_top = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics,
-				(units::Tile(11), units::Tile(2)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let chain_middle = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics,
-				(units::Tile(12), units::Tile(2)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let chain_bottom = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics, 
-				(units::Tile(13), units::Tile(2)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let blank_tile = Tile::new();
-		let wall_tile  = Tile::from_sprite(sprite, TileType::Wall);
-		let ct_tile    = Tile::from_sprite(chain_top, TileType::Air);
-		let cm_tile    = Tile::from_sprite(chain_middle, TileType::Air);
-		let cb_tile    = Tile::from_sprite(chain_bottom, TileType::Air);
-
-		let blank_row: Vec<Tile> = repeat(blank_tile).take(COLS).collect();
-
-		let mut map = Map {
-			background: backdrop::FixedBackdrop::new(
-				format!("assets/base/bkBlue.bmp"), graphics
-			),
-			sprites: repeat(blank_row.clone()).take(ROWS).collect(),
-			tiles: repeat(blank_row.clone()).take(ROWS).collect(),
-
-			event_chan: events,
-		};
-
 	
-		// init `safety floors`
-		for i in (0..COLS) {
-			map.tiles[0][i]        = wall_tile.clone();
-			map.tiles[ROWS - 1][i] = wall_tile.clone();
-		}
-
-		// "safety wall"
-		for i in (0..ROWS) {
-			map.tiles[i][0]        = wall_tile.clone();
-			map.tiles[i][COLS - 1] = wall_tile.clone();
-		}
-
-
-		map.tiles[ROWS - 2][3] = wall_tile.clone();
-		map.tiles[ROWS - 2][5] = wall_tile.clone();
-
-		map.tiles[ROWS - 3][4] = wall_tile.clone();
-		map.tiles[ROWS - 4][3] = wall_tile.clone();
-		map.tiles[ROWS - 5][2] = wall_tile.clone();
-
-		map.sprites[ROWS - 4][2] = ct_tile.clone();
-		map.sprites[ROWS - 3][2] = cm_tile.clone();
-		map.sprites[ROWS - 2][2] = cb_tile.clone();
-	
-		map
-	}
-
 	pub fn draw_background(&mut self, graphics: &mut graphics::Graphics) {
 		self.background.draw(graphics);
 	}
@@ -259,6 +212,7 @@ impl Map {
 	pub fn draw(&mut self, graphics: &mut graphics::Graphics) {
 		for a in (0..self.tiles.len()) {
 			for b in (0..self.tiles[a].len()) {
+				if self.tiles[a][b].hp <= 0 { self.tiles[a][b] = Tile::new() }
 				match self.tiles[a][b].sprite {
 					Some(ref sprite) => {
 						sprite.borrow_mut()
@@ -283,6 +237,8 @@ impl Map {
 			tile.ofs_x = tile.ofs_x + delta_x;
 		}
 	}
+
+	pub fn spawn_pos(&self) -> (units::Tile, units::Tile) { self.spawn }
 
 	/// Does a fast-check to see if a rectangle overlaps another rectangle
 	/// Does "damage" to the block it hits
