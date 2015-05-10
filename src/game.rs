@@ -1,6 +1,6 @@
 use std::cmp;
 use std::thread::sleep_ms;
-use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 use enemies;
 use graphics::{self, Graphics};

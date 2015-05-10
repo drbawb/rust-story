@@ -300,7 +300,7 @@ impl Map {
 		if    (first_row > ROWS) || (last_row+1 > ROWS)
 		   || (first_col > COLS) || (last_col   > COLS) {
 
-		   	self.event_chan.send(GameEvent::Panic);
+		   	let _ = self.event_chan.send(GameEvent::Panic);
 		   	return vec![];
 	    }
 

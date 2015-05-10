@@ -237,29 +237,12 @@ impl Player {
 			self.is_invincible = self.invincible_time < DAMAGE_INVINCIBILITY;
 		}
 
-		// swap gravity and move axes according to gravity
-		let (mut v_grav, mut v_move) = match self.g_dir {
-			Gravity::Up    => (self.velocity_y, self.velocity_x),
-			Gravity::Down  => (self.velocity_y, self.velocity_x),
-		};
-
-		// swap gravity and move positions according to gravity
-		let (mut p_grav, mut p_move) = match self.g_dir {
-			Gravity::Up    => (self.y, self.x),
-			Gravity::Down  => (self.y, self.x),
-		};
-
-		// switch update dirs
 		self.update_x(map);
 
+		// switch update dirs
 		match self.g_dir {
-			Gravity::Up  => {
-				self.update_grav(map, &mut v_grav, &mut p_grav,  true);
-			},
-
-			Gravity::Down => {
-				self.update_grav(map, &mut v_grav, &mut p_grav, false);
-			},
+			Gravity::Up   => { self.update_grav(map,  true); },
+			Gravity::Down => { self.update_grav(map, false); },
 		}
 	}
 
@@ -337,8 +320,6 @@ impl Player {
 	/// assigned to one of two axes.
 	fn update_grav (&mut self, 
 	                map: &map::Map, 
-		            v_grav: &mut units::Velocity,
-		            p_grav: &mut units::Game,
 		            is_inverted: bool) {
 
 		println!("grav check inverted? {}", is_inverted);
