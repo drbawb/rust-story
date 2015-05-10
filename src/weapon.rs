@@ -129,6 +129,14 @@ impl Weapon {
 	}
 }
 
+#[derive(Copy, Clone)]
+pub enum Direction {
+	Up,
+	Down,
+	Left,
+	Right,
+}
+
 #[derive(Clone)]
 pub struct Bullet {
 	// sprite
@@ -144,7 +152,8 @@ pub struct Bullet {
 	vy: units::Velocity,
 
 	// states
-	collided: bool,
+	collided:  bool,
+	direction: Direction,
 }
 
 impl Bullet {
@@ -200,7 +209,8 @@ impl Bullet {
 			vy: units::Velocity(0.0),
 
 			// states
-			collided: false,
+			collided:  false,
+			direction: Direction::Right,
 		}
 	}
 
@@ -211,8 +221,13 @@ impl Bullet {
 		self.y = y.to_game();
 	}
 
-	pub fn set_velocity(&mut self, velocity: (units::Velocity, units::Velocity)) {
+	pub fn set_velocity(&mut self, 
+	                    velocity: (units::Velocity, units::Velocity),
+	                    direction: Direction) {
+
 		let (vx,vy) = velocity;
+
+		self.direction = direction;
 		self.vx = vx;
 		self.vy = vy;
 	}
@@ -225,8 +240,14 @@ impl Bullet {
 	}
 
 	pub fn draw(&mut self, display: &mut Graphics) {
-		self.sprite_right.borrow_mut()
-		                 .draw(display, (self.x, self.y));
+		let mut sprite_ref = match self.direction {
+			Direction::Up    => {    self.sprite_up.borrow_mut() },
+			Direction::Down  => {  self.sprite_down.borrow_mut() },
+			Direction::Left  => {  self.sprite_left.borrow_mut() },
+			Direction::Right => { self.sprite_right.borrow_mut() },
+		};
+
+     	sprite_ref.draw(display, (self.x, self.y));
 	}
 
 	// integrate time over vx and vy to compute new positions
@@ -238,15 +259,13 @@ impl Bullet {
 		let ny = self.y + dy;
 
 		// quick check collision at new position
-		//new(width: units::Game, height: units::Game) -> Rectangle {
+		let mut hit_pos = None;
 		let nrect = Rectangle {
 			x: nx,
 			y: ny,
 			width:  units::Tile(1).to_game(),
 			height: units::Tile(1).to_game(),
 		};
-
-		let mut hit_pos = None;
 
 		{ // borrow tiles for collision checking
 			let tiles = tile_map.hit_scan(&nrect);

@@ -7,7 +7,7 @@ use sprite::{self, Facing, Looking, Motion, Updatable};
 
 use collisions::{Info,Rectangle};
 use map::{self, TileType};
-use weapon::{Bullet, Weapon};
+use weapon::{self, Bullet, Weapon};
 
 use units;
 use units::AsGame;
@@ -622,9 +622,16 @@ impl Player {
 			self.next_fire_time = BULLET_DELAY_MS;
 			
 			let mut projectile = self.proto_bullet.clone();
-			projectile.set_coords((self.x, self.y));
-			projectile.set_velocity((units::Velocity(0.75), units::Velocity(0.0)));
 
+			let (p_velocity, direction) = match self.movement {
+				(_, _, Looking::Up)   => { ( (units::Velocity(  0.0), units::Velocity(-0.75)),    weapon::Direction::Up ) },
+				(_, _, Looking::Down) => { ( (units::Velocity(  0.0), units::Velocity( 0.75)),  weapon::Direction::Down ) },
+				(_, Facing::East, _)  => { ( (units::Velocity( 0.75), units::Velocity(  0.0)),  weapon::Direction::Left ) },
+				(_, Facing::West, _)  => { ( (units::Velocity(-0.75), units::Velocity(  0.0)), weapon::Direction::Right ) },
+			};
+
+			projectile.set_coords((self.x, self.y));
+			projectile.set_velocity(p_velocity, direction);
 			self.bullets.push(projectile);
 		}
 	}
