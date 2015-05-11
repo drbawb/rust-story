@@ -207,15 +207,6 @@ impl Map {
 
 		gup_brick.borrow_mut().flip(false, true);
 
-		let girder_l = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				display,
-				(units::Tile(14) , units::Tile(2)),
-				(units::Tile(1), units::Tile(1)),
-				sheet.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
 		let girder_m = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				display,
@@ -225,10 +216,19 @@ impl Map {
 			) as Box<sprite::Updatable<_>>
 		));
 
-		let girder_r = Rc::new(RefCell::new(
+		let rjunk_1 = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				display,
-				(units::Tile(15) , units::Tile(2)),
+				(units::Tile(7) , units::Tile(1)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let rjunk_2 = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(8) , units::Tile(1)),
 				(units::Tile(1), units::Tile(1)),
 				sheet.clone()
 			) as Box<sprite::Updatable<_>>
@@ -273,6 +273,7 @@ impl Map {
 			let mut col = vec![];
 			let mut girder_started = false;
 
+			let mut junk_tick = false;
 			for (col_no, tile_ty) in line.chars().enumerate() {
 				col.push(match tile_ty {
 					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
@@ -292,17 +293,14 @@ impl Map {
 						} else { Tile::new() }
 					},
 
-					'g' => {
-						if girder_started {
-							// peek to see if we're done aft
-							match line.chars().skip(col_no+1).peekable().next() {
-								Some('g')  => { Tile::from_sprite(girder_m.clone(), TileType::Air) },
-								Some(ch)   => { Tile::from_sprite(girder_r.clone(), TileType::Air) },
-								None       => { panic!("girder w/o close?") },
-							}
+					'g' => { Tile::from_sprite(girder_m.clone(), TileType::Air) },
+
+					'f' => {
+						junk_tick = !junk_tick;
+						if junk_tick {
+							Tile::from_sprite(rjunk_1.clone(), TileType::Air)
 						} else {
-							girder_started = true;
-							Tile::from_sprite(girder_l.clone(), TileType::Air)
+							Tile::from_sprite(rjunk_2.clone(), TileType::Air)
 						}
 					},
 
