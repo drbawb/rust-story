@@ -97,6 +97,11 @@ impl<'g> Graphics<'g> {
 		self.cache.get_mut(&file_path).unwrap()
 	}
 
+	pub fn draw_rect(&mut self, rect: &rect::Rect, color: Color) {
+		let _ = self.screen.drawer().set_draw_color(color);
+		let _ = self.screen.drawer().fill_rect(*rect);
+	}
+
 	pub fn blit_surface(&mut self,
 	                    src_id: &str,
 	                    src_rect:  &rect::Rect,
