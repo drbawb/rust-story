@@ -5,7 +5,7 @@ use std::sync::mpsc::Sender;
 
 use backdrop;
 use graphics;
-use sprite;
+use sprite::{self, Drawable, Updatable};
 use units;
 
 use collisions::Rectangle;
@@ -17,6 +17,7 @@ static COLS: usize = 20; // 640
 
 #[derive(Clone,Copy,PartialEq,Eq)]
 pub enum TileType {
+	Exit,
 	Air,
 	GDown,
 	GUp,
@@ -115,7 +116,8 @@ impl Map {
 		let header = level_bg.lines()
 		                     .take(1)
 		                     .next()
-		                     .expect("map background path missing");
+		                     .expect("map background path missing")
+		                     .trim();
 
       	// loader assets
       	let sheet = format!("assets/base/Stage/PrtJail.bmp");
@@ -155,6 +157,36 @@ impl Map {
 			) as Box<sprite::Updatable<_>>
 		));
 
+		let sheet = format!("assets/base/Stage/PrtAlmond.bmp");
+		let gdown_brick = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(5) , units::Tile(3)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let gup_brick = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(5) , units::Tile(3)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let exit = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(13) , units::Tile(1)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		gup_brick.borrow_mut().flip(false, true);
+
 		let mut spawn_pos = (units::Tile(0), units::Tile(0));
 		let mut tile_rows = vec![];
 		for (row_no,line) in level_fg.lines().enumerate() {
@@ -174,8 +206,10 @@ impl Map {
 						Tile::new()
 					}
 					
-					'd' => { Tile::from_sprite(wall.clone(), TileType::GDown) },
-					'u' => { Tile::from_sprite(wall.clone(), TileType::GUp) },
+					'd' => { Tile::from_sprite(gdown_brick.clone(), TileType::GDown) },
+					'u' => { Tile::from_sprite(gup_brick.clone(), TileType::GUp) },
+
+					'x' => { Tile::from_sprite(exit.clone(), TileType::Exit) },
 
 					'.' => { Tile::new() },
 					_ => { Tile::new() },
@@ -195,15 +229,18 @@ impl Map {
 				col.push(match tile_ty {
 					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
 					'.' => { Tile::new() },
-					_   => { panic!("unknown tile type in map bg"); },
+					_   => { Tile::new() },
 				});
 			}
 
 			sprite_rows.push(col);
 		}
 
+		let header_path = header.to_string();
+		println!("loading backgroudn: {}", header_path);
+
 		Map {
-			background: backdrop::FixedBackdrop::new(header.to_string(), display),
+			background: backdrop::FixedBackdrop::new(header_path, display),
 			sprites: sprite_rows,
 			tiles:   tile_rows,
 

@@ -1,5 +1,7 @@
 use std::cell::RefCell;
 use std::collections::hash_map::{HashMap, Entry};
+use std::sync::mpsc::Sender;
+use game::GameEvent;
 use num::Float;
 
 use graphics;
@@ -123,6 +125,9 @@ pub struct Player {
 	// timers
 	invincible_time: units::Millis,
 	next_fire_time:  units::Millis,
+
+	//
+	events_tx: Sender<GameEvent>,
 }
 
 
@@ -135,7 +140,8 @@ impl Player {
 	/// The player will continue to fall until some collision is detected.
 	pub fn new(graphics: &mut graphics::Graphics, 
 	            x: units::Game, 
-	            y: units::Game) -> Player {
+	            y: units::Game,
+	            gevent_tx: Sender<GameEvent>) -> Player {
 		// insert sprites into map
 		let sprite_map = 
 			HashMap::<MotionTup, Box<sprite::Updatable<_>>>::new();
@@ -186,6 +192,8 @@ impl Player {
 
 			invincible_time: units::Millis(0),
 			next_fire_time:  units::Millis(0),
+
+			events_tx: gevent_tx,
 		};
 
 		// load sprites for every possible movement tuple.
@@ -462,9 +470,22 @@ impl Player {
 					if *hp < 0 { *hp = 0 }
 				},
 
-				TileType::GUp => {
+				TileType::GUp   => { 
+					match self.g_dir {
+						Gravity::Down => { self.events_tx.send(GameEvent::SwapUp); },
+						_ => {},
+					}
+				},
 
-				}
+				TileType::GDown => {
+					match self.g_dir {
+						Gravity::Up => { self.events_tx.send(GameEvent::SwapDown); },
+						_ => {},
+					}
+				},
+
+				TileType::Exit => { self.events_tx.send(GameEvent::Win); },
+
 				_ => {},
 			}
 		}
@@ -644,10 +665,14 @@ impl Player {
 			self.next_fire_time = BULLET_DELAY_MS;
 			
 			let mut projectile = self.proto_bullet.clone();
+			let g_mult = match self.g_dir {
+				Gravity::Up   => { -1.0 },
+				Gravity::Down => {  1.0 },
+			};
 
 			let (p_velocity, direction) = match self.movement {
-				(_, _, Looking::Up)   => { ( (units::Velocity(  0.0), units::Velocity(-0.75)),    weapon::Direction::Up ) },
-				(_, _, Looking::Down) => { ( (units::Velocity(  0.0), units::Velocity( 0.75)),  weapon::Direction::Down ) },
+				(_, _, Looking::Up)   => { ( (units::Velocity(  0.0), units::Velocity(-0.75 * g_mult)),    weapon::Direction::Up ) },
+				(_, _, Looking::Down) => { ( (units::Velocity(  0.0), units::Velocity( 0.75 * g_mult)),  weapon::Direction::Down ) },
 				(_, Facing::East, _)  => { ( (units::Velocity( 0.75), units::Velocity(  0.0)),  weapon::Direction::Left ) },
 				(_, Facing::West, _)  => { ( (units::Velocity(-0.75), units::Velocity(  0.0)), weapon::Direction::Right ) },
 			};
