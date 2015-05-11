@@ -25,6 +25,7 @@ pub enum TileType {
 	Destructible,
 	Wall,
 	
+	Chain,
 	Spikes,
 }
 
@@ -120,6 +121,25 @@ impl Map {
 		                     .trim();
 
       	// loader assets
+      	let sheet = format!("assets/base/Stage/PrtCave.bmp");
+      	let chain_top = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(11) , units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+  		));
+
+  		let chain_bot = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(13) , units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+  		));
+
       	let sheet = format!("assets/base/Stage/PrtJail.bmp");
       	let wall = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
@@ -187,6 +207,33 @@ impl Map {
 
 		gup_brick.borrow_mut().flip(false, true);
 
+		let girder_l = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(14) , units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let girder_m = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(13) , units::Tile(1)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let girder_r = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(15) , units::Tile(2)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
 		let mut spawn_pos = (units::Tile(0), units::Tile(0));
 		let mut tile_rows = vec![];
 		for (row_no,line) in level_fg.lines().enumerate() {
@@ -204,7 +251,7 @@ impl Map {
 					's' => {
 						spawn_pos = (units::Tile(col_no), units::Tile(row_no));
 						Tile::new()
-					}
+					},
 					
 					'd' => { Tile::from_sprite(gdown_brick.clone(), TileType::GDown) },
 					'u' => { Tile::from_sprite(gup_brick.clone(), TileType::GUp) },
@@ -220,15 +267,45 @@ impl Map {
 			tile_rows.push(col);
 		}
 
-		let mut sprite_rows = vec![];
-		for line in level_bg.lines().skip(1) {
+		let mut sprite_rows: Vec<Vec<Tile>> = vec![];
+		for (row_no, line) in level_bg.lines().skip(1).enumerate() {
 			let line = line.trim();
 			let mut col = vec![];
+			let mut girder_started = false;
 
-			for tile_ty in line.chars() {
+			for (col_no, tile_ty) in line.chars().enumerate() {
 				col.push(match tile_ty {
 					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
 					'.' => { Tile::new() },
+
+					'c' => {
+						if let Some(row) = sprite_rows.get(row_no-1) {
+							if let Some(tile) = row.get(col_no) {
+								if tile.tile_type == TileType::Chain {
+									Tile::from_sprite(chain_bot.clone(), TileType::Chain)
+								} else {
+									Tile::from_sprite(chain_top.clone(), TileType::Chain)
+								}
+							} else {
+								panic!("last chain out of bounds")
+							}
+						} else { Tile::new() }
+					},
+
+					'g' => {
+						if girder_started {
+							// peek to see if we're done aft
+							match line.chars().skip(col_no+1).peekable().next() {
+								Some('g')  => { Tile::from_sprite(girder_m.clone(), TileType::Air) },
+								Some(ch)   => { Tile::from_sprite(girder_r.clone(), TileType::Air) },
+								None       => { panic!("girder w/o close?") },
+							}
+						} else {
+							girder_started = true;
+							Tile::from_sprite(girder_l.clone(), TileType::Air)
+						}
+					},
+
 					_   => { Tile::new() },
 				});
 			}
