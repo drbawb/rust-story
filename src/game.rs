@@ -1,4 +1,6 @@
 use std::cmp;
+use std::fs::File;
+use std::io::prelude::*;
 use std::thread::sleep_ms;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
@@ -23,6 +25,9 @@ pub static SCREEN_HEIGHT: units::Tile = units::Tile(15);
 
 pub enum GameEvent {
 	Panic,
+	SwapUp,
+	SwapDown,
+	Win,
 }
 
 enum GameMode {
@@ -40,68 +45,68 @@ pub struct Game<'engine> {
 
 	events_tx: Sender<GameEvent>,
 	events_rx: Receiver<GameEvent>,
+
+	next_level: usize,
 }
 
 struct GameState {
 	quote:  player::Player,
 	yatty:  enemies::CaveBat,
 	map:    map::Map,
+
+	inverted: bool,
 }
 
 impl GameState {
-	/// Set initial game-state for level 1
-	pub fn initial(display: &mut graphics::Graphics, 
-                   gevent_tx: Sender<GameEvent>) -> GameState {
+	pub fn level_from_disk(display: &mut graphics::Graphics,
+	                       gevent_tx: Sender<GameEvent>,
+	                       level_idx: usize) -> GameState {
 
-let level_0_fg = 
-"wwwwwwwwwwwwwwwwwwww
- w..............ww..w
- w.............w.w..w
- w............w..w..w
- w...........w...w..w
- w..........w.......w
- w..................w
- w........w......wwww
- w........w......w..w
- w........w......w..w
- wwwww...wwwwwwwww..w
- w..................w
- w..................w
- w..................w
- wwwwwwwwwwwwwwwwwwww";
+		let fg_path = format!("levels/level_{}.fg.drb", level_idx);
+		let bg_path = format!("levels/level_{}.bg.drb", level_idx);
 
-let level_0_bg = 
-"assets/base/bkBlue.bmp
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................
-....................";
-		
-		GameState {
-			map: map::Map::new(display, gevent_tx, level_0_bg, level_0_fg),
+		println!("loading levels from {} \n {}", fg_path, bg_path);
 
-			quote: player::Player::new(
-				display,
-				(SCREEN_WIDTH  / units::Tile(2)).to_game(),
-				(SCREEN_HEIGHT / units::Tile(2)).to_game(),
-			),
+		let mut fg_buf = String::new();
+		let mut bg_buf = String::new();
 
-			yatty: enemies::CaveBat::new(
+		let mut fg = File::open(fg_path).ok().expect(&format!("level files not found for idx {}", level_idx)[..]);
+		let mut bg = File::open(bg_path).ok().expect(&format!("level files not found for idx {}", level_idx)[..]);
+
+		// fill fg_buf and bg_buf w/ level_<idx>.<layer>.drb
+		fg.read_to_string(&mut fg_buf).ok().unwrap();
+		bg.read_to_string(&mut bg_buf).ok().unwrap();
+
+		let world  = map::Map::new(display, gevent_tx.clone(), &bg_buf[..], &fg_buf[..]);
+		let (x,y)  = world.spawn_pos();
+
+		let mut player = player::Player::new(
+			display,
+			x.to_game(),
+			y.to_game(),
+			gevent_tx.clone(),
+		);
+
+
+		let enemy = match level_idx {
+			_ => enemies::CaveBat::new(
 				display,
 				(SCREEN_WIDTH / units::Tile(3)).to_game(),
 				(units::Tile(10)).to_game(),
 			),
+		};
+
+		let start_inverted = match level_idx {
+			1 => { player.swap_gravity(); true },
+			_ => { false },
+		};
+
+		GameState {
+			map:   world,
+			quote: player,
+			yatty: enemy,
+
+			inverted: start_inverted,
 		}
 	}
 }
@@ -118,7 +123,8 @@ impl<'e> Game<'e> {
 		let (gevent_tx, gevent_rx) = channel();
 
 		Game {
-			state: GameState::initial(&mut display, gevent_tx.clone()),
+			state: GameState::level_from_disk(&mut display, gevent_tx.clone(), 0),
+			next_level:  0,
 
 			display:     display,
 			controller:  controller,
@@ -168,6 +174,27 @@ impl<'e> Game<'e> {
 			'drain: loop {
 				match self.events_rx.try_recv() {
 					Ok(GameEvent::Panic) => { game_state = GameMode::GameOver },
+					Ok(GameEvent::SwapUp) => {
+						println!("swap up");
+						if !self.state.inverted { 
+							self.state.inverted = true;
+							self.state.quote.swap_gravity();
+						}
+					},
+					Ok(GameEvent::SwapDown) => {
+						println!("swap down");
+						if self.state.inverted {
+							self.state.inverted = false;
+							self.state.quote.swap_gravity();
+						}
+					},
+
+					Ok(GameEvent::Win) => {
+						// TODO: load state next level
+						self.next_level += 1;
+						self.state = GameState::level_from_disk(&mut self.display, self.events_tx.clone(), self.next_level);
+					},
+
 					_ => {},
 				}
 
@@ -239,12 +266,12 @@ impl<'e> Game<'e> {
 		// background
 		self.state.map.draw_background(&mut self.display);
 		self.state.map.draw_sprites(&mut self.display);
+		self.state.map.draw(&mut self.display);
 
 		// foreground
 		self.state.quote.draw(&mut self.display);
 		self.state.yatty.draw(&mut self.display);
-		self.state.map.draw(&mut self.display);
-
+		
 		// ui
 		self.state.quote.draw_hud(&mut self.display);
 	}
@@ -252,7 +279,7 @@ impl<'e> Game<'e> {
 	/// Passes the current time in milliseconds to our underlying actors.
 	fn update(&mut self, elapsed_time: units::Millis) {
 		self.state.map.update(elapsed_time);
-		self.state.quote.update(elapsed_time, &self.state.map);
+		self.state.quote.update(elapsed_time, &mut self.state.map);
 		self.state.yatty.update(elapsed_time, self.state.quote.center_x());
 
 		let collided =
@@ -262,13 +289,18 @@ impl<'e> Game<'e> {
 		if collided {
 			self.state.quote.take_damage();
 		}
+
+		if self.state.quote.hitpoints() <= 0 {
+			let _ = self.events_tx.send(GameEvent::Panic);
+		}
 	}
 
 	fn tick_menu(&mut self, next_state: &mut GameMode) {
 		if self.controller.was_key_pressed(KeyCode::R) {
 			// reload level
-			self.state = GameState::initial(&mut self.display, 
-			                                self.events_tx.clone());
+			self.state = GameState::level_from_disk(&mut self.display, 
+			                                		self.events_tx.clone(),
+			                                		self.next_level);
 
 			*next_state = GameMode::Running;
 		}
@@ -307,7 +339,9 @@ impl<'e> Game<'e> {
 		} else if self.controller.was_key_released(KeyCode::Z) {
 			self.state.quote.stop_jump();
 		} else if self.controller.was_key_pressed(KeyCode::X) {
-			self.state.quote.swap_gravity();
-		}
+			self.state.quote.fire_gun();
+		} /*else if self.controller.was_key_pressed(KeyCode::G) {
+
+		} */
 	}
 }

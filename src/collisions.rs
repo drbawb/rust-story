@@ -1,3 +1,4 @@
+use graphics;
 use units;
 
 #[derive(Copy,Clone)]
@@ -36,5 +37,11 @@ impl Rectangle {
 		self.left() <= other.right() &&
 		self.top() <= other.bottom() &&
 		self.bottom() >= other.top()
+	}
+
+	pub fn draw(&self, display: &mut graphics::Graphics) {
+		let (units::Game(x), units::Game(y)) = (self.x, self.y);
+		let (units::Game(w), units::Game(h)) = (self.width, self.height);
+
 	}
 }

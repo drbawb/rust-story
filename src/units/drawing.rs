@@ -11,7 +11,7 @@ pub trait AsPixel { fn to_pixel(&self) -> Pixel; }
 /// A `Game` unit represents a density-independent distance in pixels.
 /// Converting a `Game` to pixels will round it to the nearest coordinate,
 /// scaled based on the desired tile size & resolution.
-#[derive(Clone, Copy, PartialEq,PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq,PartialOrd)]
 pub struct Game(pub f64);
 
 impl AsGame for Game {

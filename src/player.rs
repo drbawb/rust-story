@@ -1,4 +1,7 @@
+use std::cell::RefCell;
 use std::collections::hash_map::{HashMap, Entry};
+use std::sync::mpsc::Sender;
+use game::GameEvent;
 use num::Float;
 
 use graphics;
@@ -7,6 +10,7 @@ use sprite::{self, Facing, Looking, Motion, Updatable};
 
 use collisions::{Info,Rectangle};
 use map::{self, TileType};
+use weapon::{self, Bullet, Weapon};
 
 use units;
 use units::AsGame;
@@ -59,6 +63,8 @@ static Y_BOX: Rectangle = Rectangle {
 static DAMAGE_INVINCIBILITY: units::Millis  = units::Millis(3000);
 static INVINCIBILITY_FLASH:  units::Millis  = units::Millis(50);
 
+static BULLET_DELAY_MS: units::Millis = units::Millis(100);
+
 static HEALTH_BAR_X: units::Tile           = units::Tile(2);
 static HEALTH_BAR_Y: units::Tile           = units::Tile(2);
 static HEALTH_BAR_OFS_X: units::HalfTile   = units::HalfTile(0);
@@ -80,11 +86,19 @@ enum Gravity {
 	Down,
 }
 
+type PlayerSprite = Box<sprite::Updatable<units::Game>>;
+
 /// Encapsulates the pysical motion of a player as it relates to
 /// a sprite which can be animated, positioned, and drawn on the screen.
 pub struct Player {
 	// assets
-	sprites:   HashMap<MotionTup, Box<sprite::Updatable<units::Game>>>,
+	sprites: HashMap<MotionTup, PlayerSprite>,
+	weapon:  Weapon,
+
+	// projectiles list
+	proto_bullet:   Bullet,
+	bullets:        Vec<Bullet>,
+
 	hp_sprite: Box<sprite::Drawable<units::Tile>>,
 	hud:       Box<sprite::Updatable<units::Tile>>,
 	hud_fill:  Box<sprite::Updatable<units::HalfTile>>,
@@ -103,12 +117,17 @@ pub struct Player {
 	accel_x:       i64,
 
 	// state
+	hitpoints:        RefCell<i64>,
 	is_interacting:  bool,
 	is_invincible:   bool,
 	is_jump_active:  bool,
 
 	// timers
 	invincible_time: units::Millis,
+	next_fire_time:  units::Millis,
+
+	//
+	events_tx: Sender<GameEvent>,
 }
 
 
@@ -120,8 +139,9 @@ impl Player {
 	/// The player is initailized `standing` facing `east`.
 	/// The player will continue to fall until some collision is detected.
 	pub fn new(graphics: &mut graphics::Graphics, 
-	               x: units::Game, 
-	               y: units::Game) -> Player {
+	            x: units::Game, 
+	            y: units::Game,
+	            gevent_tx: Sender<GameEvent>) -> Player {
 		// insert sprites into map
 		let sprite_map = 
 			HashMap::<MotionTup, Box<sprite::Updatable<_>>>::new();
@@ -145,7 +165,12 @@ impl Player {
 		// construct new player
 		let mut new_player = Player{
 			elapsed_time: units::Millis(0),
-			sprites:   sprite_map,
+			sprites:      sprite_map,
+			weapon:       Weapon::new(graphics),
+			
+			bullets:      vec![],
+			proto_bullet: Bullet::new(graphics),
+
 			hud:       health_bar_sprite,
 			hud_fill:  health_fill_sprite,
 			hp_sprite: digit_3,
@@ -159,12 +184,16 @@ impl Player {
 			velocity_y: units::Velocity(0.0),
 			accel_x: 1,
 
+			hitpoints:      RefCell::new(10),
 			is_interacting: false,
 			is_jump_active: false,
 			is_invincible:  false,
 			g_dir:          Gravity::Down,
 
 			invincible_time: units::Millis(0),
+			next_fire_time:  units::Millis(0),
+
+			events_tx: gevent_tx,
 		};
 
 		// load sprites for every possible movement tuple.
@@ -185,19 +214,28 @@ impl Player {
 			return;
 		} else {
 			let sprite = self.sprites.get_mut(&self.movement).unwrap();
+			
 			match self.g_dir {
 				Gravity::Up => {
 					// mirror sprite vertically
 					sprite.flip(false, true);
 					sprite.draw(display, (self.x, self.y));
+					self.weapon.draw(display, (self.x, self.y), false, true);
 				},
 
 				Gravity::Down => {
 					// draw sprite normally
 					sprite.flip(false, false);
 					sprite.draw(display, (self.x, self.y));
+					self.weapon.draw(display, (self.x, self.y), false, false);
 				},
-			}
+			}			
+		}
+
+		// draw all player's projectiles
+		for bullet in self.bullets.iter_mut() {
+			//println!("drawing bullet");
+			bullet.draw(display);
 		}
 	}
 
@@ -214,6 +252,7 @@ impl Player {
 			                   (HEALTH_FILL_X,
 			                    HEALTH_FILL_Y));
 			
+			self.hp_sprite = box NumberSprite::new(display, *self.hitpoints.borrow() as i32);
 			self.hp_sprite.draw(display,
 			                    (units::Tile(3),
 			                     units::Tile(2)));
@@ -223,9 +262,12 @@ impl Player {
 	/// Updates player-state that relies on time data. (Namely physics calculations.)
 	/// Determines which sprite-sheet should be used for thsi frame.
 	/// Forwards the elapsed time to the current sprite.
-	pub fn update(&mut self, elapsed_time: units::Millis, map: &map::Map) {
+	pub fn update(&mut self, elapsed_time: units::Millis, map: &mut map::Map) {
 		// calculate current position
 		self.elapsed_time = elapsed_time;
+		if (self.next_fire_time > units::Millis(0)) {
+			self.next_fire_time = self.next_fire_time - self.elapsed_time;
+		}
 		
 		// update sprite
 		self.current_motion(); // update motion once at beginning of frame for consistency
@@ -237,6 +279,7 @@ impl Player {
 			self.is_invincible = self.invincible_time < DAMAGE_INVINCIBILITY;
 		}
 
+		// update player position
 		self.update_x(map);
 
 		// switch update dirs
@@ -244,6 +287,18 @@ impl Player {
 			Gravity::Up   => { self.update_grav(map,  true); },
 			Gravity::Down => { self.update_grav(map, false); },
 		}
+
+		// update projectile position
+		for (idx, bullet) in self.bullets.iter_mut().enumerate() {
+			bullet.update(self.elapsed_time, map);
+		}
+
+		self.bullets.iter()
+		            .position(|bullet| { bullet.is_off_screen() })
+		            .map(|idx| { self.bullets.remove(idx)});
+
+		// chosen vectors
+		//println!("delta (x,y): ({:?} , {:?})", self.velocity_x, self.velocity_y);
 	}
 
 	fn update_x(&mut self, map: &map::Map) {
@@ -322,8 +377,6 @@ impl Player {
 	                map: &map::Map, 
 		            is_inverted: bool) {
 
-		println!("grav check inverted? {}", is_inverted);
-
 		// check if they are "falling" relative to gravity
 		let is_falling = match is_inverted {
 			true  => self.velocity_y > units::Velocity(0.0),
@@ -341,12 +394,16 @@ impl Player {
 			false => { gravity },
 		};
 
-		// integrate time
-		let v_gravity = self.velocity_y + (gravity * self.elapsed_time);
-		self.velocity_y = units::Velocity((*v_gravity).min(*MAX_VELOCITY_Y));
-		let delta = self.velocity_y * self.elapsed_time;
+		// integrate time and clamp based on direction
+		let v_delta = self.velocity_y + (gravity * self.elapsed_time);
+		self.velocity_y = if is_inverted {
+			units::Velocity((*v_delta).max(-*MAX_VELOCITY_Y))
+		} else { 
+			units::Velocity((*v_delta).min(*MAX_VELOCITY_Y))
+		};
 
 		// check collision in direction of delta
+		let delta = self.velocity_y * self.elapsed_time;
 		if delta > units::Game(0.0) {
 			// react to collision
 			let mut info = self.get_collision_info(&self.bottom_collision(delta), map);
@@ -395,10 +452,41 @@ impl Player {
 			tile_map.get_colliding_tiles(hitbox);
 
 		let mut info = Info { collided: false, row: units::Tile(0), col: units::Tile(0) };
+
+		// match the first tile
 		for collision in tiles.iter() {
-			if collision.tile.tile_type == TileType::Wall {
-				info = Info {collided: true, row: collision.row, col: collision.col};
-				break;
+			// is this a solid collision?
+		 	match collision.tile.tile_type {
+				  TileType::Wall 
+				| TileType::Destructible => {
+					info = Info {collided: true, row: collision.row, col: collision.col};
+				},
+
+				TileType::Spikes => {
+					let damage_from_collision = collision.tile.do_damage();
+					let mut hp = self.hitpoints.borrow_mut();
+					*hp = (*hp - damage_from_collision);
+
+					if *hp < 0 { *hp = 0 }
+				},
+
+				TileType::GUp   => { 
+					match self.g_dir {
+						Gravity::Down => { self.events_tx.send(GameEvent::SwapUp); },
+						_ => {},
+					}
+				},
+
+				TileType::GDown => {
+					match self.g_dir {
+						Gravity::Up => { self.events_tx.send(GameEvent::SwapDown); },
+						_ => {},
+					}
+				},
+
+				TileType::Exit => { self.events_tx.send(GameEvent::Win); },
+
+				_ => {},
 			}
 		}
 
@@ -570,6 +658,31 @@ impl Player {
 		self.is_jump_active = false;
 	}
 
+	/// Attempts to fire a projectile, unless the next_fire
+	/// timer has not yet expired ...
+	pub fn fire_gun(&mut self) {
+		if (self.next_fire_time <= units::Millis(0)) {
+			self.next_fire_time = BULLET_DELAY_MS;
+			
+			let mut projectile = self.proto_bullet.clone();
+			let g_mult = match self.g_dir {
+				Gravity::Up   => { -1.0 },
+				Gravity::Down => {  1.0 },
+			};
+
+			let (p_velocity, direction) = match self.movement {
+				(_, _, Looking::Up)   => { ( (units::Velocity(  0.0), units::Velocity(-0.75 * g_mult)),    weapon::Direction::Up ) },
+				(_, _, Looking::Down) => { ( (units::Velocity(  0.0), units::Velocity( 0.75 * g_mult)),  weapon::Direction::Down ) },
+				(_, Facing::East, _)  => { ( (units::Velocity( 0.75), units::Velocity(  0.0)),  weapon::Direction::Left ) },
+				(_, Facing::West, _)  => { ( (units::Velocity(-0.75), units::Velocity(  0.0)), weapon::Direction::Right ) },
+			};
+
+			projectile.set_coords((self.x, self.y));
+			projectile.set_velocity(p_velocity, direction);
+			self.bullets.push(projectile);
+		}
+	}
+
 	/// This is called to update the player's `movement` based on
 	/// their current: acceleration, velocity, and collision state.
 	///
@@ -597,6 +710,8 @@ impl Player {
 				(Motion::Falling, last_facing, last_looking)
 			}
 		};
+
+		self.weapon.set_motion(self.movement);
 	}
 	
 	/// A player's damage rectangle encompasses the whole player.
@@ -618,7 +733,7 @@ impl Player {
 		self.is_invincible    = true;
 		self.invincible_time  = units::Millis(0);
 
-		println!("bat has collided with me! D:");
+		*self.hitpoints.borrow_mut() -= 2;
 	}
 
 	/// Returns true if the player is currently invisible due to an
@@ -688,6 +803,10 @@ impl Player {
 	/// Gravity cannot pull them below this floor.
 	fn on_ground(&self) -> bool {
 		self.on_ground
+	}
+
+	pub fn hitpoints(&self) -> i64 {
+		*self.hitpoints.borrow()
 	}
 
 	pub fn swap_gravity(&mut self) {

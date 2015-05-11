@@ -33,7 +33,7 @@ impl Sub<Millis> for Millis {
 /// (Note: this is actually `Pixels/ms`, but `Games` are used as
 /// they are higher precision types, they will also automatically
 /// scale the render distance when converted to pixels.)
-#[derive(Clone,Copy, PartialEq,PartialOrd)]
+#[derive(Clone,Copy,Debug,PartialEq,PartialOrd)]
 pub struct Velocity(pub f64);
 
 /// Allows dereferencing `Velocity(f64)` to the direct value

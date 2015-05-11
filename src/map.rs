@@ -5,7 +5,7 @@ use std::sync::mpsc::Sender;
 
 use backdrop;
 use graphics;
-use sprite;
+use sprite::{self, Drawable, Updatable};
 use units;
 
 use collisions::Rectangle;
@@ -17,8 +17,15 @@ static COLS: usize = 20; // 640
 
 #[derive(Clone,Copy,PartialEq,Eq)]
 pub enum TileType {
+	Exit,
 	Air,
-	Wall
+	GDown,
+	GUp,
+	
+	Destructible,
+	Wall,
+	
+	Spikes,
 }
 
 #[derive(Clone,Copy)]
@@ -41,9 +48,11 @@ type TileSprite = Rc<RefCell<Box<sprite::Updatable<units::Game>>>>;
 // TODO: Conflicts w/ units::Tile, should probably have a different name.
 #[derive(Clone)]
 pub struct Tile {
-	pub tile_type:  TileType,
-	pub ofs_x:      units::Game,
-	sprite:         Option<TileSprite>,	
+	pub tile_type: TileType,
+	pub ofs_x:     units::Game,
+
+	hp:     i64,
+	sprite: Option<TileSprite>,	
 }
 
 impl Tile {
@@ -53,6 +62,7 @@ impl Tile {
 			tile_type: TileType::Air,
 			sprite:    None,
 			ofs_x:     units::Game(0.0),
+			hp:        1,
 		}
 	}
 
@@ -63,6 +73,27 @@ impl Tile {
 			tile_type: tile_type,
 			sprite:    Some(sprite.clone()),
 			ofs_x:     units::Game(0.0),
+			hp:        1,
+		}
+	}
+
+	/// HP delta to be applied to actors on collision
+	pub fn do_damage(&self) -> i64 {
+		match self.tile_type {
+			TileType::Spikes => { 100 },
+			_ => { 0 },
+		}
+	}
+
+	/// Yields damage to tile, if applicable
+	fn take_damage(&mut self) {
+		match self.tile_type {
+			TileType::Destructible => { self.hp -= 1 },
+			_ => {},
+		};
+
+		if self.hp <= 0 {
+			println!("tile destroyed holy shit!");
 		}
 	}
 }
@@ -73,6 +104,7 @@ pub struct Map {
 	tiles:       Vec<Vec<Tile>>,
 
 	event_chan: Sender<GameEvent>,
+	spawn: (units::Tile, units::Tile),
 }
 
 impl Map {
@@ -84,29 +116,104 @@ impl Map {
 		let header = level_bg.lines()
 		                     .take(1)
 		                     .next()
-		                     .expect("map background path missing");
+		                     .expect("map background path missing")
+		                     .trim();
 
       	// loader assets
-      	let sheet = format!("assets/base/Stage/PrtCave.bmp");
-		let wall = Rc::new(RefCell::new(
+      	let sheet = format!("assets/base/Stage/PrtJail.bmp");
+      	let wall = Rc::new(RefCell::new(
 			box sprite::Sprite::new(
 				display,
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				sheet.clone()
 			) as Box<sprite::Updatable<_>>
+  		));
+
+		let dwall = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(3) , units::Tile(0)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+  		));
+
+		let spikes_up = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(12) , units::Tile(4)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
 		));
 
+		let spikes_down = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(12) , units::Tile(5)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let sheet = format!("assets/base/Stage/PrtAlmond.bmp");
+		let gdown_brick = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(5) , units::Tile(3)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let gup_brick = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(5) , units::Tile(3)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		let exit = Rc::new(RefCell::new(
+			box sprite::Sprite::new(
+				display,
+				(units::Tile(13) , units::Tile(1)),
+				(units::Tile(1), units::Tile(1)),
+				sheet.clone()
+			) as Box<sprite::Updatable<_>>
+		));
+
+		gup_brick.borrow_mut().flip(false, true);
+
+		let mut spawn_pos = (units::Tile(0), units::Tile(0));
 		let mut tile_rows = vec![];
-		for line in level_fg.lines() {
+		for (row_no,line) in level_fg.lines().enumerate() {
 			let line = line.trim();
 			let mut col = vec![];
 
-			for tile_ty in line.chars() {
+			for (col_no, tile_ty) in line.chars().enumerate() {
 				col.push(match tile_ty {
-					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
+					'w' => { Tile::from_sprite(wall.clone(),          TileType::Wall) },
+					'b' => { Tile::from_sprite(dwall.clone(), TileType::Destructible) },
+					
+					'^' => { Tile::from_sprite(spikes_up.clone(),     TileType::Spikes) },
+					'v' => { Tile::from_sprite(spikes_down.clone(),   TileType::Spikes) },
+
+					's' => {
+						spawn_pos = (units::Tile(col_no), units::Tile(row_no));
+						Tile::new()
+					}
+					
+					'd' => { Tile::from_sprite(gdown_brick.clone(), TileType::GDown) },
+					'u' => { Tile::from_sprite(gup_brick.clone(), TileType::GUp) },
+
+					'x' => { Tile::from_sprite(exit.clone(), TileType::Exit) },
+
 					'.' => { Tile::new() },
-					any   => { panic!("unknown tile type in map fg {}", any); },
+					_ => { Tile::new() },
+					//any   => { panic!("unknown tile type in map fg {}", any); },
 				});
 			}
 
@@ -122,114 +229,27 @@ impl Map {
 				col.push(match tile_ty {
 					'w' => { Tile::from_sprite(wall.clone(), TileType::Wall) },
 					'.' => { Tile::new() },
-					_   => { panic!("unknown tile type in map bg"); },
+					_   => { Tile::new() },
 				});
 			}
 
 			sprite_rows.push(col);
 		}
 
+		let header_path = header.to_string();
+		println!("loading backgroudn: {}", header_path);
+
 		Map {
-			background: backdrop::FixedBackdrop::new(header.to_string(), display),
+			background: backdrop::FixedBackdrop::new(header_path, display),
 			sprites: sprite_rows,
 			tiles:   tile_rows,
 
 			event_chan: events,
+			spawn: spawn_pos,
 		}
 
 	}
-	/// Will initialize a map (20 * 15) tiles:
-	///
-	/// * Most of these tiles will be `Air` tiles.
-	/// * There are 15-tile high walls in the first and last columns. 
-	/// * A small "obstacle course", 5-tiles wide, is placed about 2 tiles in.
-	/// * A 3-tile high chain is placed on the left-side of this obstacle course.
-	pub fn create_test_map(graphics: &mut graphics::Graphics, 
-	                       events: Sender<GameEvent>) -> Map {
-
-		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
-		let sprite   =  Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics,
-				(units::Tile(1) , units::Tile(0)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let chain_top = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics,
-				(units::Tile(11), units::Tile(2)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let chain_middle = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics,
-				(units::Tile(12), units::Tile(2)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let chain_bottom = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
-				graphics, 
-				(units::Tile(13), units::Tile(2)),
-				(units::Tile(1), units::Tile(1)),
-				map_path.clone()
-			) as Box<sprite::Updatable<_>>
-		));
-
-		let blank_tile = Tile::new();
-		let wall_tile  = Tile::from_sprite(sprite, TileType::Wall);
-		let ct_tile    = Tile::from_sprite(chain_top, TileType::Air);
-		let cm_tile    = Tile::from_sprite(chain_middle, TileType::Air);
-		let cb_tile    = Tile::from_sprite(chain_bottom, TileType::Air);
-
-		let blank_row: Vec<Tile> = repeat(blank_tile).take(COLS).collect();
-
-		let mut map = Map {
-			background: backdrop::FixedBackdrop::new(
-				format!("assets/base/bkBlue.bmp"), graphics
-			),
-			sprites: repeat(blank_row.clone()).take(ROWS).collect(),
-			tiles: repeat(blank_row.clone()).take(ROWS).collect(),
-
-			event_chan: events,
-		};
-
 	
-		// init `safety floors`
-		for i in (0..COLS) {
-			map.tiles[0][i]        = wall_tile.clone();
-			map.tiles[ROWS - 1][i] = wall_tile.clone();
-		}
-
-		// "safety wall"
-		for i in (0..ROWS) {
-			map.tiles[i][0]        = wall_tile.clone();
-			map.tiles[i][COLS - 1] = wall_tile.clone();
-		}
-
-
-		map.tiles[ROWS - 2][3] = wall_tile.clone();
-		map.tiles[ROWS - 2][5] = wall_tile.clone();
-
-		map.tiles[ROWS - 3][4] = wall_tile.clone();
-		map.tiles[ROWS - 4][3] = wall_tile.clone();
-		map.tiles[ROWS - 5][2] = wall_tile.clone();
-
-		map.sprites[ROWS - 4][2] = ct_tile.clone();
-		map.sprites[ROWS - 3][2] = cm_tile.clone();
-		map.sprites[ROWS - 2][2] = cb_tile.clone();
-	
-		map
-	}
-
 	pub fn draw_background(&mut self, graphics: &mut graphics::Graphics) {
 		self.background.draw(graphics);
 	}
@@ -254,6 +274,7 @@ impl Map {
 	pub fn draw(&mut self, graphics: &mut graphics::Graphics) {
 		for a in (0..self.tiles.len()) {
 			for b in (0..self.tiles[a].len()) {
+				if self.tiles[a][b].hp <= 0 { self.tiles[a][b] = Tile::new() }
 				match self.tiles[a][b].sprite {
 					Some(ref sprite) => {
 						sprite.borrow_mut()
@@ -277,6 +298,43 @@ impl Map {
 		for tile in (self.tiles[last_row].iter_mut()) {
 			tile.ofs_x = tile.ofs_x + delta_x;
 		}
+	}
+
+	pub fn spawn_pos(&self) -> (units::Tile, units::Tile) { self.spawn }
+
+	/// Does a fast-check to see if a rectangle overlaps another rectangle
+	/// Scans the entire row.
+	pub fn hit_scan(&mut self, rectangle: &Rectangle) -> Vec<CollisionTile> {
+		let units::Tile(row_no) = rectangle.top().to_tile();
+
+	    // check tiles at delta position
+	    let mut collision_tiles = vec![];
+		for col_no in (0..self.tiles[row_no].len()) {
+			// compute tile's real position
+			let tile = &self.tiles[row_no][col_no];				
+			let mut d_rect = Rectangle::new(
+				units::Tile(1).to_game(), 
+				units::Tile(1).to_game()
+			);
+
+			d_rect.x = tile.ofs_x + units::Tile(col_no);
+			d_rect.y = units::Tile(row_no).to_game();
+
+			if d_rect.collides_with(rectangle) {
+				collision_tiles.push(
+					CollisionTile::new(units::Tile(row_no), 
+					                   units::Tile(col_no), 
+					                   tile)
+				);
+			}
+		}
+
+		collision_tiles
+	}
+
+	/// Transfers damage to the tile at (row,col)
+	pub fn take_damage(&mut self, row: usize, col: usize) {
+		self.tiles[row][col].take_damage();
 	}
 
 	/// Checks if `Rectangle` is colliding with any tiles in the foreground.
