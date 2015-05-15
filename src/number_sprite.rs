@@ -9,18 +9,20 @@ use units::{self, AsGame};
 /// Useful for impl. counters, status bars, prompts, etc.
 ///
 struct DigitIter {
+	is_zero:   bool,
 	remainder: i32,
 }
 
 impl DigitIter {
 	fn new(number: i32) -> DigitIter {
-		DigitIter { remainder: number }
+		DigitIter { remainder: number, is_zero: (number == 0) }
 	}
 }
 
 impl Iterator for DigitIter {
 	type Item = i32;
 	fn next(&mut self) -> Option<i32> {
+		if self.is_zero { self.is_zero = false; return Some(0) };
 		if self.remainder <= 0 { return None; }
 
 		let digit = self.remainder % 10; // grab last digit
@@ -73,3 +75,11 @@ fn test_digit_iter() {
 	assert_eq!(digit_100, Some(4));
 }
 
+#[test]
+fn test_zero_iter() {
+	let mut iter  = DigitIter::new(0);
+	let digit_10  = iter.next();
+	let digit_100 = iter.next();
+	assert_eq!(digit_10,  Some(0));
+	assert_eq!(digit_100, None);
+}
