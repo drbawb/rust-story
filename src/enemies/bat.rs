@@ -69,12 +69,12 @@ impl CaveBat {
 					Facing::East => Y_OFFSET + EAST_OFFSET,
 				};
 
-				entry.insert(box sprite::AnimatedSprite::new(
+				entry.insert(Box::new(sprite::AnimatedSprite::new(
 						display, asset_path, 
 						(sprite_x, sprite_y), 
 						(units::Tile(1), units::Tile(1)),
 						SPRITE_FRAMES, SPRITE_FPS
-					).unwrap() as Box<sprite::Updatable<_>>);
+					).unwrap()) as Box<sprite::Updatable<_>>);
 			},
 			_ => {},
 		};

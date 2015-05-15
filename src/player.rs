@@ -120,21 +120,21 @@ impl Player {
 		let sprite_map = 
 			HashMap::<MotionTup, Box<sprite::Updatable<_>>>::new();
 
-		let health_bar_sprite = box sprite::Sprite::new(
+		let health_bar_sprite = Box::new(sprite::Sprite::new(
 			graphics, 
 			(HEALTH_BAR_OFS_X, HEALTH_BAR_OFS_Y),
 			(HEALTH_BAR_W, HEALTH_BAR_H),
 			format!("assets/base/TextBox.bmp"),
-		) as Box<sprite::Updatable<_>>;
+		)) as Box<sprite::Updatable<_>>;
 
-		let health_fill_sprite = box sprite::Sprite::new(
+		let health_fill_sprite = Box::new(sprite::Sprite::new(
 			graphics,
 			(HEALTH_FILL_OFS_X, HEALTH_FILL_OFS_Y),
 			(HEALTH_FILL_W.to_game() - FILL_SHIFT, HEALTH_FILL_H.to_game()),
 			format!("assets/base/TextBox.bmp"),
-		) as Box<sprite::Updatable<_>>;
+		)) as Box<sprite::Updatable<_>>;
 
-		let digit_3 = box NumberSprite::new(graphics, 42);
+		let digit_3 = Box::new(NumberSprite::new(graphics, 42));
 
 		// construct new player
 		let mut new_player = Player{
@@ -413,12 +413,12 @@ impl Player {
 							_ => units::Tile(0)
 						};
 					
-						box sprite::Sprite::new(
+						Box::new(sprite::Sprite::new(
 							graphics, 
 							(motion_frame + (looking_frame), facing_frame), 
 							(units::Tile(1), units::Tile(1)),	
 							file_path
-						) as Box<sprite::Updatable<_>>
+						)) as Box<sprite::Updatable<_>>
 					}
 
 					// static: jumping or falling
@@ -431,12 +431,12 @@ impl Player {
 							_ => motion_frame
 						};
 						
-						box sprite::Sprite::new(
+						Box::new(sprite::Sprite::new(
 							graphics,
 							(looking_frame, facing_frame),
 							(units::Tile(1), units::Tile(1)),
 							file_path
-						) as Box<sprite::Updatable<_>>
+						)) as Box<sprite::Updatable<_>>
 					}
 
 					// dynamic: 
@@ -446,12 +446,12 @@ impl Player {
 							_ => units::Tile(0)
 						};
 		
-						box sprite::AnimatedSprite::new(
+						Box::new(sprite::AnimatedSprite::new(
 							graphics, file_path,
 							(motion_frame + looking_frame, facing_frame),
 							(units::Tile(1), units::Tile(1)),
 							SPRITE_NUM_FRAMES, SPRITE_FPS
-						).unwrap() as Box<sprite::Updatable<_>>
+						).unwrap()) as Box<sprite::Updatable<_>>
 					}
 				};
 

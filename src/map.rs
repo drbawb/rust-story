@@ -71,39 +71,39 @@ impl Map {
 
 		let map_path =  format!("assets/base/Stage/PrtCave.bmp");
 		let sprite   =  Rc::new(RefCell::new(
-			box sprite::Sprite::new(
+			Box::new(sprite::Sprite::new(
 				graphics,
 				(units::Tile(1) , units::Tile(0)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as Box<sprite::Updatable<_>>
+			)) as Box<sprite::Updatable<_>>
 		));
 
 		let chain_top = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
+			Box::new(sprite::Sprite::new(
 				graphics,
 				(units::Tile(11), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as Box<sprite::Updatable<_>>
+			)) as Box<sprite::Updatable<_>>
 		));
 
 		let chain_middle = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
+			Box::new(sprite::Sprite::new(
 				graphics,
 				(units::Tile(12), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as Box<sprite::Updatable<_>>
+			)) as Box<sprite::Updatable<_>>
 		));
 
 		let chain_bottom = Rc::new(RefCell::new(
-			box sprite::Sprite::new(
+			Box::new(sprite::Sprite::new(
 				graphics, 
 				(units::Tile(13), units::Tile(2)),
 				(units::Tile(1), units::Tile(1)),
 				map_path.clone()
-			) as Box<sprite::Updatable<_>>
+			)) as Box<sprite::Updatable<_>>
 		));
 
 		let blank_tile = Tile::new();
