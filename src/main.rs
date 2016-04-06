@@ -1,8 +1,6 @@
 extern crate num;
 extern crate sdl2;
 
-use sdl2::sdl;
-
 pub mod backdrop;
 pub mod collisions;
 pub mod enemies;
@@ -17,7 +15,7 @@ pub mod units;
 
 pub fn main() {
 	println!("initalizing sdl ...");
-	let sdl_context = sdl::init(sdl::INIT_EVERYTHING).unwrap();
+	let sdl_context = sdl2::init().unwrap();
 
 	println!("let me tell you a story ...");
 	let mut story = ::game::Game::new(&sdl_context);

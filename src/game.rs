@@ -2,16 +2,16 @@ use std::cmp;
 use std::thread::sleep_ms;
 
 use enemies;
-use graphics::{self, Graphics};
+use graphics;
 use input;
 use map;
 use player;
 use units;
 use units::{AsGame};
 
-use sdl2::{self, sdl};
+use sdl2;
 use sdl2::event::Event;
-use sdl2::keycode::KeyCode;
+use sdl2::keyboard::Keycode;
 
 const TARGET_FRAMERATE: units::Fps  =  60;
 static MAX_FRAME_TIME: units::Millis =  units::Millis(5 * (1000 / TARGET_FRAMERATE as i64));
@@ -69,13 +69,13 @@ impl<'e> Game<'e> {
 	fn event_loop(&mut self) {
 		// event loop control
 		let frame_delay          = units::Millis(1000 / TARGET_FRAMERATE as i64);
-		let mut last_update_time = units::Millis(sdl::get_ticks() as i64);
+		let mut last_update_time = units::Millis(self.get_ticks() as i64);
 	
-		let mut event_pump = self.context.event_pump();
+		let mut event_pump = self.context.event_pump().unwrap();
 		let mut running    = true;
 		
 		while running {
-			let start_time_ms = units::Millis(sdl::get_ticks() as i64);
+			let start_time_ms = units::Millis(self.get_ticks() as i64);
 			self.controller.begin_new_frame();
 
 			// drain event queue once per frame
@@ -84,55 +84,55 @@ impl<'e> Game<'e> {
 			for event in event_pump.poll_iter() {
 				match event {
 					Event::KeyDown { keycode, .. } => {
-						self.controller.key_down_event(keycode);
+						self.controller.key_down_event(keycode.unwrap());
 					},
 					Event::KeyUp { keycode, .. } => {
-						self.controller.key_up_event(keycode);
+						self.controller.key_up_event(keycode.unwrap());
 					},
 					_ => {},
 				}
 			}
 
 			// Handle exit game
-			if self.controller.was_key_released(KeyCode::Escape) {
+			if self.controller.was_key_released(Keycode::Escape) {
 				running = false;
 			}
 
 			// Handle player movement
-			if self.controller.is_key_held(KeyCode::Left)
-				&& self.controller.is_key_held(KeyCode::Right) {
+			if self.controller.is_key_held(Keycode::Left)
+				&& self.controller.is_key_held(Keycode::Right) {
 
 				self.quote.stop_moving();
-			} else if self.controller.is_key_held(KeyCode::Left) {
+			} else if self.controller.is_key_held(Keycode::Left) {
 				self.quote.start_moving_left();
-			} else if self.controller.is_key_held(KeyCode::Right) {
+			} else if self.controller.is_key_held(Keycode::Right) {
 				self.quote.start_moving_right();
 			} else {
 				self.quote.stop_moving();
 			}
 
 			// Handle player looking
-			if self.controller.is_key_held(KeyCode::Up)
-				&& self.controller.is_key_held(KeyCode::Down) {
+			if self.controller.is_key_held(Keycode::Up)
+				&& self.controller.is_key_held(Keycode::Down) {
 
 				self.quote.look_horizontal();
-			} else if self.controller.is_key_held(KeyCode::Up) {
+			} else if self.controller.is_key_held(Keycode::Up) {
 				self.quote.look_up();
-			} else if self.controller.is_key_held(KeyCode::Down) {
+			} else if self.controller.is_key_held(Keycode::Down) {
 				self.quote.look_down();
 			} else {
 				self.quote.look_horizontal();
 			}
 
 			// Handle player jump
-			if self.controller.was_key_pressed(KeyCode::Z) {
+			if self.controller.was_key_pressed(Keycode::Z) {
 				self.quote.start_jump();
-			} else if self.controller.was_key_released(KeyCode::Z) {
+			} else if self.controller.was_key_released(Keycode::Z) {
 				self.quote.stop_jump();
 			}
 
 			// inform actors of how much time has passed since last frame
-			let current_time_ms = units::Millis(sdl::get_ticks() as i64);
+			let current_time_ms = units::Millis(self.get_ticks() as i64);
 			let elapsed_time    = current_time_ms - last_update_time;
 			
 			self.update(cmp::min(elapsed_time, MAX_FRAME_TIME));
@@ -144,7 +144,7 @@ impl<'e> Game<'e> {
 			self.display.switch_buffers();
 
 			// throttle event-loop based on iteration time vs frame deadline
-			let iter_time = units::Millis(sdl::get_ticks() as i64) - start_time_ms;
+			let iter_time = units::Millis(self.get_ticks() as i64) - start_time_ms;
 			let next_frame_time: u64 = if frame_delay > iter_time { 
 				let (units::Millis(fd), units::Millis(it)) = (frame_delay, iter_time);
 				(fd - it) as u64
@@ -163,6 +163,11 @@ impl<'e> Game<'e> {
 		}
 
 	}
+
+    // TODO: use time::* etc?
+    fn get_ticks(&mut self) -> u32 {
+        self.context.timer().unwrap().ticks()
+    }
 
 	/// Instructs our actors to draw their current state to the screen.
 	fn draw(&mut self) {

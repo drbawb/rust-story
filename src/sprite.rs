@@ -75,7 +75,7 @@ impl Sprite {
 		let (units::Pixel(xi), units::Pixel(yi)) = 
 			(norm_x.to_pixel(), norm_y.to_pixel());
 
-		let origin  = rect::Rect::new(xi,yi,wi,hi);
+		let origin  = rect::Rect::new(xi,yi,wi as u32, hi as u32);
 		graphics.load_image(file_name.clone(), true);  // request graphics subsystem cache this sprite.
 
 		return Sprite {
@@ -96,7 +96,7 @@ impl<C: AsGame> Drawable<C> for Sprite {
 		let (units::Pixel(xi), units::Pixel(yi)) = 
 			(x.to_game().to_pixel(), y.to_game().to_pixel());
 	
-		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
+		let dest_rect = rect::Rect::new(xi, yi, wi as u32, hi as u32);
 
 		display.blit_surface(&self.sprite_sheet[..], &self.source_rect, &dest_rect);
 	}
@@ -145,7 +145,7 @@ impl AnimatedSprite {
 	
 		let (units::Pixel(wi), units::Pixel(hi)) = (w.to_pixel(), h.to_pixel());
 		let (units::Pixel(xi), units::Pixel(yi)) = (x.to_pixel(), y.to_pixel());
-		let origin = rect::Rect::new(xi, yi, wi, hi);
+		let origin = rect::Rect::new(xi, yi, wi as u32, hi as u32);
 		
 		graphics.load_image(sheet_path.clone(), true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
@@ -176,11 +176,17 @@ impl<C: AsGame> Updatable<C> for AnimatedSprite {
 			self.last_update = units::Millis(0);  // reset timer
 			self.current_frame += 1;              // increment frame counter
 
+
+            let frame_width: u32 = self.source_rect.width();
+
 			if self.current_frame < self.num_frames {
-				self.source_rect.x += self.source_rect.w;
+                self.source_rect.offset(frame_width as i32, 0);
+				//self.source_rect.x += self.source_rect.w;
 			} else {
 				self.current_frame  = 0;
-				self.source_rect.x -= self.source_rect.w * (self.num_frames - 1) as i32;
+                let animation_length = (frame_width as u64) * (self.num_frames - 1);
+                self.source_rect.offset(-(animation_length as i32), 0);
+				//self.source_rect.x -= self.source_rect.w * (self.num_frames - 1) as i32;
 			}
 		}
 	}
@@ -196,7 +202,7 @@ impl<C: AsGame> Drawable<C> for AnimatedSprite {
 		let (units::Pixel(xi), units::Pixel(yi)) = 
 			(x.to_game().to_pixel(), y.to_game().to_pixel());
 
-		let dest_rect = rect::Rect::new(xi, yi, wi, hi);
+		let dest_rect = rect::Rect::new(xi, yi, wi as u32, hi as u32);
 		display.blit_surface(&self.sprite_sheet[..], &self.source_rect, &dest_rect);
 	}
 }

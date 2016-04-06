@@ -2,10 +2,9 @@ use game;
 use units;
 use units::{AsPixel};
 
-use sdl2::{self, mouse, rect, surface};
+use sdl2::{self, rect, surface};
 use sdl2::pixels::Color;
-use sdl2::render::{self, Renderer, RenderDriverIndex, Texture};
-use sdl2::video::{self, WindowPos};
+use sdl2::render::{Renderer, Texture};
 
 use std::collections::hash_map::{HashMap, Entry};
 use std::path::Path;
@@ -22,25 +21,23 @@ impl<'g> Graphics<'g> {
 		// boot the renderer
 		let (units::Pixel(w), units::Pixel(h)) = 
 			(game::SCREEN_WIDTH.to_pixel(), game::SCREEN_HEIGHT.to_pixel());
-		
-		let current_mode = video::Window::new(
-			context,
-			"rust-story v0.0",                               // title
-			WindowPos::PosCentered, WindowPos::PosCentered,  // position (x,y)
-			w, h,
-			video::INPUT_GRABBED
-		);
+	
+       
+        let video            = context.video().unwrap();
+        let mut window_proto = video.window("rust-story v0.0", w as u32, h as u32);
+        let current_mode     = window_proto.position_centered()
+                                           .input_grabbed()
+                                           .build();
 
 		let window_context = match current_mode {
 			Ok(ctx)  => ctx,
 			Err(msg) => panic!(msg),
 		};
 
-		 let renderer = Renderer::from_window(
-			window_context,
-			RenderDriverIndex::Auto,
-			render::SOFTWARE,
-		).unwrap();
+        let renderer = window_context.renderer()
+            .software()
+            .build()
+            .unwrap();
 
 		// strap it to graphics subsystem
 		let graphics = Graphics {
@@ -48,7 +45,7 @@ impl<'g> Graphics<'g> {
 			screen: renderer,
 		};
 
-		mouse::show_cursor(true);
+        context.mouse().show_cursor(true);
 		return graphics;
 	}
 
@@ -65,10 +62,10 @@ impl<'g> Graphics<'g> {
 		// Retrieve a handle or generate a new one if it exists already.
 		// Load sprite
 		let sprite_path = Path::new(&file_path[..]);
-		let sprite_window = surface::Surface::from_bmp(&sprite_path);
+		let sprite_window = surface::Surface::load_bmp(&sprite_path);
 
 		// Store sprite
-		let sprite_surface = match sprite_window {
+		let mut sprite_surface = match sprite_window {
 			Ok(surface) => surface,
 			Err(msg) => panic!("sprite could not be loaded to a surface: {}", msg),
 		};
@@ -85,7 +82,7 @@ impl<'g> Graphics<'g> {
 			Entry::Vacant(entry) => {
 				match self.screen.create_texture_from_surface(&sprite_surface) {
 					Ok(texture) => { entry.insert(texture); },
-					Err(msg) => panic!("sprite could not be rendered: {}", msg)
+					Err(msg) => panic!("sprite could not be rendered: {:?}", msg)
 				}
 			},
 
@@ -103,14 +100,14 @@ impl<'g> Graphics<'g> {
 	                    dest_rect: &rect::Rect) {
 	
 		let src = &mut self.cache.get_mut(src_id).unwrap();
-		let _ = self.screen.drawer().copy(src, Some(*src_rect), Some(*dest_rect));
+		let _ = self.screen.copy(src, Some(*src_rect), Some(*dest_rect));
 	}
 
 	pub fn switch_buffers(&mut self) {
-		self.screen.drawer().present();
+		self.screen.present();
 	}
 
 	pub fn clear_buffer(&mut self) {
-		let _ = self.screen.drawer().clear();
+		let _ = self.screen.clear();
 	}
 }
