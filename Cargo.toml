@@ -1,10 +1,9 @@
 [package]
 name = "rust-story"
-version = "0.24.1"
+version = "0.24.2"
 authors = [ "drbawb@fatalsyntax.com" ]
 
 [dependencies]
 num = "*"
 sdl2 = "*"
 sdl2_ttf = "*"
-
