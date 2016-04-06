@@ -114,8 +114,7 @@ pub struct AnimatedSprite {
 	pub source_rect:   rect::Rect,
 	pub sprite_sheet:  String,
 
-	offset:  (units::Tile, units::Tile),
-	size:    (units::Tile, units::Tile),
+	size: (units::Tile, units::Tile),
 
 	current_frame:  units::Frame,
 	num_frames:     units::Frame,
@@ -149,7 +148,6 @@ impl AnimatedSprite {
 		
 		graphics.load_image(sheet_path.clone(), true); // request graphics subsystem cache this sprite.
 		let sprite = AnimatedSprite{
-			offset:  offset,
 			size:    size,
 			
 			fps: fps,
