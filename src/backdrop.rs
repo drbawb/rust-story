@@ -27,14 +27,14 @@ impl FixedBackdrop {
 
 		while units::Pixel(x) < game::SCREEN_WIDTH.to_pixel() {
 			while units::Pixel(y) < game::SCREEN_HEIGHT.to_pixel() {
-				let src  = Rect::new(0, 0, tile_size, tile_size);
-				let dest = Rect::new(x, y, tile_size, tile_size);
+				let src  = Rect::new(0, 0, tile_size as u32, tile_size as u32);
+				let dest = Rect::new(x, y, tile_size as u32, tile_size as u32);
 
 				graphics.blit_surface(&self.surface_id[..], &src, &dest);
-				y+= tile_size;
+				y+= tile_size as i32;
 			}
 
-			x += tile_size;
+			x += tile_size as i32;
 			y = 0;
 		}
 	}
