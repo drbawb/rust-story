@@ -1,5 +1,7 @@
+*.swp
 .rust/*
 *assets
 lib/*.rlib
 bin/**
 doc/**
+target/**
